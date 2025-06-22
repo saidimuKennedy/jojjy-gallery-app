@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Artwork {
+  id          Int      @id @default(autoincrement())
+  title       String
+  artist      String
+  category    String
+  price       Decimal  @db.Decimal(10, 2)
+  imageUrl    String   @db.Text
+  description String?  @db.Text
+  dimensions  String?
+  isAvailable Boolean? @default(true)
+  views       Int      @default(0)
+  likes       Int      @default(0)
+  medium      String
+  year        Int
+  featured    Boolean? @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("artworks")
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  artworkIds  String? // ADD THIS LINE: To store the JSON stringified array of artwork IDs
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  status      String
+  amount      Decimal  @db.Decimal(10, 2)
+  phoneNumber String
+  timestamp   DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+
+  @@map("transactions")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  username     String        @unique
+  email        String        @unique
+  passwordHash String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  sessions     Session[]
+  Transaction  Transaction[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  data      Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sessions")
+}
