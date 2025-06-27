@@ -6,6 +6,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const { id } = req.query;
+
   if (!id || typeof id !== "string") {
     return res
       .status(400)
@@ -16,7 +17,7 @@ export default async function handler(
     switch (req.method) {
       case "GET":
         const artwork = await prisma.artwork.findUnique({
-          where: { id },
+          where: { id: parseInt(id) },
         });
         if (!artwork) {
           return res
@@ -26,15 +27,15 @@ export default async function handler(
         return res.status(200).json({ success: true, data: artwork });
 
       case "PUT":
-        const updatedArtwork = await prisma.artwork.update({
-          where: { id },
+          const updatedArtwork = await prisma.artwork.update({
+          where: { id: parseInt(id) },
           data: req.body,
         });
         return res.status(200).json({ success: true, data: updatedArtwork });
 
       case "DELETE":
         await prisma.artwork.delete({
-          where: { id },
+          where: { id: parseInt(id) },
         });
         return res.status(200).json({
           success: true,

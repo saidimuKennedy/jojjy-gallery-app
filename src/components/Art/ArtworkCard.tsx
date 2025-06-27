@@ -1,10 +1,10 @@
-import { Artwork } from "../../types/api";
-import { Heart, Eye, Star } from "lucide-react";
+import { ArtworkWithRelations } from "../../types/api";
+import { Heart, Eye } from "lucide-react";
 import AddToCartButton from "./AddToCartButton";
 import { useState } from "react";
 
 interface ArtworkCardProps {
-  artwork: Artwork;
+  artwork: ArtworkWithRelations;
   onFocus: (imageUrl: string) => void;
 }
 
@@ -72,16 +72,6 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
       {/* Gallery-style Hover Overlay */}
       <div className="absolute inset-0 bg-white/95 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-6">
         <div className="space-y-4">
-          {artwork.featured && (
-            <div className="text-xs font-medium text-gray-500 flex items-center">
-              <Star
-                className="w-4 h-4 mr-1 text-yellow-500"
-                fill="currentColor"
-              />
-              Featured Artwork
-            </div>
-          )}
-
           <div className="space-y-2">
             <h3 className="text-xl font-light text-gray-900">
               {artwork.title}
@@ -106,12 +96,22 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
                 <Eye className="w-4 h-4 mr-1" /> {views}
               </span>
             </div>
-            <p className="font-medium text-gray-900">
-              {defaultCurrency} {artwork.price.toLocaleString()}
-            </p>
+            {/* Conditional pricing based on inGallery */}
+            {!artwork.inGallery ? (
+              <p className="font-medium text-gray-900">
+                {defaultCurrency} {artwork.price.toLocaleString()}
+              </p>
+            ) : (
+              <p className="font-medium text-gray-700 text-sm">
+                In Gallery - Contact for Price
+              </p>
+            )}
           </div>
 
-          <AddToCartButton artwork={artwork} variant="minimal" />
+          {/* Conditionally hide AddToCartButton if inGallery is true */}
+          {!artwork.inGallery && (
+            <AddToCartButton artwork={artwork} variant="minimal" />
+          )}
         </div>
       </div>
     </div>

@@ -1,50 +1,18 @@
 import { useState } from "react";
 import Head from "next/head";
-import FeaturedSection from "@/components/Art/FeaturedSection";
-import FeaturingSection from "@/components/Art/FeaturingSection";
+// Removed: FeaturedSection, FeaturingSection (as per discussion)
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
-import { useFeaturedArtworks, useArtworks } from "@/hooks/useArtWorks";
-import CategoriesNav from "@/components/ui/CategoriesNav";
-import { ArtworkWithRelations } from "@/types/api";
+// Removed: useFeaturedArtworks, useArtworks (not needed for static landing)
+// Removed: CategoriesNav/SeriesNav from homepage itself, as it navigates away
+import { ArtworkWithRelations } from "@/types/api"; // Still useful for general type awareness
 import StatCounter from "@/components/Animations/StatCounter";
 import React from "react";
+import Link from "next/link"; // Import Link for navigation
 
 export default function Home() {
-  const [focusImage, setFocusImage] = useState<string | undefined>();
-
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
-
-  // Use hooks to fetch data
-  const { artworks: allArtworks, isLoading: allArtworksLoading } =
-    useArtworks();
-  const { artworks: featuredArtworks, isLoading: featuredArtworksLoading } =
-    useFeaturedArtworks();
-
-  // Filter non-featured artworks
-  const featuringArtworks = allArtworks?.filter((art) => !art.featured) || [];
-
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-    window.scrollTo({
-      top: document.getElementById("featured")?.offsetTop || 0,
-      behavior: "smooth",
-    });
-  };
-
-  const displayedArtworks: ArtworkWithRelations[] =
-    selectedCategory === "All"
-      ? allArtworks
-      : allArtworks?.filter((art) => art.category === selectedCategory) || [];
-
-  if (allArtworksLoading || featuredArtworksLoading) {
-    // Add a loading state for better UX
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
+  // No longer need focusImage, selectedCategory, or artwork fetching logic
+  // as the homepage will be a static landing page
 
   return (
     <>
@@ -52,16 +20,17 @@ export default function Home() {
         <title>Njenga Ngugi - Contemporary African Art</title>
         <meta
           name="description"
-          content="Discover amazing artworks by Njenga Ngugi. Explore featured and unique pieces in our online gallery."
+          content="Discover amazing artworks by Njenga Ngugi. Explore his unique series of contemporary African art in the online gallery."
         />
+        {/* You can add more meta tags for SEO here */}
       </Head>
 
-      <main className="min-h-screen bg-white">
+      <main className="min-h-screen bg-white flex flex-col">
         {/* Navbar */}
         <Navbar />
 
-        {/* Hero Section */}
-        <div className="relative bg-gradient-to-b from-gray-50 to-white overflow-hidden">
+        {/* Hero Section - Keep its structure, but update content and links */}
+        <div className="relative bg-gradient-to-b from-gray-50 to-white overflow-hidden flex-grow">
           <div className="absolute inset-0 overflow-hidden opacity-10">
             <div
               className="absolute inset-0"
@@ -85,21 +54,22 @@ export default function Home() {
                   Exploring the intersection of traditional African artistry and
                   contemporary expression. Each piece is a journey through
                   culture, memory, and innovation, creating a bridge between
-                  generations and continents.
+                  generations and continents. Discover his unique series of
+                  works, each telling its own compelling story.
                 </p>
                 <div className="mt-12 flex flex-col sm:flex-row justify-center gap-4">
-                  <a
-                    href="#featured"
-                    className="inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800 transition-colors duration-200 shadow-sm"
-                  >
-                    Explore Gallery
-                  </a>
-                  <a
-                    href="/about"
-                    className="inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-md text-gray-900 bg-white border border-gray-200 hover:bg-gray-50 transition-colors duration-200"
-                  >
-                    About the Artist
-                  </a>
+                  {/* Link to the main gallery page */}
+                  <Link href="/gallery" passHref>
+                    <a className="inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800 transition-colors duration-200 shadow-sm">
+                      Explore Gallery
+                    </a>
+                  </Link>
+                  {/* Link to the About page */}
+                  <Link href="/about" passHref>
+                    <a className="inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-md text-gray-900 bg-white border border-gray-200 hover:bg-gray-50 transition-colors duration-200">
+                      About the Artist
+                    </a>
+                  </Link>
                 </div>
                 <div className="mt-16 flex justify-center space-x-6 text-sm text-gray-500">
                   <div className="flex flex-col items-center">
@@ -111,6 +81,7 @@ export default function Home() {
                   </div>
                   <div className="w-px h-12 bg-gray-200"></div>
                   <div className="flex flex-col items-center">
+                    {/* Consider dynamically fetching total artwork count or manually updating */}
                     <StatCounter end={20} label="Artworks" />
                   </div>
                 </div>
@@ -119,28 +90,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Categories Navigation */}
-        <CategoriesNav
-          selectedCategory={selectedCategory}
-          onCategoryChange={handleCategoryChange}
-        />
-
-        {/* Main Gallery Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Featured Section */}
-          <div id="featured">
-            <FeaturedSection
-              artworks={featuredArtworks}
-              onFocus={setFocusImage}
-            />
-          </div>
-
-          {/* Featuring Section */}
-          <FeaturingSection
-            selectedCategory="Featuring"
-            onFocus={setFocusImage}
-          />
-        </div>
+        {/* Removed: Categories Navigation (SeriesNav) from homepage directly */}
+        {/* Removed: Featured Section and Featuring Section */}
       </main>
 
       <Footer />

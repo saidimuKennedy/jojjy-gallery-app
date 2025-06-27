@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { Artwork } from "../../types/api";
+import { ArtworkWithRelations } from "../../types/api";
 import { Heart } from "lucide-react";
+import AddToCartButton from "./AddToCartButton";
 
 interface ArtworkDetailsProps {
-  artwork: Artwork;
+  artwork: ArtworkWithRelations;
 }
 
 const ArtworkDetails = ({ artwork }: ArtworkDetailsProps) => {
   const [likes, setLikes] = useState(artwork.likes);
-
   const defaultCurrency = process.env.NEXT_PUBLIC_CURRENCY;
 
   const handleLike = async () => {
@@ -32,6 +32,10 @@ const ArtworkDetails = ({ artwork }: ArtworkDetailsProps) => {
           {artwork.title}
         </h3>
         <p className="text-gray-600">{artwork.artist}</p>
+        {/* NEW: Display series name if available */}
+        {artwork.series && (
+            <p className="text-sm text-gray-500 mt-1">Series: {artwork.series.name}</p>
+        )}
       </div>
       <p className="text-gray-600 leading-relaxed">{artwork.description}</p>
       <div className="space-y-4">
@@ -61,10 +65,19 @@ const ArtworkDetails = ({ artwork }: ArtworkDetailsProps) => {
             <Heart className="w-5 h-5 mr-2" />
             {likes} likes
           </button>
-          <p className="text-2xl font-light text-gray-900">
-            {defaultCurrency} {artwork.price.toLocaleString()}
-          </p>
+          {/* Conditional pricing based on inGallery */}
+          {!artwork.inGallery ? (
+            <p className="text-2xl font-light text-gray-900">
+              {defaultCurrency} {artwork.price.toLocaleString()}
+            </p>
+          ) : (
+            <p className="text-xl font-light text-gray-700">
+              In Gallery - Contact for Price
+            </p>
+          )}
         </div>
+        {/* NEW: Conditionally show AddToCartButton if not inGallery */}
+        {!artwork.inGallery && <AddToCartButton artwork={artwork} />}
       </div>
     </div>
   );

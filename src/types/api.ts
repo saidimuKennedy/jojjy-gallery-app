@@ -2,31 +2,26 @@ import {
   Artwork as PrismaArtwork,
   Transaction as PrismaTransaction,
   User as PrismaUser,
+  Series as PrismaSeries,
 } from "@prisma/client";
 
-// ============================================================================
-// BASE ERROR TYPES
-// ============================================================================
 export interface APIError {
   message: string;
   status?: number;
 }
 
-// ============================================================================
-// GENERIC API RESPONSE WRAPPER
-// ============================================================================
 export interface APIResponse<T> {
   success: boolean;
   data: T;
   message?: string;
-  total?: number; // For paginated responses
+  total?: number;
 }
 
-// ============================================================================
-// TRANSFORMED ARTWORK TYPES (Prisma -> API)
-// ============================================================================
+export interface Series extends Omit<PrismaSeries, "createdAt" | "updatedAt"> {
+  createdAt: string;
+  updatedAt: string;
+}
 
-// Convert Prisma Decimal to number for API responses
 export interface Artwork
   extends Omit<
     PrismaArtwork,
@@ -39,17 +34,18 @@ export interface Artwork
     | "medium"
     | "isAvailable"
     | "featured"
+    | "seriesId"
+    | "inGallery"
   > {
-  price: number; // Convert Decimal to number
-  createdAt: string; // Convert DateTime to ISO string (optional for responses)
-  updatedAt: string; // Convert DateTime to ISO string (optional for responses)
-  // Explicitly define properties that might be `null` in Prisma and you want to reflect that
-  description: string | null; // From Prisma: string | null
-  dimensions: string | null; // From Prisma: string | null
-  year: number | null; // From Prisma: number | null (assuming year can be null)
-  medium: string | null; // From Prisma: string | null (assuming medium can be null)
-  isAvailable: boolean | null; // From Prisma: boolean | null (assuming isAvailable can be null)
-  featured: boolean | null; // From Prisma: boolean (assuming featured is always defined)
+  price: number;
+  createdAt: string;
+  updatedAt: string;
+  description: string | null;
+  dimensions: string | null;
+  year: number | null;
+  medium: string | null;
+  isAvailable: boolean | null;
+  inGallery: boolean;
 }
 
 export interface Transaction
@@ -57,42 +53,40 @@ export interface Transaction
     PrismaTransaction,
     "amount" | "timestamp" | "createdAt" | "updatedAt"
   > {
-  amount: number; // Convert Decimal to number
-  timestamp: string; // Convert DateTime to ISO string
-  createdAt?: string; // Convert DateTime to ISO string (optional for responses)
-  updatedAt?: string; // Convert DateTime to ISO string (optional for responses)
+  amount: number;
+  timestamp: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// User type (mostly unchanged, just DateTime conversion)
 export interface User extends Omit<PrismaUser, "createdAt" | "updatedAt"> {
-  createdAt?: string; // Convert DateTime to ISO string (optional for responses)
-  updatedAt?: string; // Convert DateTime to ISO string (optional for responses)
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// ============================================================================
-// ARTWORK WITH RELATIONS
-// ============================================================================
 export interface ArtworkWithRelations extends Artwork {
   transactions?: Transaction[];
+  series?: Series | null;
 }
 
 export interface ArtworkWithFullRelations extends Artwork {
   transactions?: (Transaction & {
     user?: User;
   })[];
+  series?: Series | null;
 }
 
-// ============================================================================
-// API RESPONSE TYPES
-// ============================================================================
 export type ArtworkResponse = APIResponse<ArtworkWithRelations>;
 export type ArtworksResponse = APIResponse<ArtworkWithRelations[]>;
 export type ArtworkWithFullRelationsResponse =
   APIResponse<ArtworkWithFullRelations>;
 
-// ============================================================================
-// FILTER TYPES
-// ============================================================================
+export interface SeriesWithArtworks extends Series {
+  artworks: Artwork[];
+}
+export type SeriesResponse = APIResponse<SeriesWithArtworks>;
+export type SeriesListResponse = APIResponse<Series[]>;
+
 export interface ArtworkFilters {
   category?: string;
   price?: number;
@@ -102,8 +96,8 @@ export interface ArtworkFilters {
   artist?: string;
   medium?: string;
   year?: number;
-  featured?: boolean;
   isAvailable?: boolean;
+  seriesId?: number;
   sort?:
     | "price_asc"
     | "price_desc"
@@ -118,9 +112,6 @@ export interface ArtworkFilters {
   [key: string]: string | number | boolean | undefined;
 }
 
-// ============================================================================
-// PAYMENT TYPES
-// ============================================================================
 export interface PaymentSuccessData {
   transactionId: string;
   artworkIds: number[];
@@ -147,40 +138,36 @@ export interface CartPaymentRequestData {
   phoneNumber: string;
   artworkIds: number[];
 }
-// ============================================================================
-// TYPE CONVERSION UTILITIES
-// ============================================================================
 
-/**
- * Convert Prisma Artwork to API Artwork
- */
+export function convertPrismaSeriesToAPI(series: PrismaSeries): Series {
+  return {
+    ...series,
+    createdAt: series.createdAt.toISOString(),
+    updatedAt: series.updatedAt.toISOString(),
+  };
+}
+
 export function convertPrismaArtworkToAPI(artwork: PrismaArtwork): Artwork {
   return {
     ...artwork,
-    price: artwork.price.toNumber(), // Convert Decimal to number
+    price: artwork.price.toNumber(),
     createdAt: artwork.createdAt.toISOString(),
     updatedAt: artwork.updatedAt.toISOString(),
   };
 }
 
-/**
- * Convert Prisma Transaction to API Transaction
- */
 export function convertPrismaTransactionToAPI(
   transaction: PrismaTransaction
 ): Transaction {
   return {
     ...transaction,
-    amount: transaction.amount.toNumber(), // Convert Decimal to number
+    amount: transaction.amount.toNumber(),
     timestamp: transaction.timestamp.toISOString(),
     createdAt: transaction.createdAt.toISOString(),
     updatedAt: transaction.updatedAt.toISOString(),
   };
 }
 
-/**
- * Convert Prisma User to API User
- */
 export function convertPrismaUserToAPI(user: PrismaUser): User {
   return {
     ...user,
@@ -189,21 +176,30 @@ export function convertPrismaUserToAPI(user: PrismaUser): User {
   };
 }
 
-/**
- * Convert Prisma Artwork with relations to API format
- */
 export function convertPrismaArtworkWithRelationsToAPI(
-  artwork: PrismaArtwork & { transactions?: PrismaTransaction[] }
+  artwork: PrismaArtwork & {
+    transactions?: PrismaTransaction[];
+    series?: PrismaSeries | null;
+  }
 ): ArtworkWithRelations {
   return {
     ...convertPrismaArtworkToAPI(artwork),
     transactions: artwork.transactions?.map(convertPrismaTransactionToAPI),
+    series: artwork.series ? convertPrismaSeriesToAPI(artwork.series) : null,
   };
 }
 
-// ============================================================================
-// SWR HOOK TYPES
-// ============================================================================
+export function convertPrismaSeriesWithArtworksToAPI(
+  series: PrismaSeries & { artworks?: PrismaArtwork[] }
+): SeriesWithArtworks {
+  return {
+    ...convertPrismaSeriesToAPI(series),
+    artworks: series.artworks
+      ? series.artworks.map(convertPrismaArtworkToAPI)
+      : [],
+  };
+}
+
 export interface UseArtworksReturn {
   artworks: ArtworkWithRelations[];
   total: number;
@@ -215,6 +211,22 @@ export interface UseArtworksReturn {
 
 export interface UseArtworkReturn {
   artwork: ArtworkWithRelations | undefined;
+  isLoading: boolean;
+  isValidating: boolean;
+  error: string | undefined;
+  mutate: () => void;
+}
+
+export interface UseSeriesReturn {
+  series: SeriesWithArtworks | undefined;
+  isLoading: boolean;
+  isValidating: boolean;
+  error: string | undefined;
+  mutate: () => void;
+}
+
+export interface UseSeriesListReturn {
+  seriesList: Series[];
   isLoading: boolean;
   isValidating: boolean;
   error: string | undefined;

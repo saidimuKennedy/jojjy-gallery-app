@@ -6,11 +6,12 @@ import {
   ArtworkFilters,
   UseArtworksReturn,
   UseArtworkReturn,
+  SeriesResponse,
+  SeriesListResponse,
+  UseSeriesReturn,
+  UseSeriesListReturn,
 } from "@/types/api";
 
-// ============================================================================
-// FETCHER FUNCTION
-// ============================================================================
 const artworksFetcher: Fetcher<ArtworksResponse, string> = async (
   url: string
 ) => {
@@ -40,7 +41,6 @@ const artworkFetcher: Fetcher<ArtworkResponse, string> = async (
     throw error;
   }
   const data = await response.json();
-  // Check for API-level errors
   if (!data.success) {
     const error = new Error(data.message || "API request failed") as Error & {
       status: number;
@@ -52,9 +52,48 @@ const artworkFetcher: Fetcher<ArtworkResponse, string> = async (
   return data as ArtworkResponse;
 };
 
-// ============================================================================
-// SWR CONFIGURATION
-// ============================================================================
+const seriesListFetcher: Fetcher<SeriesListResponse, string> = async (
+  url: string
+) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    const error = new Error(
+      `HTTP ${response.status}: ${response.statusText}`
+    ) as Error & { status: number };
+    error.status = response.status;
+    throw error;
+  }
+  const data = await response.json();
+  if (!data.success) {
+    const error = new Error(data.message || "API request failed") as Error & {
+      status: number;
+    };
+    error.status = response.status;
+    throw error;
+  }
+  return data as SeriesListResponse;
+};
+
+const seriesFetcher: Fetcher<SeriesResponse, string> = async (url: string) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    const error = new Error(
+      `HTTP ${response.status}: ${response.statusText}`
+    ) as Error & { status: number };
+    error.status = response.status;
+    throw error;
+  }
+  const data = await response.json();
+  if (!data.success) {
+    const error = new Error(data.message || "API request failed") as Error & {
+      status: number;
+    };
+    error.status = response.status;
+    throw error;
+  }
+  return data as SeriesResponse;
+};
+
 const defaultSWRConfig = {
   revalidateOnFocus: true,
   revalidateOnReconnect: true,
@@ -70,13 +109,6 @@ const singleItemSWRConfig = {
   revalidateIfStale: true,
 };
 
-// ============================================================================
-// HOOKS
-// ============================================================================
-
-/**
- * Hook to fetch multiple artworks with filtering
- */
 export function useArtworks(filters: ArtworkFilters = {}): UseArtworksReturn {
   const queryParams = new URLSearchParams();
   Object.entries(filters).forEach(([key, value]) => {
@@ -84,15 +116,12 @@ export function useArtworks(filters: ArtworkFilters = {}): UseArtworksReturn {
       queryParams.append(key, String(value));
     }
   });
-
   const queryString = queryParams.toString();
   const url = `/api/artworks${queryString ? `?${queryString}` : ""}`;
-
   const { data, error, mutate, isValidating } = useSWR<
     ArtworksResponse,
     APIError
   >(url, artworksFetcher, defaultSWRConfig);
-
   return {
     artworks: data?.data || [],
     total: data?.total || 0,
@@ -103,15 +132,11 @@ export function useArtworks(filters: ArtworkFilters = {}): UseArtworksReturn {
   };
 }
 
-/**
- * Hook to fetch a single artwork by ID
- */
 export function useArtwork(id: string | number | undefined): UseArtworkReturn {
   const { data, error, mutate, isValidating } = useSWR<
     ArtworkResponse,
-    APIError // No change here, this is the error type
+    APIError
   >(id ? `/api/artworks/${id}` : null, artworkFetcher, singleItemSWRConfig);
-
   return {
     artwork: data?.data,
     isLoading: !error && !data && id !== undefined,
@@ -121,30 +146,40 @@ export function useArtwork(id: string | number | undefined): UseArtworkReturn {
   };
 }
 
-/**
- * Hook to fetch featured artworks
- */
-export function useFeaturedArtworks(): UseArtworksReturn {
-  return useArtworks({ featured: true });
+export function useSeriesList(): UseSeriesListReturn {
+  const { data, error, mutate, isValidating } = useSWR<
+    SeriesListResponse,
+    APIError
+  >("/api/series", seriesListFetcher, defaultSWRConfig);
+
+  return {
+    seriesList: data?.data || [],
+    isLoading: !error && !data,
+    isValidating,
+    error: error?.message,
+    mutate,
+  };
 }
 
-/**
- * Hook to fetch artworks by category
- */
-export function useArtworksByCategory(category: string): UseArtworksReturn {
-  return useArtworks({ category });
+export function useSeries(slug: string | undefined): UseSeriesReturn {
+  const { data, error, mutate, isValidating } = useSWR<
+    SeriesResponse,
+    APIError
+  >(slug ? `/api/series/${slug}` : null, seriesFetcher, singleItemSWRConfig);
+
+  return {
+    series: data?.data,
+    isLoading: !error && !data && slug !== undefined,
+    isValidating,
+    error: error?.message,
+    mutate,
+  };
 }
 
-/**
- * Hook to fetch artworks by artist
- */
 export function useArtworksByArtist(artist: string): UseArtworksReturn {
   return useArtworks({ artist });
 }
 
-/**
- * Hook to search artworks
- */
 export function useArtworkSearch(searchTerm: string): UseArtworksReturn {
   return useArtworks({ search: searchTerm });
 }

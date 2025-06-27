@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,6 +5,18 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Series {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  slug        String   @unique
+  description String   @db.Text
+  artworks    Artwork[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("series")
 }
 
 model Artwork {
@@ -27,7 +33,10 @@ model Artwork {
   likes       Int      @default(0)
   medium      String
   year        Int
-  featured    Boolean? @default(false)
+
+  seriesId    Int?
+  series      Series?  @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  inGallery   Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -37,7 +46,7 @@ model Artwork {
 
 model Transaction {
   id          String   @id @default(uuid())
-  artworkIds  String? // ADD THIS LINE: To store the JSON stringified array of artwork IDs
+  artworkIds  String?
   userId      String
   user        User     @relation(fields: [userId], references: [id])
   status      String
