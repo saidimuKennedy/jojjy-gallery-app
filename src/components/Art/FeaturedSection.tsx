@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Artwork } from "../../types/api"; 
+import { Artwork } from "../../types/api";
 import ArtworkCard from "./ArtworkCard";
 
 interface FeaturedSectionProps {
@@ -11,6 +11,8 @@ const FeaturedSection = ({ artworks, onFocus }: FeaturedSectionProps) => {
   const [focusedArtwork, setFocusedArtwork] = useState<Artwork | undefined>(
     undefined
   );
+
+  const defaultCurrency = process.env.NEXT_PUBLIC_CURRENCY;
 
   useEffect(() => {
     if (artworks && artworks.length > 0) {
@@ -118,7 +120,7 @@ const FeaturedSection = ({ artworks, onFocus }: FeaturedSectionProps) => {
                 </div>
               </div>
               <p className="text-2xl font-light text-gray-900">
-                KSH {focusedArtwork.price.toLocaleString()}
+                {defaultCurrency} {focusedArtwork.price.toLocaleString()}
               </p>
             </div>
           </div>

@@ -10,9 +10,9 @@ export default function Footer() {
           <div className="space-y-4 max-w-md">
             <h2 className="text-xl font-medium text-gray-900">Njenga Ngugi</h2>
             <p className="text-sm text-gray-500 leading-relaxed">
-              Contemporary Artist based in Nairobi, Kenya. Creating unique
-              artworks that blend traditional African art with modern
-              expressionism.
+              Based in Nairobi, I use charcoal, bleach, and pastel to explore
+              the quiet battles and small victories that shape who we are and
+              who we're becoming.
             </p>
           </div>
 

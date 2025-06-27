@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react"; // <-- Import useState for mobile menu state
-import { Menu, X } from "lucide-react"; // <-- Import Menu and X icons
+import React, { useEffect, useState } from "react";
+import { Menu, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import CartDrawer from "./CartDrawer";
@@ -13,7 +13,19 @@ export default function Navbar() {
   const { items, isCartOpen, closeCart } = useCart();
   const { user, isLoadingAuth, logout } = useAuth();
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // State for mobile menu
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isMobileMenuOpen]);
 
   const isActive = (path: string) => router.pathname === path;
 
@@ -26,8 +38,8 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     await logout();
-    router.push('/login');
-    setIsMobileMenuOpen(false); // Close mobile menu after logout
+    router.push("/login");
+    setIsMobileMenuOpen(false);
   };
 
   return (
@@ -36,7 +48,14 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-3">
+              <div className="w-12 h-12 flex items-center justify-center">
+                <img
+                  src="/images/pics/logo.png"
+                  alt="Njenga Ngugi Logo"
+                  className="w-10 h-10 object-contain"
+                />
+              </div>
               <span className="text-3xl font-light text-gray-900 hover:text-gray-700 transition-all duration-300">
                 Njenga Ngugi
               </span>
@@ -58,8 +77,8 @@ export default function Navbar() {
                 </Link>
               ))}
               {/* Desktop Auth Links */}
-              {!isLoadingAuth && (
-                user ? (
+              {!isLoadingAuth &&
+                (user ? (
                   <>
                     <span className="text-sm font-medium text-gray-700">
                       Welcome, {user.username}
@@ -78,12 +97,13 @@ export default function Navbar() {
                   >
                     Login
                   </Link>
-                )
-              )}
+                ))}
             </div>
 
             {/* Desktop Search Bar & Cart Button */}
-            <div className="hidden md:flex items-center space-x-8"> {/* Adjusted to align with desktop nav */}
+            <div className="hidden md:flex items-center space-x-8">
+              {" "}
+              {/* Adjusted to align with desktop nav */}
               <div className="w-72">
                 <SearchBar />
               </div>
@@ -112,7 +132,7 @@ export default function Navbar() {
       {/* Mobile Menu Drawer */}
       <div
         className={`fixed inset-0 bg-white z-40 md:hidden transform transition-transform duration-300 ease-in-out ${
-          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         } flex flex-col`}
       >
         <div className="flex items-center justify-between h-20 px-4 sm:px-6 border-b border-gray-100">
@@ -161,7 +181,7 @@ export default function Navbar() {
                     onClick={handleLogout}
                     className="block text-lg font-medium py-2 px-3 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-200 text-left"
                   >
-                    Logout run dev
+                    Logout
                   </button>
                 </>
               ) : (

@@ -230,7 +230,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
             <div className="flex justify-between items-center">
               <span className="text-base font-medium text-gray-900">Total</span>
               <span className="text-lg font-bold text-gray-900">
-                KSH {total.toLocaleString()}
+                $ {total.toLocaleString()}
               </span>
             </div>
 

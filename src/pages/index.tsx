@@ -7,6 +7,8 @@ import Footer from "@/components/ui/Footer";
 import { useFeaturedArtworks, useArtworks } from "@/hooks/useArtWorks";
 import CategoriesNav from "@/components/ui/CategoriesNav";
 import { ArtworkWithRelations } from "@/types/api";
+import StatCounter from "@/components/Animations/StatCounter";
+import React from "react";
 
 export default function Home() {
   const [focusImage, setFocusImage] = useState<string | undefined>();
@@ -101,24 +103,15 @@ export default function Home() {
                 </div>
                 <div className="mt-16 flex justify-center space-x-6 text-sm text-gray-500">
                   <div className="flex flex-col items-center">
-                    <span className="text-2xl font-semibold text-gray-900">
-                      15+
-                    </span>
-                    <span>Years of Experience</span>
+                    <StatCounter end={15} label="Years of experience" />
                   </div>
                   <div className="w-px h-12 bg-gray-200"></div>
                   <div className="flex flex-col items-center">
-                    <span className="text-2xl font-semibold text-gray-900">
-                      50+
-                    </span>
-                    <span>Major Exhibitions</span>
+                    <StatCounter end={15} label="Major exhibitions" />
                   </div>
                   <div className="w-px h-12 bg-gray-200"></div>
                   <div className="flex flex-col items-center">
-                    <span className="text-2xl font-semibold text-gray-900">
-                      200+
-                    </span>
-                    <span>Artworks Created</span>
+                    <StatCounter end={20} label="Artworks" />
                   </div>
                 </div>
               </div>

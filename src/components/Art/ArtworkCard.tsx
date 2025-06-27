@@ -1,4 +1,3 @@
-
 import { Artwork } from "../../types/api";
 import { Heart, Eye, Star } from "lucide-react";
 import AddToCartButton from "./AddToCartButton";
@@ -12,6 +11,8 @@ interface ArtworkCardProps {
 const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
   const [likes, setLikes] = useState(artwork.likes);
   const [views, setViews] = useState(artwork.views);
+
+  const defaultCurrency = process.env.NEXT_PUBLIC_CURRENCY;
 
   const handleLike = async () => {
     try {
@@ -106,7 +107,7 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
               </span>
             </div>
             <p className="font-medium text-gray-900">
-              KSH {artwork.price.toLocaleString()}
+              {defaultCurrency} {artwork.price.toLocaleString()}
             </p>
           </div>
 

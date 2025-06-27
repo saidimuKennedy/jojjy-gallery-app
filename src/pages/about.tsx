@@ -1,8 +1,9 @@
 import React from "react";
 import Head from "next/head";
-import Navbar from "@/components/ui/Navbar"; // Assuming you want Navbar on all pages
-import Footer from "@/components/ui/Footer"; // Assuming you want Footer on all pages
+import Navbar from "@/components/ui/Navbar";
+import Footer from "@/components/ui/Footer";
 import Image from "next/image";
+import StatCounter from "@/components/Animations/StatCounter";
 
 export default function AboutPage() {
   return (
@@ -26,38 +27,44 @@ export default function AboutPage() {
                 Njenga Ngugi
               </h2>
               <p className="text-lg text-gray-600 leading-relaxed mb-6">
-                Njenga Ngugi is a contemporary African artist whose work delves
-                into the rich tapestry of culture, memory, and identity. With
-                over 15 years of experience, Njenga's unique perspective bridges
-                traditional artistry with modern expression, creating pieces
-                that resonate deeply with viewers.
+                Njenga (b. 1996, Nairobi) crafts raw, expressive pieces in
+                charcoal, bleach, and pastel, blending abstraction and
+                surrealism to explore the depths of the human psyche. His work
+                invites viewers to engage with the depths of human emotion and
+                explore themes such as individuation, mental struggle, identity,
+                growth and resilience.
               </p>
               <p className="text-base text-gray-600 leading-relaxed">
-                Known for their evocative use of color and texture, Njenga's art
-                often explores themes of heritage, urban landscapes, and the
-                human condition. Their work has been featured in over 50 major
-                exhibitions worldwide, garnering critical acclaim for its
-                profound storytelling and innovative techniques.
+                Since 2017, Njenga’s work has appeared in the Kenya Art Fair
+                (2017) and the Nairobi National Museum Affordable Art Show
+                (2017). He has also participated in notable group exhibitions
+                such as A Bad Idea (Nafasi Art Gallery, 2019), Shadows (Brush‑tu
+                Art Studio, 2022), and Hidden Treasures (Gravitart Gallery,
+                2024). His debut solo exhibition, Dark Clouds Bring Waters, was
+                held at Kamene Cultural Centre in 2025. The exhibition explored
+                themes of individuation and the shadow self, tracing inner
+                transformation through layered, introspective works. His studio
+                practice begins with an intuitive process, starting by
+                introducing water, ink, and bleach to create a chaotic
+                foundation. Then he gradually bringing clarity and form using
+                charcoal and pastel, layering dry media to define what emerges,
+                uncovering subconscious stories in every layer. Featured in
+                Kenyan Arts Diary (2025) and profiled by Business Daily for his
+                alchemical approach, Njenga continues to push boundaries,
+                exploring the subconscious, inviting viewers to engage with the
+                unpredictable interplay of mark and void, and hoping each piece
+                draws them into a deeper psychological journey.
               </p>
               <div className="mt-8 flex justify-center md:justify-start space-x-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-gray-900">15+</p>
-                  <p className="text-sm text-gray-500">Years Experience</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-gray-900">50+</p>
-                  <p className="text-sm text-gray-500">Exhibitions</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-gray-900">200+</p>
-                  <p className="text-sm text-gray-500">Artworks</p>
-                </div>
+                <StatCounter end={15} label="Years of experience" />
+                <StatCounter end={15} label="Exhibitions" />
+                <StatCounter end={20} label="Artworks" />
               </div>
             </div>
             <div className="flex justify-center md:justify-end">
-              {/* Placeholder image for the artist */}
+              {/* Artist Image */}
               <Image
-                src="https://placehold.co/400x500.png?text=Artist+Photo" // Placeholder image
+                src="/images/joj-artist.png"
                 alt="Njenga Ngugi - The Artist"
                 width={400}
                 height={500}

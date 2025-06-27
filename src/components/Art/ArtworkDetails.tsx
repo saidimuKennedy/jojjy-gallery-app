@@ -9,6 +9,8 @@ interface ArtworkDetailsProps {
 const ArtworkDetails = ({ artwork }: ArtworkDetailsProps) => {
   const [likes, setLikes] = useState(artwork.likes);
 
+  const defaultCurrency = process.env.NEXT_PUBLIC_CURRENCY;
+
   const handleLike = async () => {
     try {
       const response = await fetch(`/api/artworks/${artwork.id}/like`, {
@@ -60,7 +62,7 @@ const ArtworkDetails = ({ artwork }: ArtworkDetailsProps) => {
             {likes} likes
           </button>
           <p className="text-2xl font-light text-gray-900">
-            KSH {artwork.price.toLocaleString()}
+            {defaultCurrency} {artwork.price.toLocaleString()}
           </p>
         </div>
       </div>
