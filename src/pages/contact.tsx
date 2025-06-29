@@ -1,48 +1,57 @@
-import React, { useState } from 'react';
-import Head from 'next/head';
-import Navbar from '@/components/ui/Navbar'; // Assuming you want Navbar on all pages
-import Footer from '@/components/ui/Footer'; // Assuming you want Footer on all pages
-import { Mails, PhoneCall } from 'lucide-react';
+import React, { useState } from "react";
+import Head from "next/head";
+import Navbar from "@/components/Layout/Navbar"; // Assuming you want Navbar on all pages
+import Footer from "@/components/ui/Footer"; // Assuming you want Footer on all pages
+import { Mails, PhoneCall } from "lucide-react";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
   });
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setStatus('loading');
+    setStatus("loading");
     setErrorMessage(null);
 
     // Basic client-side validation
-    if (!formData.name || !formData.email || !formData.subject || !formData.message) {
-      setErrorMessage('Please fill in all fields.');
-      setStatus('error');
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.subject ||
+      !formData.message
+    ) {
+      setErrorMessage("Please fill in all fields.");
+      setStatus("error");
       return;
     }
 
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     // Simulate success or failure
     const isSuccess = Math.random() > 0.2; // 80% chance of success for demo
 
     if (isSuccess) {
-      setStatus('success');
-      setFormData({ name: '', email: '', subject: '', message: '' }); // Clear form
-      alert('Your message has been sent successfully!'); // Use alert for now, replace with a custom modal/toast
+      setStatus("success");
+      setFormData({ name: "", email: "", subject: "", message: "" }); // Clear form
+      alert("Your message has been sent successfully!"); // Use alert for now, replace with a custom modal/toast
     } else {
-      setStatus('error');
-      setErrorMessage('Failed to send message. Please try again later.');
+      setStatus("error");
+      setErrorMessage("Failed to send message. Please try again later.");
     }
   };
 
@@ -50,19 +59,22 @@ export default function ContactPage() {
     <>
       <Head>
         <title>Contact - Njenga Ngugi</title>
-        <meta name="description" content="Get in touch with Njenga Ngugi for inquiries, commissions, or collaborations." />
+        <meta
+          name="description"
+          content="Get in touch with Njenga Ngugi for inquiries, commissions, or collaborations."
+        />
       </Head>
       <main className="min-h-screen bg-white">
         <Navbar />
-        
+
         {/* Hero Section */}
         <div className="bg-black py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-5xl font-bold text-white mb-4">
-              Contact Us
-            </h1>
+            <h1 className="text-5xl font-bold text-white mb-4">Get In Touch</h1>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Have a question, a commission request, or just want to say hello? Fill out the form below, and we'll get back to you as soon as possible.
+              Have a question, a commission request, or just want to say hello?
+              Fill out the form below, and we'll get back to you as soon as
+              possible.
             </p>
           </div>
         </div>
@@ -73,7 +85,10 @@ export default function ContactPage() {
             <form onSubmit={handleSubmit} className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-black mb-2 uppercase tracking-wide">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-black mb-2 uppercase tracking-wide"
+                  >
                     Name
                   </label>
                   <input
@@ -87,9 +102,12 @@ export default function ContactPage() {
                     required
                   />
                 </div>
-                
+
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-black mb-2 uppercase tracking-wide">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-black mb-2 uppercase tracking-wide"
+                  >
                     Email
                   </label>
                   <input
@@ -106,7 +124,10 @@ export default function ContactPage() {
               </div>
 
               <div>
-                <label htmlFor="subject" className="block text-sm font-medium text-black mb-2 uppercase tracking-wide">
+                <label
+                  htmlFor="subject"
+                  className="block text-sm font-medium text-black mb-2 uppercase tracking-wide"
+                >
                   Subject
                 </label>
                 <input
@@ -122,7 +143,10 @@ export default function ContactPage() {
               </div>
 
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-black mb-2 uppercase tracking-wide">
+                <label
+                  htmlFor="message"
+                  className="block text-sm font-medium text-black mb-2 uppercase tracking-wide"
+                >
                   Message
                 </label>
                 <textarea
@@ -139,23 +163,27 @@ export default function ContactPage() {
 
               {errorMessage && (
                 <div className="bg-red-50 border-l-4 border-red-500 p-4">
-                  <p className="text-red-800 text-sm font-medium">{errorMessage}</p>
+                  <p className="text-red-800 text-sm font-medium">
+                    {errorMessage}
+                  </p>
                 </div>
               )}
-              
-              {status === 'success' && (
+
+              {status === "success" && (
                 <div className="bg-green-50 border-l-4 border-green-500 p-4">
-                  <p className="text-green-800 text-sm font-medium">Thank you for your message! We will get back to you soon.</p>
+                  <p className="text-green-800 text-sm font-medium">
+                    Thank you for your message! We will get back to you soon.
+                  </p>
                 </div>
               )}
 
               <div className="pt-4">
                 <button
                   type="submit"
-                  disabled={status === 'loading'}
+                  disabled={status === "loading"}
                   className="w-full bg-black text-white py-4 px-6 text-lg font-semibold hover:bg-gray-800 disabled:bg-gray-400 transition-colors duration-200 uppercase tracking-wide"
                 >
-                  {status === 'loading' ? 'Sending Message...' : 'Send Message'}
+                  {status === "loading" ? "Sending Message..." : "Send Message"}
                 </button>
               </div>
             </form>
@@ -173,21 +201,28 @@ export default function ContactPage() {
                 Prefer direct contact? Here are additional ways to get in touch.
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-2xl mx-auto">
               <div className="text-center">
                 <div className="flex items-center justify-center">
-                  <Mails className="w-16 h-16 mx-auto mb-4 " color='black'/>
+                  <Mails className="w-16 h-16 mx-auto mb-4 " color="black" />
                 </div>
-                <h3 className="text-xl font-semibold text-black mb-2 lowercase tracking-wide">email</h3>
+                <h3 className="text-xl font-semibold text-black mb-2 lowercase tracking-wide">
+                  email
+                </h3>
                 <p className="text-gray-600 text-lg">info@njengangugi.com</p>
               </div>
-              
+
               <div className="text-center">
                 <div className="flex items-center justify-center">
-                  <PhoneCall className="w-16 h-16 mx-auto mb-4 " color='black'/>
+                  <PhoneCall
+                    className="w-16 h-16 mx-auto mb-4 "
+                    color="black"
+                  />
                 </div>
-                <h3 className="text-xl font-semibold text-black mb-2 lowercase tracking-wide">phone</h3>
+                <h3 className="text-xl font-semibold text-black mb-2 lowercase tracking-wide">
+                  phone
+                </h3>
                 <p className="text-gray-600 text-lg">+254-712-345-67</p>
               </div>
             </div>

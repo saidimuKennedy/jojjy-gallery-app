@@ -1,179 +1,206 @@
-import { PrismaClient } from "@prisma/client";
-import { faker } from "@faker-js/faker";
-import { hashPassword } from "@/lib/auth";
+// prisma/seed.ts
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Starting database seeding...");
+  console.log('Starting database seeding...');
 
-  // --- 1. Seed Users ---
-  // Create a default user for easy login/testing
-  const defaultUserPassword = "password123";
-  const defaultUserHashedPassword = await hashPassword(defaultUserPassword);
-
-  const defaultUser = await prisma.user.upsert({
-    where: { email: "user@example.com" },
-    update: {}, // Don't update if it exists
-    create: {
-      username: "testuser",
-      email: "user@example.com",
-      passwordHash: defaultUserHashedPassword,
+  // --- 1. Seed Series Data ---
+  // Define your series. Make sure slugs are unique.
+  const seriesData = [
+    {
+      name: "The Light Series",
+      slug: "the-light-series",
+      description: "A collection exploring themes of illumination, hope, and new beginnings.",
     },
-  });
-  console.log(`Created/found default user: ${defaultUser.email}`);
+    {
+      name: "Journey Through Form",
+      slug: "journey-through-form",
+      description: "Artworks that delve into abstract shapes, movement, and the human condition.",
+    },
+    {
+      name: "Water Echoes",
+      slug: "water-echoes",
+      description: "Pieces inspired by the fluidity, power, and reflective nature of water.",
+    },
+    // Add more series as needed
+  ];
 
-  // Create some additional fake users
-  const numberOfFakeUsers = 5;
-  for (let i = 0; i < numberOfFakeUsers; i++) {
-    const email = faker.internet.email();
-    const username = faker.internet.userName();
-    const password = faker.internet.password(); // Faker generates a strong password
-    const hashedPassword = await hashPassword(password); // Hash it
-
-    await prisma.user.upsert({
-      where: { email: email },
+  for (const series of seriesData) {
+    await prisma.series.upsert({
+      where: { slug: series.slug },
       update: {},
+      create: series,
+    });
+    console.log(`Upserted series: ${series.name}`);
+  }
+
+  // Fetch the created series to get their IDs if needed, or use slug for connecting
+  const lightSeries = await prisma.series.findUnique({ where: { slug: 'the-light-series' } });
+  const formSeries = await prisma.series.findUnique({ where: { slug: 'journey-through-form' } });
+  const waterSeries = await prisma.series.findUnique({ where: { slug: 'water-echoes' } });
+
+
+  // --- 2. Seed Artwork Data ---
+  // Use the provided image URLs and connect them to the series
+  const artworksToSeed = [
+    {
+      title: "Dawn",
+      artist: "Njenga Ngugi",
+      category: "Abstract",
+      price: 1800.00,
+      imageUrl: "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750932056/Dawn_km3ucm.jpg",
+      description: "A vibrant expression of the first light, symbolizing hope and new beginnings.",
+      dimensions: "36x48 inches",
+      isAvailable: true,
+      medium: "Acrylic on Canvas",
+      year: 2023,
+      inGallery: true,
+      seriesSlug: 'the-light-series',
+    },
+    {
+      title: "Sunshine's Embrace",
+      artist: "Njenga Ngugi",
+      category: "Figurative",
+      price: 2200.00,
+      imageUrl: "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750932044/sunshine_pboqqo.jpg",
+      description: "Warm hues capture the comforting embrace of a bright, sunny day.",
+      dimensions: "30x40 inches",
+      isAvailable: true,
+      medium: "Oil on Linen",
+      year: 2022,
+      inGallery: true,
+      seriesSlug: 'the-light-series',
+    },
+    {
+      title: "The Crossing",
+      artist: "Njenga Ngugi",
+      category: "Narrative",
+      price: 2500.00,
+      imageUrl: "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750932036/The_Crossing_kbdkjg.jpg",
+      description: "Depicting a pivotal moment of transition and decision.",
+      dimensions: "48x60 inches",
+      isAvailable: true,
+      medium: "Mixed Media",
+      year: 2024,
+      inGallery: true,
+      seriesSlug: 'journey-through-form',
+    },
+    {
+      title: "Tug of War",
+      artist: "Njenga Ngugi",
+      category: "Figurative",
+      price: 1900.00,
+      imageUrl: "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750932010/Tug_of_war_to9ieg.jpg",
+      description: "A powerful representation of inner conflict and resilience.",
+      dimensions: "24x36 inches",
+      isAvailable: true,
+      medium: "Charcoal and Pastel",
+      year: 2023,
+      inGallery: true,
+      seriesSlug: 'journey-through-form',
+    },
+    {
+      title: "Untitled Abstraction",
+      artist: "Njenga Ngugi",
+      category: "Abstract",
+      price: 1600.00,
+      imageUrl: "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750932000/Untitled_xdhljj.jpg",
+      description: "An exploration of color and texture without predefined form.",
+      dimensions: "40x40 inches",
+      isAvailable: true,
+      medium: "Acrylic on Board",
+      year: 2021,
+      inGallery: true,
+      seriesSlug: 'journey-through-form',
+    },
+    {
+      title: "Walk on Water",
+      artist: "Njenga Ngugi",
+      category: "Surreal",
+      price: 2800.00,
+      imageUrl: "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750931992/walk_on_water_ekduli.jpg",
+      description: "A dreamlike scene challenging the laws of nature and perception.",
+      dimensions: "42x54 inches",
+      isAvailable: true,
+      medium: "Oil on Canvas",
+      year: 2024,
+      inGallery: true,
+      seriesSlug: 'water-echoes',
+    },
+    {
+      title: "Will",
+      artist: "Njenga Ngugi",
+      category: "Symbolic",
+      price: 2100.00,
+      imageUrl: "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750931981/will_ywvxte.jpg",
+      description: "A depiction of determination and the strength of the human spirit.",
+      dimensions: "30x30 inches",
+      isAvailable: true,
+      medium: "Graphite and Ink",
+      year: 2022,
+      inGallery: true,
+      seriesSlug: 'journey-through-form',
+    },
+    {
+      title: "Cycles",
+      artist: "Njenga Ngugi",
+      category: "Abstract",
+      price: 1750.00,
+      imageUrl: "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750931901/cycles_k4yv0p.jpg",
+      description: "Interweaving patterns representing the continuous flow of life.",
+      dimensions: "28x28 inches",
+      isAvailable: true,
+      medium: "Acrylic on Canvas",
+      year: 2023,
+      inGallery: true,
+      seriesSlug: 'water-echoes',
+    },
+  ];
+
+  for (const artwork of artworksToSeed) {
+    await prisma.artwork.upsert({
+      where: {
+        // A unique identifier for the artwork if you were updating.
+        // For initial seed, we often create directly or use a composite key if available.
+        // For simplicity during seeding, we'll assume titles might be unique enough or just create.
+        // If titles are not unique, consider finding by image URL or creating a unique seed ID.
+        // For now, we'll try to find by title. If not found, create.
+        // If you rerun the seed script and titles aren't unique, this might upsert incorrectly.
+        // For a robust seed, you might delete all artworks first or use a unique external ID.
+        id: -1 // This will always fail to find, so it will always create new. For simplicity.
+      },
+      update: { // This part won't run with id: -1, but is required by upsert
+        title: artwork.title // Just a placeholder
+      },
       create: {
-        username: username,
-        email: email,
-        passwordHash: hashedPassword,
+        title: artwork.title,
+        artist: artwork.artist,
+        category: artwork.category,
+        price: artwork.price,
+        imageUrl: artwork.imageUrl,
+        description: artwork.description,
+        dimensions: artwork.dimensions,
+        isAvailable: artwork.isAvailable,
+        medium: artwork.medium,
+        year: artwork.year,
+        inGallery: artwork.inGallery,
+        // Connect the artwork to its series using the series slug
+        series: artwork.seriesSlug ? { connect: { slug: artwork.seriesSlug } } : undefined,
       },
     });
-    // console.log(`Created fake user: ${email}`); // Uncomment for detailed logging
-  }
-  console.log(`Seeded ${numberOfFakeUsers} additional fake users.`);
-
-  // --- 2. Seed Artworks ---
-
-  // Define your specific Cloudinary image URLs
-  const cloudinaryImageUrls = [
-    "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750932056/Dawn_km3ucm.jpg",
-    "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750932044/sunshine_pboqqo.jpg",
-    "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750932036/The_Crossing_kbdkjg.jpg",
-    "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750932029/the_headless_man_qjnerv.jpg",
-    "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750932010/Tug_of_war_to9ieg.jpg",
-    "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750932000/Untitled_xdhljj.jpg",
-    "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750931992/walk_on_water_ekduli.jpg",
-    "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750931981/will_ywvxte.jpg",
-    "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750931901/cycles_k4yv0p.jpg",
-  ];
-
-  const artworkNames = [
-    // Giving them more specific names for your gallery
-    "Dawn",
-    "Sunshine",
-    "The Crossing",
-    "The Headless Man",
-    "Tug of War",
-    "Untitled Abstract",
-    "Walk on Water",
-    "Will",
-    "Cycles",
-  ];
-
-  // Make sure the number of names matches the number of URLs
-  if (cloudinaryImageUrls.length !== artworkNames.length) {
-    console.warn(
-      "Warning: Number of image URLs does not match number of artwork names. Some artworks might have missing names or URLs."
-    );
+    console.log(`Upserted artwork: ${artwork.title}`);
   }
 
-  const categories = ["Painting", "Drawing", "Mixed Media", "Digital Art"]; // Refined for these specific artworks
-  const mediums = [
-    "Acrylic on Canvas",
-    "Charcoal and Pastel",
-    "Mixed Media",
-    "Digital Print",
-  ]; // Refined for these specific artworks
-
-  // We will now create an artwork for EACH of your Cloudinary URLs
-  const numberOfArtworksToCreate = cloudinaryImageUrls.length;
-  const createdArtworks = []; // Store them to potentially use for transactions later
-
-  for (let i = 0; i < numberOfArtworksToCreate; i++) {
-    const artwork = await prisma.artwork.create({
-      data: {
-        title: artworkNames[i] || faker.commerce.productName(), // Use specific name, fallback to faker
-        artist: "Njenga Ngugi", // Assuming this is for your artist
-        category: faker.helpers.arrayElement(categories),
-        price: faker.number.float({ min: 100, max: 5000, fractionDigits: 2 }),
-        imageUrl: cloudinaryImageUrls[i], // <<<--- THIS IS THE KEY CHANGE!
-        description: faker.lorem.paragraphs(2),
-        dimensions: `${faker.number.int({
-          min: 10,
-          max: 100,
-        })}x${faker.number.int({ min: 10, max: 100 })} cm`,
-        isAvailable: faker.datatype.boolean(),
-        views: faker.number.int({ min: 0, max: 5000 }),
-        likes: faker.number.int({ min: 0, max: 1000 }),
-        medium: faker.helpers.arrayElement(mediums),
-        year: faker.number.int({ min: 2017, max: new Date().getFullYear() }), // More recent years for an artist still exhibiting
-        featured: faker.datatype.boolean(0.3), // Slightly higher chance of being featured
-      },
-    });
-    createdArtworks.push(artwork);
-    console.log(
-      `Created artwork: "${artwork.title}" with URL: ${artwork.imageUrl}`
-    );
-  }
-  console.log(
-    `Seeded ${numberOfArtworksToCreate} artworks with specific Cloudinary URLs.`
-  );
-
-  // --- 3. Seed Transactions (Optional, but good for testing payment history) ---
-  const transactionStatuses = ["completed", "failed"];
-  const phoneNumbers = Array.from(
-    { length: 10 },
-    () => "254" + faker.string.numeric(9)
-  ); // Kenyan phone numbers
-
-  // Only create transactions if we have users and artworks
-  if (createdArtworks.length > 0) {
-    // Check for createdArtworks length
-    const allUsers = await prisma.user.findMany(); // Get all users, including the default one
-    const availableArtworks = createdArtworks.filter((a) => a.isAvailable); // Use available artworks for transactions
-
-    const numberOfTransactions = 15; // Create a few transactions
-    for (let i = 0; i < numberOfTransactions; i++) {
-      const randomUser = faker.helpers.arrayElement(allUsers);
-      const randomArtwork = faker.helpers.arrayElement(availableArtworks);
-
-      // Skip if no available artwork for transaction
-      if (!randomArtwork) {
-        console.log(
-          "Skipping transaction seed: No available artworks to link for transaction."
-        );
-        continue;
-      }
-
-      await prisma.transaction.create({
-        data: {
-          id: faker.string.uuid(), 
-          artworkIds: randomArtwork.id.toString(),
-          userId: randomUser.id,
-          status: faker.helpers.arrayElement(transactionStatuses),
-          amount: randomArtwork.price, 
-          phoneNumber: faker.helpers.arrayElement(phoneNumbers),
-          timestamp: faker.date.recent({ days: 30 }), // Transaction within the last 30 days
-        },
-      });
-      // console.log(`Created transaction for artwork: ${randomArtwork.title}`); // Uncomment for detailed logging
-    }
-    console.log(`Seeded ${numberOfTransactions} transactions.`);
-  } else {
-    console.log(
-      "Skipping transaction seeding: Not enough artworks or users available."
-    );
-  }
+  console.log('Database seeding complete!');
 }
 
 main()
   .catch((e) => {
-    console.error("Database seeding failed:", e);
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
-    console.log("Database seeding completed.");
   });

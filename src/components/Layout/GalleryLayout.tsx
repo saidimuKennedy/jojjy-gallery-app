@@ -1,27 +1,43 @@
 import { ReactNode } from "react";
+import Navbar from "./Navbar";
+import Footer from "../ui/Footer";
 
 interface GalleryLayoutProps {
   children: ReactNode;
+  currentFocusedImageUrl?: string;
 }
 
-export default function GalleryLayout({ children }: GalleryLayoutProps) {
+export default function GalleryLayout({
+  children,
+  currentFocusedImageUrl,
+}: GalleryLayoutProps) {
   return (
-    <div className="min-h-screen bg-white">
-      <main className="container mx-auto px-4 py-8">
+    <div
+      className="min-h-screen bg-white transition-background-image duration-500 ease-in-out"
+      style={{
+        backgroundImage: currentFocusedImageUrl
+          ? `linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)), url(${currentFocusedImageUrl})`
+          : "none",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
+    >
+      {" "}
+      <Navbar />
+      <main className="container mx-auto  py-8">
         {/* Gallery Header */}
+
         <div className="text-center mb-12">
           <h1 className="text-4xl font-light text-gray-900 mb-4">
-            Gallery Collection
+            View Collection
           </h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Explore our curated collection of unique artworks, each piece
-            telling its own story through the artist's creative vision.
-          </p>
         </div>
 
         {/* Main Content */}
         {children}
       </main>
+      <Footer/>
     </div>
   );
 }

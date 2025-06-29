@@ -1,13 +1,13 @@
+// src/components/layout/Navbar.tsx
+
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
-import CartDrawer from "./CartDrawer";
-import SearchBar from "./SearchBar";
-import CardButton from "./CartButton";
-
+import CartDrawer from "../ui/CartDrawer";
+import CartButton from "../ui/CartButton";
 export default function Navbar() {
   const router = useRouter();
   const { items, isCartOpen, closeCart } = useCart();
@@ -27,10 +27,31 @@ export default function Navbar() {
     };
   }, [isMobileMenuOpen]);
 
+  // Close mobile menu when route changes
+  useEffect(() => {
+    const handleRouteChange = () => {
+      setIsMobileMenuOpen(false);
+      closeCart(); // Also close cart drawer on route change for clean navigation
+    };
+
+    router.events.on("routeChangeComplete", handleRouteChange);
+    router.events.on("routeChangeError", handleRouteChange);
+
+    return () => {
+      router.events.off("routeChangeComplete", handleRouteChange);
+      router.events.off("routeChangeError", handleRouteChange);
+    };
+  }, [router.events, closeCart]);
+
   const isActive = (path: string) => router.pathname === path;
+
+  const shouldShowCart =
+    router.pathname.startsWith("/artworks/") &&
+    router.pathname.length > "/artworks/".length;
 
   const navItems = [
     { label: "Home", path: "/" },
+    { label: "Gallery", path: "/gallery" },
     { label: "Portfolio", path: "/portfolio" },
     { label: "About", path: "/about" },
     { label: "Contact", path: "/contact" },
@@ -61,7 +82,7 @@ export default function Navbar() {
               </span>
             </Link>
 
-            {/* Desktop Navigation (visible only on md and up) */}
+            {/* Desktop Navigation */}
             <div className="hidden md:flex md:items-center md:space-x-8">
               {navItems.map((item) => (
                 <Link
@@ -98,21 +119,12 @@ export default function Navbar() {
                     Login
                   </Link>
                 ))}
+              {shouldShowCart && <CartButton />}
             </div>
 
-            {/* Desktop Search Bar & Cart Button */}
-            <div className="hidden md:flex items-center space-x-8">
-              {" "}
-              {/* Adjusted to align with desktop nav */}
-              <div className="w-72">
-                <SearchBar />
-              </div>
-              <CardButton />
-            </div>
-
-            {/* Mobile Hamburger & Cart Button (visible only on md down) */}
+            {/* Mobile Hamburger & Conditionally Rendered Cart Button */}
             <div className="flex md:hidden items-center space-x-4">
-              <CardButton /> {/* Cart button for mobile */}
+              {shouldShowCart && <CartButton />}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-500"
@@ -128,10 +140,9 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
-
       {/* Mobile Menu Drawer */}
       <div
-        className={`fixed inset-0 bg-white z-40 md:hidden transform transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-0 bg-white z-[999] md:hidden transform transition-transform duration-300 ease-in-out ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         } flex flex-col`}
       >
@@ -146,18 +157,13 @@ export default function Navbar() {
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-4 flex flex-col space-y-6">
-          {/* Mobile Search Bar */}
-          <div className="w-full">
-            <SearchBar />
-          </div>
-
           {/* Mobile Navigation Items */}
           <div className="flex flex-col space-y-4">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 href={item.path}
-                onClick={() => setIsMobileMenuOpen(false)} // Close menu on item click
+                onClick={() => setIsMobileMenuOpen(false)}
                 className={`block text-xl font-medium py-2 px-3 rounded-lg ${
                   isActive(item.path)
                     ? "bg-gray-100 text-gray-900"
@@ -197,7 +203,6 @@ export default function Navbar() {
           )}
         </div>
       </div>
-
       {/* Cart Drawer */}
       <CartDrawer isOpen={isCartOpen} onClose={closeCart} />
     </>

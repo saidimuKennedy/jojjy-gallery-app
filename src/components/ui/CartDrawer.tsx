@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { X, ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { useAuth } from "@/context/AuthContext"; // Import useAuth to get user state
+import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import PaymentModal from "../Payment/PaymentModal"; // Corrected import path for PaymentModal
 import toast from "react-hot-toast"; // Import toast
@@ -19,7 +19,9 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
   const router = useRouter(); // Initialize router for redirection
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [paymentSuccessMessage, setPaymentSuccessMessage] = useState<string | null>(null);
+  const [paymentSuccessMessage, setPaymentSuccessMessage] = useState<
+    string | null
+  >(null);
 
   if (!isOpen) return null;
 
@@ -37,10 +39,13 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
   `.trim();
 
   // Custom Toast Component for Login Prompt
-  const LoginPromptToast: React.FC<{ t: any; message: string }> = ({ t, message }) => (
+  const LoginPromptToast: React.FC<{ t: any; message: string }> = ({
+    t,
+    message,
+  }) => (
     <div
       className={`${
-        t.visible ? 'animate-enter' : 'animate-leave'
+        t.visible ? "animate-enter" : "animate-leave"
       } max-w-md w-full bg-white shadow-lg rounded-md pointer-events-auto flex ring-1 ring-black ring-opacity-5 divide-x divide-gray-200`}
       // Styling for less rounded corners: Use rounded-md for a slight curve, or rounded-none for sharp.
       // rounded-md is good for a slightly less rounded appearance compared to rounded-lg or rounded-xl
@@ -49,18 +54,27 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
         <div className="flex items-start">
           <div className="flex-shrink-0 pt-0.5">
             {/* Custom icon (example: a warning icon) - unchanged as it's functional */}
-            <svg className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.174 3.353 1.94 3.353h14.053c1.766 0 2.806-1.853 1.94-3.353L12 2.25 2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            <svg
+              className="h-6 w-6 text-red-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v3.75m-9.303 3.376c-.866 1.5.174 3.353 1.94 3.353h14.053c1.766 0 2.806-1.853 1.94-3.353L12 2.25 2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+              />
             </svg>
           </div>
           <div className="ml-3 flex-1">
-            <p className="text-sm font-medium text-gray-900">
-              {message}
-            </p>
+            <p className="text-sm font-medium text-gray-900">{message}</p>
             <button
               onClick={() => {
                 toast.dismiss(t.id); // Dismiss the toast
-                router.push('/login'); // Redirect to login page
+                router.push("/login"); // Redirect to login page
               }}
               className="mt-2 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-sm shadow-sm text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" // Less rounded button, black background
             >
@@ -75,36 +89,47 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
           className="w-full border border-transparent rounded-none p-4 flex items-center justify-center text-sm font-medium text-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500"
         >
           {/* Custom black X icon for dismissal */}
-          <X className="w-5 h-5 text-black" /> {/* <--- Applied text-black here */}
+          <X className="w-5 h-5 text-black" />{" "}
+          {/* <--- Applied text-black here */}
         </button>
       </div>
     </div>
   );
 
-
   const handleCheckoutClick = () => {
     // --- AUTHENTICATION CHECK (Reinstated isLoadingAuth) ---
     // Prevent checkout if user is not authenticated and not currently loading auth state
-    if (!user && !isLoadingAuth) { // Check both user status AND loading status
-      toast.custom((t) => ( // Use toast.custom for full control over rendering
-        <LoginPromptToast t={t} message={'Please log in to proceed with payment.'} />
-      ), {
-        duration: 4000, // Toast duration
-        position: 'top-center', // Position of the toast on the screen
-      });
+    if (!user && !isLoadingAuth) {
+      // Check both user status AND loading status
+      toast.custom(
+        (
+          t // Use toast.custom for full control over rendering
+        ) => (
+          <LoginPromptToast
+            t={t}
+            message={"Please log in to proceed with payment."}
+          />
+        ),
+        {
+          duration: 4000, // Toast duration
+          position: "top-center", // Position of the toast on the screen
+        }
+      );
       return; // Stop the function here
     }
     // --- END AUTHENTICATION CHECK ---
 
     if (items.length === 0) {
-      toast.error('Your cart is empty. Add items to proceed.', { duration: 3000 });
+      toast.error("Your cart is empty. Add items to proceed.", {
+        duration: 3000,
+      });
       return;
     }
 
     // If authenticated and cart is not empty, proceed to payment modal
     const cartDetailsForPayment = {
       totalAmount: total,
-      artworkIds: items.map(item => item.id),
+      artworkIds: items.map((item) => item.id),
     };
 
     setIsPaymentModalOpen(true);
@@ -113,7 +138,9 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 
   const handlePaymentSuccess = (data: PaymentSuccessData) => {
     console.log("Payment successful:", data);
-    setPaymentSuccessMessage(`Payment successful! Transaction ID: ${data.transactionId}`);
+    setPaymentSuccessMessage(
+      `Payment successful! Transaction ID: ${data.transactionId}`
+    );
     clearCart();
     // closeCart(); // Optionally close the main cart drawer too
   };
@@ -121,10 +148,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
   return (
     <>
       {/* Overlay */}
-      <div
-        className={overlayClasses}
-        onClick={onClose}
-      />
+      <div className={overlayClasses} onClick={onClose} />
 
       {/* Main Drawer Container */}
       <div className={drawerClasses}>
@@ -205,7 +229,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                         </p>
                       </div>
                       <p className="text-sm font-semibold text-gray-900 ml-4 flex-shrink-0">
-                        KSH {item.price.toLocaleString()}
+                        $ {item.price.toLocaleString()}
                       </p>
                     </div>
                     <div className="mt-3">
@@ -264,7 +288,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
         <PaymentModal
           cartDetails={{
             totalAmount: total,
-            artworkIds: items.map(item => item.id),
+            artworkIds: items.map((item) => item.id),
           }}
           isOpen={isPaymentModalOpen}
           onClose={() => setIsPaymentModalOpen(false)}

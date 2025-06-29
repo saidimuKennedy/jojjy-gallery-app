@@ -1,6 +1,6 @@
 import React from "react";
 import Head from "next/head";
-import Navbar from "@/components/ui/Navbar";
+import Navbar from "@/components/Layout/Navbar";
 import Footer from "@/components/ui/Footer";
 import Image from "next/image";
 import StatCounter from "@/components/Animations/StatCounter";

@@ -1,13 +1,19 @@
 import { useState, useEffect } from "react";
-import { useSeriesList } from "@/hooks/useArtWorks";
-import CartButton from "./CartButton";
+import { useArtworks, useSeriesList } from "@/hooks/useArtWorks";
 import Link from "next/link";
+import SearchBar from "./SearchBar";
 
 interface SeriesNavProps {
+  onSearch?: (query: string) => void;
   activeSlug?: string;
+  initialSearchQuery?: string;
 }
 
-export default function SeriesNav({ activeSlug }: SeriesNavProps) {
+export default function SeriesNav({
+  activeSlug,
+  onSearch,
+  initialSearchQuery = "",
+}: SeriesNavProps) {
   const { seriesList, isLoading, error } = useSeriesList();
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -45,6 +51,8 @@ export default function SeriesNav({ activeSlug }: SeriesNavProps) {
     })),
   ];
 
+  const handleSearch = onSearch || (() => {});
+
   return (
     <div
       className={`sticky top-0 z-50 bg-white border-b border-gray-100 transition-all duration-200 ${
@@ -59,6 +67,7 @@ export default function SeriesNav({ activeSlug }: SeriesNavProps) {
                 key={item.slug}
                 href={item.slug === "all" ? "/gallery" : `/series/${item.slug}`}
                 passHref
+                legacyBehavior
               >
                 <button
                   className={`whitespace-nowrap px-4 py-2 text-sm font-medium transition-all duration-200 ${
@@ -73,7 +82,10 @@ export default function SeriesNav({ activeSlug }: SeriesNavProps) {
             ))}
           </div>
           <div className="flex-shrink-0 ml-4">
-            <CartButton />
+            <SearchBar
+              onSearch={handleSearch}
+              initialQuery={initialSearchQuery}
+            />
           </div>
         </div>
       </div>

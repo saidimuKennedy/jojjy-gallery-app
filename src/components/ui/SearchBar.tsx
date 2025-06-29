@@ -1,24 +1,43 @@
-// components/ui/SearchBar.tsx
-import { ChangeEvent } from "react"; // [cite: 454]
-import { Search } from "lucide-react"; // Import Search icon
+import { useState } from "react";
+import { SearchIcon } from "lucide-react";
 
-export default function SearchBar() {
-  // [cite: 454]
+interface SearchBarProps {
+  onSearch: (query: string) => void;
+  initialQuery?: string;
+  placeholder?: string;
+}
+
+export default function SearchBar({
+  onSearch,
+  initialQuery = "",
+  placeholder = "Search artworks, artist, series...",
+}: SearchBarProps) {
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSearch(searchQuery);
+  };
   return (
-    <div className="relative w-full max-w-sm">
-      {" "}
-      {/* Added wrapper for icon positioning */}
+    <form onSubmit={handleSubmit} className="flex items-center space-x-2">
       <input
-        type="search"
-        placeholder="Search artworks..."
-        className="pl-12 pr-4 py-2.5 rounded bg-gray-50 text-gray-900 placeholder-gray-500 border border-gray-200 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 w-full transition-all duration-200"
-        onChange={(e: ChangeEvent<HTMLInputElement>) => {
-          // [cite: 454]
-          // TODO: Implement search functionality
-          console.log(e.target.value); // [cite: 454]
-        }}
+        type="text"
+        placeholder={placeholder}
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="flex-grow px-4 py-2 border border-neutral-300 rounded-md text-neutral-800
+                   focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent
+                   transition-all duration-200 text-sm"
       />
-      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-    </div>
+      <button
+        type="submit"
+        className="bg-neutral-900 text-white p-2 rounded-md hover:bg-neutral-700
+                   transition-colors duration-200 flex items-center justify-center
+      "
+        aria-label="Perform search"
+      >
+        <SearchIcon size={20} />
+      </button>
+    </form>
   );
-} // [cite: 455]
+}
