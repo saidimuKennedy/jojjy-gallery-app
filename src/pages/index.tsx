@@ -1,5 +1,5 @@
 import Head from "next/head";
-import Navbar from "@/components/Layout/Navbar";
+import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import StatCounter from "@/components/Animations/StatCounter";
 import React from "react";
@@ -31,7 +31,10 @@ export default function Home() {
               loop
               playsInline
             >
-              <source src="https://res.cloudinary.com/dq3wkbgts/video/upload/v1735653355/samples/dance-2.mp4" type="video/mp4" />
+              <source
+                src="https://res.cloudinary.com/dq3wkbgts/video/upload/v1735653355/samples/dance-2.mp4"
+                type="video/mp4"
+              />
               <source src="/videos/hero-background.webm" type="video/webm" />
               {/* Fallback for browsers that don't support video */}
             </video>
@@ -42,14 +45,17 @@ export default function Home() {
           <div className="max-w-7xl mx-auto">
             <div className="relative z-10 py-24 sm:py-32 lg:py-40 px-4 sm:px-6 lg:px-8">
               <div className="text-center max-w-4xl mx-auto">
-                <h1 className="text-5xl font-extrabold text-white sm:text-6xl md:text-7xl tracking-tight">
-                  <span className="block font-serif">Njenga Ngugi</span>
-                  <span className="block text-2xl sm:text-3xl font-normal text-gray-200 mt-4">
-                    Contemporary African Art
-                  </span>
-                </h1>
+                <div className="flex justify-center mb-4">
+                  <div className="w-36 h-24 sm:w-44 sm:h-28 md:w-52 md:h-32">
+                    <img
+                      src="/images/pics/logo.png"
+                      alt="Njenga Ngugi Logo"
+                      className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
+                    />
+                  </div>
+                </div>
 
-                <p className="mt-8 text-xl text-gray-100 leading-relaxed max-w-3xl mx-auto">
+                <p className="mt-8 text-xl text-black leading-relaxed max-w-3xl mx-auto">
                   Exploring the intersection of traditional African artistry and
                   contemporary expression. Each piece is a journey through
                   culture, memory, and innovation, creating a bridge between

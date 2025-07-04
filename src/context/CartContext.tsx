@@ -1,8 +1,8 @@
 import { createContext, useContext, useReducer, ReactNode, useState } from "react";
-import { Artwork } from "../types/api"; 
+import { Artwork } from "../types/api";
 
 interface CartItem extends Artwork {
-  // Add any cart-specific properties if necessary, e.g., quantity
+  //TODO
 }
 
 interface CartState {
@@ -35,34 +35,23 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         (item) => item.id === action.payload.id
       );
       if (existingItem) {
-        // If you want to handle quantity:
-        // return {
-        //   ...state,
-        //   items: state.items.map(item =>
-        //     item.id === action.payload.id ? { ...item, quantity: item.quantity + 1 } : item
-        //   ),
-        //   total: state.total + parseFloat(String(action.payload.price)) // Ensure price is number
-        // };
-        // For now, since items are unique artworks, just return state if already in cart
         return state;
       }
-      // Ensure action.payload.price is parsed as a float (number)
       const priceToAdd = parseFloat(String(action.payload.price));
       return {
         ...state,
-        items: [...state.items, { ...action.payload }], // Add quantity if applicable
-        total: state.total + (isNaN(priceToAdd) ? 0 : priceToAdd), // Add parsed price, handle NaN
+        items: [...state.items, { ...action.payload }],
+        total: state.total + (isNaN(priceToAdd) ? 0 : priceToAdd),
       };
     case "REMOVE_ITEM":
       const itemToRemove = state.items.find(
         (item) => item.id === action.payload
       );
-      // Ensure itemToRemove.price is parsed as a float (number)
       const priceToRemove = parseFloat(String(itemToRemove?.price || 0));
       return {
         ...state,
         items: state.items.filter((item) => item.id !== action.payload),
-        total: state.total - (isNaN(priceToRemove) ? 0 : priceToRemove), // Subtract parsed price, handle NaN
+        total: state.total - (isNaN(priceToRemove) ? 0 : priceToRemove),
       };
     case "CLEAR_CART":
       return { items: [], total: 0 };

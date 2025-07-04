@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import Head from 'next/head';
-import { useRouter } from 'next/router';
-import { Palette } from 'lucide-react';
+import React, { useState } from "react";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { Palette } from "lucide-react";
 
 export default function RegisterPage() {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,30 +19,30 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setSuccessMessage(data.message || 'Registration successful! You can now log in.');
-        // Optionally clear form fields
-        setUsername('');
-        setEmail('');
-        setPassword('');
-        // Redirect to login page after a short delay
+        setSuccessMessage(
+          data.message || "Registration successful! You can now log in."
+        );
+        setUsername("");
+        setEmail("");
+        setPassword("");
         setTimeout(() => {
-          router.push('/login');
-        }, 2000);
+          router.push("/login");
+        }, 1000);
       } else {
-        setError(data.message || 'Registration failed. Please try again.');
+        setError(data.message || "Registration failed. Please try again.");
       }
     } catch (err) {
       console.error("Registration API call failed:", err);
-      setError('Network error or server unavailable. Please try again.');
+      setError("Network error or server unavailable. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -54,7 +54,6 @@ export default function RegisterPage() {
         <title>Register - Njenga Ngugi</title>
       </Head>
       <div className="min-h-screen bg-white flex">
-        {/* Left side - Form */}
         <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 lg:px-16">
           <div className="max-w-md mx-auto w-full">
             <div className="mb-12">
@@ -68,7 +67,10 @@ export default function RegisterPage() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-black mb-2 uppercase tracking-wide">
+                <label
+                  htmlFor="username"
+                  className="block text-sm font-medium text-black mb-2 uppercase tracking-wide"
+                >
                   Username
                 </label>
                 <input
@@ -85,7 +87,10 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-black mb-2 uppercase tracking-wide">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-black mb-2 uppercase tracking-wide"
+                >
                   Email Address
                 </label>
                 <input
@@ -102,7 +107,10 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-black mb-2 uppercase tracking-wide">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-black mb-2 uppercase tracking-wide"
+                >
                   Password
                 </label>
                 <input
@@ -123,10 +131,12 @@ export default function RegisterPage() {
                   <p className="text-red-800 text-sm font-medium">{error}</p>
                 </div>
               )}
-              
+
               {successMessage && (
                 <div className="bg-green-50 border-l-4 border-green-500 p-4">
-                  <p className="text-green-800 text-sm font-medium">{successMessage}</p>
+                  <p className="text-green-800 text-sm font-medium">
+                    {successMessage}
+                  </p>
                 </div>
               )}
 
@@ -136,15 +146,18 @@ export default function RegisterPage() {
                   disabled={isSubmitting}
                   className="w-full bg-black text-white py-4 px-6 text-lg font-semibold hover:bg-gray-800 disabled:bg-gray-400 transition-colors duration-200 uppercase tracking-wide"
                 >
-                  {isSubmitting ? 'Creating Account...' : 'Create Account'}
+                  {isSubmitting ? "Creating Account..." : "Create Account"}
                 </button>
               </div>
             </form>
 
             <div className="mt-8 text-center">
               <p className="text-gray-600">
-                Already have an account?{' '}
-                <a href="/login" className="text-black font-semibold hover:underline">
+                Already have an account?{" "}
+                <a
+                  href="/login"
+                  className="text-black font-semibold hover:underline"
+                >
                   Sign in here
                 </a>
               </p>
@@ -152,14 +165,14 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Right side - Visual element */}
         <div className="hidden lg:flex lg:w-1/2 bg-black flex-col justify-center items-center px-16">
           <div className="text-white text-center">
             <div className="mb-8">
-              <Palette className='w-24 h-24 mx-auto mb-6' />
+              <Palette className="w-24 h-24 mx-auto mb-6" />
               <h2 className="text-4xl font-bold mb-4">Welcome</h2>
               <p className="text-xl text-gray-300 max-w-md">
-                Create your account and join our community of innovators and creators.
+                Create your account and join our community of innovators and
+                creators.
               </p>
             </div>
           </div>

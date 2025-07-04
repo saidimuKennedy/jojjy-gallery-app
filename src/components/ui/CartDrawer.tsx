@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { X, ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { useAuth } from "@/context/AuthContext";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
-import PaymentModal from "../Payment/PaymentModal"; // Corrected import path for PaymentModal
-import toast from "react-hot-toast"; // Import toast
-import { useRouter } from "next/router"; // Import useRouter for navigation
+import PaymentModal from "../Payment/PaymentModal";
+import toast from "react-hot-toast";
+import { useRouter } from "next/router";
 import { PaymentSuccessData } from "@/types/api";
 
 interface CartDrawerProps {
@@ -15,8 +15,8 @@ interface CartDrawerProps {
 
 const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
   const { items, total, removeItem, clearCart, closeCart } = useCart();
-  const { user, isLoadingAuth } = useAuth(); // Destructure user and isLoadingAuth from useAuth
-  const router = useRouter(); // Initialize router for redirection
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentSuccessMessage, setPaymentSuccessMessage] = useState<
@@ -38,7 +38,6 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
     z-[901] flex flex-col
   `.trim();
 
-  // Custom Toast Component for Login Prompt
   const LoginPromptToast: React.FC<{ t: any; message: string }> = ({
     t,
     message,
@@ -47,13 +46,10 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
       className={`${
         t.visible ? "animate-enter" : "animate-leave"
       } max-w-md w-full bg-white shadow-lg rounded-md pointer-events-auto flex ring-1 ring-black ring-opacity-5 divide-x divide-gray-200`}
-      // Styling for less rounded corners: Use rounded-md for a slight curve, or rounded-none for sharp.
-      // rounded-md is good for a slightly less rounded appearance compared to rounded-lg or rounded-xl
     >
       <div className="flex-1 w-0 p-4">
         <div className="flex items-start">
           <div className="flex-shrink-0 pt-0.5">
-            {/* Custom icon (example: a warning icon) - unchanged as it's functional */}
             <svg
               className="h-6 w-6 text-red-500"
               fill="none"
@@ -73,10 +69,10 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
             <p className="text-sm font-medium text-gray-900">{message}</p>
             <button
               onClick={() => {
-                toast.dismiss(t.id); // Dismiss the toast
-                router.push("/login"); // Redirect to login page
+                toast.dismiss(t.id);
+                router.push("/login");
               }}
-              className="mt-2 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-sm shadow-sm text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" // Less rounded button, black background
+              className="mt-2 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-sm shadow-sm text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
             >
               Login
             </button>
@@ -88,36 +84,31 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
           onClick={() => toast.dismiss(t.id)}
           className="w-full border border-transparent rounded-none p-4 flex items-center justify-center text-sm font-medium text-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500"
         >
-          {/* Custom black X icon for dismissal */}
-          <X className="w-5 h-5 text-black" />{" "}
-          {/* <--- Applied text-black here */}
+          <X className="w-5 h-5 text-black" />
         </button>
       </div>
     </div>
   );
 
   const handleCheckoutClick = () => {
-    // --- AUTHENTICATION CHECK (Reinstated isLoadingAuth) ---
-    // Prevent checkout if user is not authenticated and not currently loading auth state
-    if (!user && !isLoadingAuth) {
-      // Check both user status AND loading status
+    const isAuthenticated = status === "authenticated";
+    const isLoadingAuth = status === "loading";
+
+    if (!isAuthenticated && !isLoadingAuth) {
       toast.custom(
-        (
-          t // Use toast.custom for full control over rendering
-        ) => (
+        (t) => (
           <LoginPromptToast
             t={t}
             message={"Please log in to proceed with payment."}
           />
         ),
         {
-          duration: 4000, // Toast duration
-          position: "top-center", // Position of the toast on the screen
+          duration: 4000,
+          position: "top-center",
         }
       );
-      return; // Stop the function here
+      return;
     }
-    // --- END AUTHENTICATION CHECK ---
 
     if (items.length === 0) {
       toast.error("Your cart is empty. Add items to proceed.", {
@@ -126,7 +117,6 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
       return;
     }
 
-    // If authenticated and cart is not empty, proceed to payment modal
     const cartDetailsForPayment = {
       totalAmount: total,
       artworkIds: items.map((item) => item.id),
@@ -142,17 +132,15 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
       `Payment successful! Transaction ID: ${data.transactionId}`
     );
     clearCart();
-    // closeCart(); // Optionally close the main cart drawer too
   };
+
+  const isLoadingAuth = status === "loading";
 
   return (
     <>
-      {/* Overlay */}
       <div className={overlayClasses} onClick={onClose} />
 
-      {/* Main Drawer Container */}
       <div className={drawerClasses}>
-        {/* Header - Fixed */}
         <div className="flex-shrink-0 px-4 py-6 border-b border-gray-200 flex items-center justify-between bg-white">
           <div className="flex items-center">
             <ShoppingCart className="w-6 h-6 text-gray-900 mr-2" />
@@ -168,7 +156,6 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Success Message - Fixed position */}
         {paymentSuccessMessage && (
           <div className="flex-shrink-0 bg-green-50 border-l-4 border-green-400 text-green-700 p-4 mx-4 mt-4 rounded-md shadow-sm">
             <div className="flex">
@@ -180,7 +167,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                 >
                   <path
                     fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1_0_00-1.414 1.414l2 2a1 1_0_001.414 0l4-4z"
                     clipRule="evenodd"
                   />
                 </svg>
@@ -193,7 +180,6 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
           </div>
         )}
 
-        {/* Cart Items - Scrollable with proper flex-grow */}
         <div className="flex-1 overflow-y-auto px-4 py-6 min-h-0">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-12">
@@ -229,7 +215,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                         </p>
                       </div>
                       <p className="text-sm font-semibold text-gray-900 ml-4 flex-shrink-0">
-                        $ {item.price.toLocaleString()}
+                        {`$ ${item.price!.toLocaleString()}`}
                       </p>
                     </div>
                     <div className="mt-3">
@@ -247,10 +233,8 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
           )}
         </div>
 
-        {/* Footer - Fixed at bottom */}
         <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 py-6">
           <div className="space-y-4">
-            {/* Total */}
             <div className="flex justify-between items-center">
               <span className="text-base font-medium text-gray-900">Total</span>
               <span className="text-lg font-bold text-gray-900">
@@ -258,20 +242,18 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
               </span>
             </div>
 
-            {/* Shipping info */}
             <p className="text-xs text-gray-500 text-center">
               Shipping and taxes calculated at checkout
             </p>
 
-            {/* Checkout button */}
             <button
               className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-200 ${
-                items.length === 0 || isLoadingAuth // Added isLoadingAuth to disable prop
+                items.length === 0 || isLoadingAuth
                   ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                   : "bg-gray-900 text-white hover:bg-gray-800 hover:shadow-lg transform hover:-translate-y-0.5"
               }`}
               onClick={handleCheckoutClick}
-              disabled={items.length === 0 || isLoadingAuth} // Added isLoadingAuth to disable prop
+              disabled={items.length === 0 || isLoadingAuth}
             >
               {items.length === 0
                 ? "Cart is Empty"
@@ -283,7 +265,6 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
         </div>
       </div>
 
-      {/* Payment Modal */}
       {isPaymentModalOpen && (
         <PaymentModal
           cartDetails={{

@@ -2,15 +2,14 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Head from "next/head";
-import { useRouter } from "next/router"; 
+import { useRouter } from "next/router";
 import { useArtworks, useSeriesList } from "@/hooks/useArtWorks";
 import { Artwork } from "@/types/api";
-import { motion } from "framer-motion";
-import Navbar from "@/components/Layout/Navbar";
+import { motion, Variants } from "framer-motion";
+import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 
-
-const pageVariants = {
+const pageVariants:Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -22,7 +21,7 @@ const pageVariants = {
   },
 };
 
-const fadeInUp = {
+const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
@@ -34,16 +33,16 @@ const fadeInUp = {
   },
 };
 
-const PortfolioSeriesPage: React.FC = () => { 
+const PortfolioSeriesPage: React.FC = () => {
   const router = useRouter();
-  const { seriesName } = router.query; 
+  const { seriesName } = router.query;
 
-  const seriesSlug = typeof seriesName === 'string' ? seriesName : ''; 
+  const seriesSlug = typeof seriesName === "string" ? seriesName : "";
 
   const { artworks: allArtworks, isLoading: artworksLoading } = useArtworks();
   const { seriesList: allSeries, isLoading: seriesLoading } = useSeriesList();
 
-  const isLoading = artworksLoading || seriesLoading || !router.isReady; 
+  const isLoading = artworksLoading || seriesLoading || !router.isReady;
 
   const currentSeries = useMemo(() => {
     if (!allSeries || !seriesSlug) return undefined;
@@ -55,7 +54,8 @@ const PortfolioSeriesPage: React.FC = () => {
   const artworksInSeries = useMemo(() => {
     if (!allArtworks || !currentSeries) return [];
     return allArtworks.filter(
-      (artwork) => artwork.series?.id === currentSeries.id && artwork.inGallery === true
+      (artwork) =>
+        artwork.series?.id === currentSeries.id && artwork.inGallery === true
     );
   }, [allArtworks, currentSeries]);
 
@@ -81,11 +81,16 @@ const PortfolioSeriesPage: React.FC = () => {
       <>
         <Navbar />
         <div className="container mx-auto px-4 py-20 text-center min-h-screen flex flex-col justify-center">
-          <h1 className="text-4xl font-light text-gray-900 mb-6">Series Not Found</h1>
+          <h1 className="text-4xl font-light text-gray-900 mb-6">
+            Series Not Found
+          </h1>
           <p className="text-gray-600 text-lg">
             The series "{seriesSlug.replace(/-/g, " ")}" could not be found.
           </p>
-          <Link href="/portfolio" className="mt-8 text-blue-600 hover:underline">
+          <Link
+            href="/portfolio"
+            className="mt-8 text-blue-600 hover:underline"
+          >
             Back to Portfolio
           </Link>
         </div>
@@ -105,7 +110,10 @@ const PortfolioSeriesPage: React.FC = () => {
           <p className="text-gray-600 text-lg">
             No artworks found for this series.
           </p>
-          <Link href="/portfolio" className="mt-8 text-blue-600 hover:underline">
+          <Link
+            href="/portfolio"
+            className="mt-8 text-blue-600 hover:underline"
+          >
             Back to Portfolio
           </Link>
         </div>
@@ -140,7 +148,7 @@ const PortfolioSeriesPage: React.FC = () => {
         {currentSeries.description && (
           <motion.p
             variants={fadeInUp}
-            className="text-lg md:text-xl text-gray-700 text-center max-w-3xl mx-auto mb-12 md:mb-16 leading-relaxed"
+            className="text-lg md:text-xl text-gray-700 text-center max-w-screen mx-auto mb-12 md:mb-16 leading-relaxed"
           >
             {currentSeries.description}
           </motion.p>
@@ -172,9 +180,6 @@ const PortfolioSeriesPage: React.FC = () => {
                   </p>
                   <p className="text-sm text-gray-500 mb-2">
                     {artwork.dimensions} | {artwork.medium}
-                  </p>
-                  <p className="text-md font-bold text-gray-900">
-                    {defaultCurrency} {artwork.price.toLocaleString()}
                   </p>
                 </div>
               </Link>

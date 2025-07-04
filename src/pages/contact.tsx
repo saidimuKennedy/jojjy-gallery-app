@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Head from "next/head";
-import Navbar from "@/components/Layout/Navbar"; // Assuming you want Navbar on all pages
-import Footer from "@/components/ui/Footer"; // Assuming you want Footer on all pages
+import Navbar from "@/components/ui/Navbar";
+import Footer from "@/components/ui/Footer";
 import { Mails, PhoneCall } from "lucide-react";
 
 export default function ContactPage() {
@@ -27,7 +27,6 @@ export default function ContactPage() {
     setStatus("loading");
     setErrorMessage(null);
 
-    // Basic client-side validation
     if (
       !formData.name ||
       !formData.email ||
@@ -39,19 +38,28 @@ export default function ContactPage() {
       return;
     }
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const response = await fetch('/api/contact/send-contact-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-    // Simulate success or failure
-    const isSuccess = Math.random() > 0.2; // 80% chance of success for demo
+      const data = await response.json();
 
-    if (isSuccess) {
-      setStatus("success");
-      setFormData({ name: "", email: "", subject: "", message: "" }); // Clear form
-      alert("Your message has been sent successfully!"); // Use alert for now, replace with a custom modal/toast
-    } else {
+      if (response.ok) {
+        setStatus("success");
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      } else {
+        setStatus("error");
+        setErrorMessage(data.message || "Failed to send message. Please try again.");
+      }
+    } catch (error) {
+      console.error("Network error submitting contact form:", error);
       setStatus("error");
-      setErrorMessage("Failed to send message. Please try again later.");
+      setErrorMessage("Network error. Please check your connection and try again.");
     }
   };
 
@@ -67,7 +75,6 @@ export default function ContactPage() {
       <main className="min-h-screen bg-white">
         <Navbar />
 
-        {/* Hero Section */}
         <div className="bg-black py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-5xl font-bold text-white mb-4">Get In Touch</h1>
@@ -79,7 +86,6 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* Contact Form Section */}
         <div className="py-16">
           <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
             <form onSubmit={handleSubmit} className="space-y-8">
@@ -190,7 +196,6 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* Contact Info Section */}
         <div className="bg-gray-50 py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
@@ -210,7 +215,9 @@ export default function ContactPage() {
                 <h3 className="text-xl font-semibold text-black mb-2 lowercase tracking-wide">
                   email
                 </h3>
-                <p className="text-gray-600 text-lg">info@njengangugi.com</p>
+                <p className="text-gray-600 text-lg">
+                  njengangugi340@gmail.com
+                </p>
               </div>
 
               <div className="text-center">

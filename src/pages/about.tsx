@@ -1,11 +1,16 @@
 import React from "react";
 import Head from "next/head";
-import Navbar from "@/components/Layout/Navbar";
+import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import Image from "next/image";
 import StatCounter from "@/components/Animations/StatCounter";
+import { UserRole } from "@prisma/client";
+import { useSession } from "next-auth/react";
+import AdminDashboard from "@/components/Admin/AdminDashboard";
 
 export default function AboutPage() {
+  const { data: session, status } = useSession();
+
   return (
     <>
       <Head>
@@ -26,15 +31,13 @@ export default function AboutPage() {
               <h2 className="text-2xl font-semibold text-gray-700 mb-4">
                 Njenga Ngugi
               </h2>
-              <p className="text-lg text-gray-600 leading-relaxed mb-6">
+              <p className="text-lg text-gray-600 leading-relaxed">
                 Njenga (b. 1996, Nairobi) crafts raw, expressive pieces in
                 charcoal, bleach, and pastel, blending abstraction and
                 surrealism to explore the depths of the human psyche. His work
                 invites viewers to engage with the depths of human emotion and
                 explore themes such as individuation, mental struggle, identity,
                 growth and resilience.
-              </p>
-              <p className="text-base text-gray-600 leading-relaxed">
                 Since 2017, Njenga’s work has appeared in the Kenya Art Fair
                 (2017) and the Nairobi National Museum Affordable Art Show
                 (2017). He has also participated in notable group exhibitions
@@ -72,6 +75,17 @@ export default function AboutPage() {
               />
             </div>
           </div>
+
+          {status !== "loading" && session?.user?.role === UserRole.ADMIN && (
+            <>
+              <hr className="my-16 border-gray-300" />{" "}
+              {/* A clear visual separator */}
+              <h2 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">
+                Artwork Management Panel
+              </h2>
+              <AdminDashboard />
+            </>
+          )}
         </div>
         <Footer />
       </main>

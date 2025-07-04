@@ -32,7 +32,6 @@ const ArtworkDetails = ({ artwork }: ArtworkDetailsProps) => {
           {artwork.title}
         </h3>
         <p className="text-gray-600">{artwork.artist}</p>
-        {/* NEW: Display series name if available */}
         {artwork.series && (
             <p className="text-sm text-gray-500 mt-1">Series: {artwork.series.name}</p>
         )}
@@ -68,7 +67,7 @@ const ArtworkDetails = ({ artwork }: ArtworkDetailsProps) => {
           {/* Conditional pricing based on inGallery */}
           {!artwork.inGallery ? (
             <p className="text-2xl font-light text-gray-900">
-              {defaultCurrency} {artwork.price.toLocaleString()}
+              {defaultCurrency} {artwork.price != null ? artwork.price.toLocaleString() : "Bid for quote"}
             </p>
           ) : (
             <p className="text-xl font-light text-gray-700">
@@ -76,7 +75,6 @@ const ArtworkDetails = ({ artwork }: ArtworkDetailsProps) => {
             </p>
           )}
         </div>
-        {/* NEW: Conditionally show AddToCartButton if not inGallery */}
         {!artwork.inGallery && <AddToCartButton artwork={artwork} />}
       </div>
     </div>

@@ -2,18 +2,18 @@ import React from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { ChevronLeftCircle, ShoppingCart } from "lucide-react";
+import { motion,Variants } from "framer-motion";
+import { ChevronLeftCircle } from "lucide-react";
 import { useArtwork } from "@/hooks/useArtWorks";
-import Navbar from "@/components/Layout/Navbar";
+import Navbar from "@/components/ui/Navbar";
 import AddToCartButton from "@/components/Art/AddToCartButton";
 
-const pageVariants = {
+const pageVariants:Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
 };
 
-const contentVariants = {
+const contentVariants :Variants= {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
@@ -27,7 +27,7 @@ const contentVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants:Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
 };
@@ -74,10 +74,10 @@ export default function ArtworkDetailPage() {
             The artwork you are looking for does not exist or an error occurred.
           </p>
           <Link
-            href="/gallery"
+            href="/portfolio"
             className="inline-block px-8 py-3 border border-neutral-900 text-neutral-900 text-sm tracking-wide hover:bg-neutral-900 hover:text-white transition-all duration-300"
           >
-            BACK TO GALLERY
+            BACK TO PORTFOLIO
           </Link>
         </motion.div>
       </div>
@@ -133,8 +133,6 @@ export default function ArtworkDetailPage() {
               {artwork.title}
             </motion.h1>
 
-            {/* Artist Name - assuming 'artist' field is available, if not, adjust */}
-            {/* If 'artist' is not directly on Artwork, you might need to fetch it or define it in types */}
             {artwork.artist && (
               <motion.p
                 variants={itemVariants}
@@ -151,7 +149,7 @@ export default function ArtworkDetailPage() {
               >
                 Series:{" "}
                 <Link
-                  href={`/portfolio/${artwork.series.slug}`} // Assuming portfolio link for series
+                  href={`/portfolio/${artwork.series.slug}`}
                   className="font-medium hover:text-neutral-900 transition-colors duration-300"
                 >
                   {artwork.series.name}
@@ -172,7 +170,6 @@ export default function ArtworkDetailPage() {
               {artwork.dimensions !== null && (
                 <p className="text-base">Dimensions: {artwork.dimensions}</p>
               )}
-              {/* Add other metadata here if needed (e.g., materials, edition) */}
             </motion.div>
 
             {artwork.description !== null && (
@@ -184,7 +181,6 @@ export default function ArtworkDetailPage() {
               </motion.div>
             )}
 
-            {/* Price and Add to Cart Button */}
             <motion.div variants={itemVariants}>
               {artwork.isAvailable ? (
                 <>
@@ -195,7 +191,6 @@ export default function ArtworkDetailPage() {
                         : `${defaultCurrency} ${artwork.price.toLocaleString()}`}
                     </p>
                   )}
-                  {/* Only show Add to Cart if there's a positive price */}
                   {artwork.price && artwork.price > 0 && (
                     <AddToCartButton artwork={artwork} variant="minimal" />
                   )}
@@ -212,3 +207,4 @@ export default function ArtworkDetailPage() {
     </motion.div>
   );
 }
+      

@@ -3,7 +3,7 @@ import { Heart, Eye, Sparkles, ChevronRightCircle } from "lucide-react";
 import AddToCartButton from "./AddToCartButton";
 import { useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, easeOut, Variants } from "framer-motion";
 
 interface ArtworkCardProps {
   artwork: ArtworkWithRelations;
@@ -17,7 +17,15 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  const handleLike = async (e) => {
+  interface HandleLikeEvent
+    extends React.MouseEvent<HTMLButtonElement, MouseEvent> {}
+
+  interface LikeApiResponse {
+    success: boolean;
+    [key: string]: any;
+  }
+
+  const handleLike = async (e: HandleLikeEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -26,10 +34,10 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
         method: "POST",
       });
 
-      const data = await response.json();
+      const data: LikeApiResponse = await response.json();
 
       if (data.success) {
-        setLikes((prev) => prev + 1);
+        setLikes((prev: number) => prev + 1);
         setIsLiked(true);
         setTimeout(() => setIsLiked(false), 1000);
       }
@@ -52,85 +60,84 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
     }
   };
 
-  // Animation variants
-  const cardVariants = {
+  const cardVariants: Variants = {
     initial: { scale: 1 },
     hover: {
       scale: 1.03,
-      transition: { duration: 0.3, ease: "easeOut" },
+      transition: { duration: 0.3, ease: easeOut },
     },
   };
 
-  const overlayVariants = {
+  const overlayVariants: Variants = {
     initial: { opacity: 0, backdropFilter: "blur(0px)" },
     hover: {
       opacity: 1,
       backdropFilter: "blur(12px)",
-      transition: { duration: 0.4, ease: "easeOut" },
+      transition: { duration: 0.4, ease: easeOut },
     },
   };
 
-  const contentVariants = {
+  const contentVariants: Variants = {
     initial: { y: 8, opacity: 0 },
     hover: {
       y: 0,
       opacity: 1,
-      transition: { duration: 0.4, delay: 0.1, ease: "easeOut" },
+      transition: { duration: 0.4, delay: 0.1, ease: easeOut },
     },
   };
 
-  const statsVariants = {
+  const statsVariants: Variants = {
     initial: { y: 8, opacity: 0 },
     hover: {
       y: 0,
       opacity: 1,
-      transition: { duration: 0.4, delay: 0.2, ease: "easeOut" },
+      transition: { duration: 0.4, delay: 0.2, ease: easeOut },
     },
   };
 
-  const likeButtonVariants = {
+  const likeButtonVariants: Variants = {
     initial: { scale: 1 },
     hover: { scale: 1.1 },
     tap: { scale: 0.95 },
     liked: {
       scale: [1, 1.3, 1],
-      transition: { duration: 0.4, ease: "easeOut" },
+      transition: { duration: 0.4, ease: easeOut },
     },
   };
 
-  const heartVariants = {
+  const heartVariants: Variants = {
     initial: { scale: 1, rotate: 0 },
     liked: {
       scale: [1, 1.4, 1.1],
       rotate: [0, -10, 5, 0],
-      transition: { duration: 0.6, ease: "easeOut" },
+      transition: { duration: 0.6, ease: easeOut },
     },
   };
 
-  const sparkleVariants = {
+  const sparkleVariants: Variants = {
     initial: { scale: 0, opacity: 0, rotate: 0 },
     liked: {
       scale: [0, 1.2, 0],
       opacity: [0, 1, 0],
       rotate: [0, 180, 360],
-      transition: { duration: 0.8, ease: "easeOut" },
+      transition: { duration: 0.8, ease: easeOut },
     },
   };
 
-  const viewActionVariants = {
+  const viewActionVariants: Variants = {
     initial: { x: 0 },
     hover: {
       x: 4,
-      transition: { duration: 0.3, ease: "easeOut" },
+      transition: { duration: 0.3, ease: easeOut },
     },
   };
 
-  const chevronVariants = {
+  const chevronVariants: Variants = {
     initial: { x: 0, rotate: 0 },
     hover: {
       x: 6,
       rotate: 5,
-      transition: { duration: 0.3, ease: "easeOut" },
+      transition: { duration: 0.3, ease: easeOut },
     },
   };
 
@@ -148,12 +155,9 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
         }}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Subtle gradient border effect */}
         <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-gray-100/20 via-transparent to-gray-200/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-        {/* Artwork Image */}
         <div className="aspect-[4/3] relative overflow-hidden rounded-t-lg">
-          {/* Loading shimmer effect */}
           {!isImageLoaded && (
             <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse" />
           )}
@@ -167,11 +171,9 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
             onLoad={() => setIsImageLoaded(true)}
           />
 
-          {/* Subtle image overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
 
-        {/* Basic Artwork Info */}
         <div className="p-6 bg-white rounded-b-lg">
           <div className="space-y-2">
             <h3 className="text-base font-medium text-gray-900 truncate group-hover:text-gray-700 transition-colors duration-200">
@@ -183,7 +185,6 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
           </div>
         </div>
 
-        {/* Enhanced Gallery-style Hover Overlay */}
         <motion.div
           variants={overlayVariants}
           initial="initial"
@@ -204,9 +205,7 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
 
           <motion.div variants={statsVariants} className="space-y-4">
             <div className="flex justify-between items-center w-full text-sm text-gray-700">
-              {/* Left side: Likes and Views */}
               <div className="flex items-center space-x-6">
-                {/* Like Button */}
                 <motion.button
                   variants={likeButtonVariants}
                   initial="initial"
@@ -232,7 +231,6 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
                       />
                     </motion.div>
 
-                    {/* Sparkle effect */}
                     <AnimatePresence>
                       {isLiked && (
                         <motion.div
@@ -250,7 +248,7 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
 
                   <motion.span
                     className="font-medium"
-                    key={likes} // This will trigger re-render when likes change
+                    key={likes}
                     initial={{ scale: 1 }}
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 0.3 }}
@@ -259,7 +257,6 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
                   </motion.span>
                 </motion.button>
 
-                {/* Views */}
                 <motion.div
                   className="flex items-center text-gray-500"
                   whileHover={{ scale: 1.05 }}
@@ -278,13 +275,14 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
                 </motion.div>
               </div>
 
-              {/* Right side: View Action */}
               <motion.div
                 variants={viewActionVariants}
                 whileHover="hover"
                 className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors duration-300 cursor-pointer group/action"
               >
-                <span className="font-medium text-sm whitespace-nowrap">View Art</span>
+                <span className="font-medium text-sm whitespace-nowrap">
+                  View Art
+                </span>
                 <motion.div variants={chevronVariants}>
                   <ChevronRightCircle className="w-5 h-5" />
                 </motion.div>
@@ -298,3 +296,4 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
 };
 
 export default ArtworkCard;
+

@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,16 +8,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// --- GALLERY MANAGEMENT MODELS ---
+
 model Series {
   id          Int      @id @default(autoincrement())
   name        String   @unique
   slug        String   @unique
   description String   @db.Text
-  artworks    Artwork[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  artworks    Artwork[] // One-to-many relationship with Artwork
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@map("series")
+  @@map("series") // Maps to a table named 'series' in your database
 }
 
 model Artwork {
@@ -25,7 +28,7 @@ model Artwork {
   artist      String
   category    String
   price       Decimal  @db.Decimal(10, 2)
-  imageUrl    String   @db.Text
+  imageUrl    String   @db.Text // Main display image URL (could be one of the mediaFiles too)
   description String?  @db.Text
   dimensions  String?
   isAvailable Boolean? @default(true)
@@ -35,30 +38,94 @@ model Artwork {
   year        Int
 
   seriesId    Int?
-  series      Series?  @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  series      Series?  @relation(fields: [seriesId], references: [id], onDelete: SetNull) // Optional relationship to Series
   inGallery   Boolean  @default(false)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  mediaFiles  ArtworkMediaFile[] // One-to-many relationship with ArtworkMediaFile (for additional artwork media)
 
-  @@map("artworks")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("artworks") // Maps to a table named 'artworks'
 }
 
-model Transaction {
-  id          String   @id @default(uuid())
-  artworkIds  String?
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  status      String
-  amount      Decimal  @db.Decimal(10, 2)
-  phoneNumber String
-  timestamp   DateTime @default(now())
+model ArtworkMediaFile {
+  id           Int           @id @default(autoincrement())
+  url          String        @db.Text         // Cloudinary URL for the media
+  type         MediaFileType // Enum for the type of media (e.g., IMAGE, VIDEO, AUDIO)
+  description  String?       @db.Text         // Description/caption for this specific media file
+  thumbnailUrl String?       @db.Text         // Thumbnail for videos/audio
+  order        Int           @default(0)     // To specify display order
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  artwork      Artwork       @relation(fields: [artworkId], references: [id], onDelete: Cascade) // Relationship back to Artwork
+  artworkId    Int
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("artwork_media_files") // Maps to a table named 'artwork_media_files'
+}
 
 
-  @@map("transactions")
+// --- MEDIA BLOG MODELS (NEW ADDITION) ---
+model MediaBlogEntry {
+  id           Int                  @id @default(autoincrement())
+  title        String
+  shortDesc    String?
+  type         MediaBlogEntryType   // Enum for the primary type of content in this entry
+  externalLink String?              // Link to external content (e.g., full blog post, YouTube video)
+  
+  thumbnailUrl String?              @db.VarChar(500) // URL for the main thumbnail of the entry
+  duration     String?              @db.VarChar(50)  // Duration string for video/audio entries (e.g., "05:30")
+  content      String?              @db.Text         // Main text content, especially for BLOG_POST type
+
+  mediaFiles   MediaBlogFile[]      // One-to-many relationship with MediaBlogFile (for actual media assets)
+
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@map("media_blog_entries") // Maps to a table named 'media_blog_entries'
+}
+
+model MediaBlogFile {
+  id           Int              @id @default(autoincrement())
+  url          String           // Cloudinary URL for image, video, audio
+  type         MediaFileType    // Type of this specific file (e.g., IMAGE, VIDEO, AUDIO)
+  description  String?          // Description/caption for this specific media file
+  thumbnailUrl String?          // Thumbnail for videos/audio
+  order        Int              @default(0) // To specify display order
+  
+  mediaBlogEntry   MediaBlogEntry @relation(fields: [mediaBlogEntryId], references: [id], onDelete: Cascade) // Relationship back to MediaBlogEntry
+  mediaBlogEntryId Int
+
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@map("media_blog_files") // Maps to a table named 'media_blog_files'
+}
+
+// --- COMMON ENUMS FOR MEDIA TYPES ---
+enum MediaFileType {
+  IMAGE
+  VIDEO
+  AUDIO
+  // Add other types as needed, e.g., THREE_D_MODEL, DOCUMENT
+}
+
+// Enum for the primary content type of a Media Blog Entry
+enum MediaBlogEntryType {
+  VIDEO        // Entry primarily features a video
+  IMAGES       // Entry primarily features a set of images
+  AUDIO        // Entry primarily features an audio file/podcast
+  EXTERNAL_LINK // Entry is primarily a link to an external resource/article
+  BLOG_POST
+}
+
+
+// --- USER & TRANSACTION MODELS ---
+enum UserRole {
+  ADMIN
+  USER
 }
 
 model User {
@@ -66,10 +133,11 @@ model User {
   username     String        @unique
   email        String        @unique
   passwordHash String
+  role         UserRole      @default(USER) // Assigns a default role
+  sessions     Session[]     // One-to-many relationship with Session
+  Transaction  Transaction[] // One-to-many relationship with Transaction
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  sessions     Session[]
-  Transaction  Transaction[]
 
   @@map("users")
 }
@@ -77,11 +145,27 @@ model User {
 model Session {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id]) // Relationship back to User
   expiresAt DateTime
   data      Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("sessions")
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  artworkIds  String? // Consider array of Int or a separate TransactionArtwork model for better normalization
+  userId      String
+  user        User     @relation(fields: [userId], references: [id]) // Relationship back to User
+  status      String
+  amount      Decimal  @db.Decimal(10, 2)
+  phoneNumber String
+  timestamp   DateTime @default(now())
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("transactions")
 }

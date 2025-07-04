@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
-import { convertPrismaArtworkToAPI, ArtworkFilters } from "@/types/api";
+import { convertPrismaArtworkWithRelationsToAPI } from "@/types/api";
 
 export default async function handler(
   req: NextApiRequest,
@@ -15,7 +15,7 @@ export default async function handler(
   try {
     const {
       page = "1",
-      limit = "10",
+      limit,
       category,
       artist,
       medium,
@@ -28,9 +28,35 @@ export default async function handler(
       sort,
     } = req.query;
 
-    const pageNum = parseInt(page as string);
-    const limitNum = parseInt(limit as string);
-    const skip = (pageNum - 1) * limitNum;
+    let pageNum: number;
+    let limitNum: number | undefined;
+
+    let prismaFindManyArgs: {
+      skip?: number;
+      take?: number;
+      where?: any;
+      orderBy?: any;
+      include?: any;
+    } = {};
+
+    const limitQuery = limit as string | undefined;
+    if (limitQuery === "all") {
+      pageNum = 1;
+      limitNum = undefined;
+    } else {
+      let parsedLimit = parseInt(limitQuery || "10");
+      if (isNaN(parsedLimit) || parsedLimit <= 0) {
+        parsedLimit = 10;
+      }
+      limitNum = parsedLimit;
+
+      pageNum = parseInt(page as string);
+      if (isNaN(pageNum) || pageNum <= 0) {
+        pageNum = 1;
+      }
+      prismaFindManyArgs.skip = (pageNum - 1) * limitNum;
+      prismaFindManyArgs.take = limitNum;
+    }
 
     const where: any = {};
 
@@ -47,8 +73,9 @@ export default async function handler(
       where.year = parseInt(year as string);
     }
     if (isAvailable !== undefined) {
-      where.isAvailable = isAvailable === "true";
+      where.isAvailable = String(isAvailable).toLowerCase() === "true";
     }
+
     if (seriesId) {
       where.seriesId = parseInt(seriesId as string);
     }
@@ -103,18 +130,19 @@ export default async function handler(
       }
     }
 
+    const prismaQuery = {
+      where,
+      orderBy,
+      include: { series: true, mediaFiles: true },
+      ...prismaFindManyArgs,
+    };
+
     const [artworks, total] = await prisma.$transaction([
-      prisma.artwork.findMany({
-        where,
-        orderBy,
-        skip,
-        take: limitNum,
-        include: { series: true },
-      }),
+      prisma.artwork.findMany(prismaQuery),
       prisma.artwork.count({ where }),
     ]);
 
-    const apiArtworks = artworks.map(convertPrismaArtworkToAPI);
+    const apiArtworks = artworks.map(convertPrismaArtworkWithRelationsToAPI);
 
     return res.status(200).json({
       success: true,

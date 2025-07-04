@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Added useEffect
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useAuth } from '@/context/AuthContext'; 
+import { useSession, signIn } from 'next-auth/react'; // CHANGED: Import useSession and signIn
 import { Brush } from 'lucide-react';
 
 export default function LoginPage() {
@@ -9,14 +9,29 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login, user } = useAuth(); 
+  // CHANGED: Use useSession directly
+  const { data: session, status } = useSession();
   const router = useRouter();
 
-  // If already logged in, redirect to home
-  // This is a basic redirect; for more robust, consider server-side checks or useEffect
-  if (user) {
-    router.push('/');
-    return null; // Don't render login page if already logged in
+  // Redirect if already logged in (authenticated session)
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push('/');
+    }
+  }, [status, router]); // Dependency array includes status and router
+
+  // Don't render anything while session status is loading
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="w-12 h-12 border-4 border-gray-200 border-t-gray-900 animate-spin rounded-full"></div>
+      </div>
+    );
+  }
+
+  // If already authenticated, return null as useEffect will handle redirect
+  if (status === "authenticated") {
+    return null;
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -24,15 +39,20 @@ export default function LoginPage() {
     setError(null);
     setIsSubmitting(true);
 
-    const errorMessage = await login(email, password);
+    // CHANGED: Use signIn from next-auth/react
+    const result = await signIn('credentials', {
+      redirect: false, // Prevent NextAuth.js from redirecting automatically
+      email,
+      password,
+    });
 
-    if (errorMessage) {
-      setError(errorMessage);
+    if (result?.error) {
+      setError(result.error); // Display error message from NextAuth.js
     } else {
-      // Login successful, AuthContext's user state is updated,
-      // and the `if (user)` check above will trigger redirect.
-      // You can also explicitly push here if not using the above check:
-      // router.push('/');
+      // If no error, sign-in was successful.
+      // NextAuth.js updates the session, and the useEffect above will handle the redirect.
+      // Alternatively, you could explicitly push here if you don't rely on useEffect:
+      router.push('/');
     }
     setIsSubmitting(false);
   };

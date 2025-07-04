@@ -1,8 +1,18 @@
+// src/types/api.ts (or your equivalent types file)
+
 import {
   Artwork as PrismaArtwork,
   Transaction as PrismaTransaction,
   User as PrismaUser,
   Series as PrismaSeries,
+  // MODIFIED: Renamed import from MediaFile to ArtworkMediaFile
+  ArtworkMediaFile as PrismaArtworkMediaFile,
+  // NEW: Import for MediaBlogEntry and MediaBlogFile
+  MediaBlogEntry as PrismaMediaBlogEntry,
+  MediaBlogFile as PrismaMediaBlogFile,
+  // NEW: Import enums for MediaBlogEntryType and MediaFileType
+  MediaBlogEntryType as PrismaMediaBlogEntryType,
+  MediaFileType as PrismaMediaFileType,
 } from "@prisma/client";
 
 export interface APIError {
@@ -22,6 +32,19 @@ export interface Series extends Omit<PrismaSeries, "createdAt" | "updatedAt"> {
   updatedAt: string;
 }
 
+// MODIFIED: Renamed interface from MediaFile to ArtworkMediaFile
+export interface ArtworkMediaFile
+  extends Omit<
+    PrismaArtworkMediaFile, // MODIFIED: Using PrismaArtworkMediaFile
+    "createdAt" | "updatedAt" | "description" | "thumbnailUrl" | "type"
+  > {
+  createdAt: string;
+  updatedAt: string;
+  description: string | null;
+  thumbnailUrl: string | null;
+  type: PrismaMediaFileType; // NEW: Added type field from enum
+}
+
 export interface Artwork
   extends Omit<
     PrismaArtwork,
@@ -33,11 +56,11 @@ export interface Artwork
     | "year"
     | "medium"
     | "isAvailable"
-    | "featured"
+    // | "featured" // Assuming 'featured' was removed from PrismaArtwork based on Artwork in schema.prisma
     | "seriesId"
     | "inGallery"
   > {
-  price: number;
+  price: number | null;
   createdAt: string;
   updatedAt: string;
   description: string | null;
@@ -64,22 +87,65 @@ export interface User extends Omit<PrismaUser, "createdAt" | "updatedAt"> {
   updatedAt?: string;
 }
 
+// MODIFIED: Updated ArtworkWithRelations to use ArtworkMediaFile
 export interface ArtworkWithRelations extends Artwork {
   transactions?: Transaction[];
   series?: Series | null;
+  mediaFiles?: ArtworkMediaFile[]; // MODIFIED: Changed to ArtworkMediaFile[]
 }
 
+// MODIFIED: Updated ArtworkWithFullRelations to use ArtworkMediaFile
 export interface ArtworkWithFullRelations extends Artwork {
   transactions?: (Transaction & {
     user?: User;
   })[];
   series?: Series | null;
+  mediaFiles?: ArtworkMediaFile[]; // MODIFIED: Changed to ArtworkMediaFile[]
+}
+
+// NEW: Interface for Media Blog Entry
+export interface MediaBlogEntry
+  extends Omit<
+    PrismaMediaBlogEntry,
+    "createdAt" | "updatedAt" | "shortDesc" | "externalLink" | "type"
+  > {
+  createdAt: string;
+  updatedAt: string;
+  shortDesc: string | null;
+  externalLink: string | null;
+  type: PrismaMediaBlogEntryType; // New field from enum
+}
+
+// NEW: Interface for Media Blog File
+export interface MediaBlogFile
+  extends Omit<
+    PrismaMediaBlogFile,
+    "createdAt" | "updatedAt" | "description" | "thumbnailUrl" | "type"
+  > {
+  createdAt: string;
+  updatedAt: string;
+  url: string;
+  description: string | null;
+  thumbnailUrl: string | null;
+  type: PrismaMediaFileType; // New field from enum
+  order: number;
+}
+
+// NEW: Interface for Media Blog Entry with its associated files
+export interface MediaBlogEntryWithRelations extends MediaBlogEntry {
+  mediaFiles?: MediaBlogFile[];
 }
 
 export type ArtworkResponse = APIResponse<ArtworkWithRelations>;
 export type ArtworksResponse = APIResponse<ArtworkWithRelations[]>;
 export type ArtworkWithFullRelationsResponse =
   APIResponse<ArtworkWithFullRelations>;
+
+// NEW: Types for Media Blog Entry API responses
+export type MediaBlogEntryResponse = APIResponse<MediaBlogEntryWithRelations>;
+export type MediaBlogEntriesResponse = APIResponse<
+  MediaBlogEntryWithRelations[]
+>;
 
 export interface SeriesWithArtworks extends Series {
   artworks: Artwork[];
@@ -108,17 +174,18 @@ export interface ArtworkFilters {
     | "views_asc"
     | "views_desc";
   page?: number;
-  limit?: number;
+  limit?: number | "all";
   [key: string]: string | number | boolean | undefined;
 }
 
 export interface PaymentSuccessData {
   transactionId: string;
   artworkIds: number[];
-  status: "completed";
+  status: "pending" | "confirmed" | "failed";
   amount: number;
   phoneNumber: string;
   timestamp: string;
+  stkResponse: {};
 }
 
 export interface PaymentResponse {
@@ -156,6 +223,48 @@ export function convertPrismaArtworkToAPI(artwork: PrismaArtwork): Artwork {
   };
 }
 
+// MODIFIED: Renamed and updated function to convert PrismaArtworkMediaFile to API type
+export function convertPrismaArtworkMediaFileToAPI(
+  mediaFile: PrismaArtworkMediaFile
+): ArtworkMediaFile {
+  // MODIFIED: Return type changed
+  return {
+    ...mediaFile,
+    createdAt: mediaFile.createdAt.toISOString(),
+    updatedAt: mediaFile.updatedAt.toISOString(),
+    // Type is already a string, no conversion needed unless it's an enum type
+    type: mediaFile.type as PrismaMediaFileType, // Ensure type is correctly cast
+  };
+}
+
+// NEW: Function to convert PrismaMediaBlogEntry to API type
+export function convertPrismaMediaBlogEntryToAPI(
+  entry: PrismaMediaBlogEntry
+): MediaBlogEntry {
+  return {
+    ...entry,
+    createdAt: entry.createdAt.toISOString(),
+    updatedAt: entry.updatedAt.toISOString(),
+    shortDesc: entry.shortDesc || null,
+    externalLink: entry.externalLink || null,
+    type: entry.type as PrismaMediaBlogEntryType, // Ensure enum type
+  };
+}
+
+// NEW: Function to convert PrismaMediaBlogFile to API type
+export function convertPrismaMediaBlogFileToAPI(
+  file: PrismaMediaBlogFile
+): MediaBlogFile {
+  return {
+    ...file,
+    createdAt: file.createdAt.toISOString(),
+    updatedAt: file.updatedAt.toISOString(),
+    description: file.description || null,
+    thumbnailUrl: file.thumbnailUrl || null,
+    type: file.type as PrismaMediaFileType, // Ensure enum type
+  };
+}
+
 export function convertPrismaTransactionToAPI(
   transaction: PrismaTransaction
 ): Transaction {
@@ -176,16 +285,31 @@ export function convertPrismaUserToAPI(user: PrismaUser): User {
   };
 }
 
+// MODIFIED: Updated convertPrismaArtworkWithRelationsToAPI
 export function convertPrismaArtworkWithRelationsToAPI(
   artwork: PrismaArtwork & {
     transactions?: PrismaTransaction[];
     series?: PrismaSeries | null;
+    mediaFiles?: PrismaArtworkMediaFile[]; // MODIFIED: Changed to PrismaArtworkMediaFile[]
   }
 ): ArtworkWithRelations {
   return {
     ...convertPrismaArtworkToAPI(artwork),
     transactions: artwork.transactions?.map(convertPrismaTransactionToAPI),
     series: artwork.series ? convertPrismaSeriesToAPI(artwork.series) : null,
+    mediaFiles: artwork.mediaFiles?.map(convertPrismaArtworkMediaFileToAPI), // MODIFIED: Changed function call
+  };
+}
+
+// NEW: Function to convert PrismaMediaBlogEntryWithRelations to API type
+export function convertPrismaMediaBlogEntryWithRelationsToAPI(
+  entry: PrismaMediaBlogEntry & {
+    mediaFiles?: PrismaMediaBlogFile[];
+  }
+): MediaBlogEntryWithRelations {
+  return {
+    ...convertPrismaMediaBlogEntryToAPI(entry),
+    mediaFiles: entry.mediaFiles?.map(convertPrismaMediaBlogFileToAPI),
   };
 }
 
@@ -227,6 +351,25 @@ export interface UseSeriesReturn {
 
 export interface UseSeriesListReturn {
   seriesList: Series[];
+  isLoading: boolean;
+  isValidating: boolean;
+  error: string | undefined;
+  mutate: () => void;
+}
+
+// NEW: UseMediaBlogEntriesReturn
+export interface UseMediaBlogEntriesReturn {
+  mediaBlogEntries: MediaBlogEntryWithRelations[];
+  total: number;
+  isLoading: boolean;
+  isValidating: boolean;
+  error: string | undefined;
+  mutate: () => void;
+}
+
+// NEW: UseMediaBlogEntryReturn
+export interface UseMediaBlogEntryReturn {
+  mediaBlogEntry: MediaBlogEntryWithRelations | undefined;
   isLoading: boolean;
   isValidating: boolean;
   error: string | undefined;

@@ -39,7 +39,7 @@ export default function PaymentModal({
         artworkIds: cartDetails.artworkIds,
       };
 
-      const response = await fetch("/api/payment/simulate", {
+      const response = await fetch("/api/payment/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -114,7 +114,7 @@ export default function PaymentModal({
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold text-gray-900">Total</span>
                   <span className="text-xl font-bold text-green-600">
-                    KSH {cartDetails.totalAmount.toLocaleString()}
+                    $ {cartDetails.totalAmount.toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -136,12 +136,12 @@ export default function PaymentModal({
                   <input
                     id="phone"
                     type="tel"
-                    placeholder="07XXXXXXXX"
+                    placeholder="2547XXXXXXXX"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
                     required
-                    pattern="[0-9]{10}"
+                    pattern="2547[0-9]{8}"
                     disabled={loading}
                   />
                 </div>
@@ -208,12 +208,6 @@ export default function PaymentModal({
               </div>
             </div>
 
-            {/* Demo Notice */}
-            <div className="mt-4 text-center">
-              <p className="text-xs text-gray-500 bg-gray-100 rounded-full px-3 py-1 inline-block">
-                🔧 Demo Mode: Payment simulation enabled
-              </p>
-            </div>
           </div>
         </div>
       </div>
