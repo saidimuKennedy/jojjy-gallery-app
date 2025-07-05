@@ -38,6 +38,7 @@ export default function AboutPage() {
                 invites viewers to engage with the depths of human emotion and
                 explore themes such as individuation, mental struggle, identity,
                 growth and resilience.
+                <br />
                 Since 2017, Njenga’s work has appeared in the Kenya Art Fair
                 (2017) and the Nairobi National Museum Affordable Art Show
                 (2017). He has also participated in notable group exhibitions
