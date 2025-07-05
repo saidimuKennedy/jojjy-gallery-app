@@ -3,7 +3,7 @@ import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import StatCounter from "@/components/Animations/StatCounter";
 import React from "react";
-import Link from "next/link"; // Import Link for navigation
+import Link from "next/link"; 
 
 export default function Home() {
   return (
@@ -48,7 +48,7 @@ export default function Home() {
                 <div className="flex justify-center mb-4">
                   <div className="w-36 h-24 sm:w-44 sm:h-28 md:w-52 md:h-32">
                     <img
-                      src="/images/pics/logo.png"
+                      src="https://res.cloudinary.com/dq3wkbgts/image/upload/v1751641327/logo_v51aad.png"
                       alt="Njenga Ngugi Logo"
                       className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
                     />

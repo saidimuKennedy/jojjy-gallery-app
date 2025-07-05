@@ -67,7 +67,7 @@ export default function AboutPage() {
             <div className="flex justify-center md:justify-end">
               {/* Artist Image */}
               <Image
-                src="/images/joj-artist.png"
+                src="https://res.cloudinary.com/dq3wkbgts/image/upload/v1751641304/joj-artist_vkqvbv.jpg"
                 alt="Njenga Ngugi - The Artist"
                 width={400}
                 height={500}

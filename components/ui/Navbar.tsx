@@ -73,7 +73,7 @@ export default function Navbar() {
             <Link href="/" className="flex items-center py-2">
               <div className="w-24 h-16 flex items-center justify-center">
                 <img
-                  src="/images/pics/logo.png"
+                  src="https://res.cloudinary.com/dq3wkbgts/image/upload/v1751641327/logo_v51aad.png"
                   alt="Njenga Ngugi Logo"
                   className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
                 />
