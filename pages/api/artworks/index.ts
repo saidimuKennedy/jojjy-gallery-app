@@ -137,10 +137,8 @@ export default async function handler(
       ...prismaFindManyArgs,
     };
 
-    const [artworks, total] = await prisma.$transaction([
-      prisma.artwork.findMany(prismaQuery),
-      prisma.artwork.count({ where }),
-    ]);
+    const artworks = await prisma.artwork.findMany(prismaQuery);
+    const total = await prisma.artwork.count({ where });
 
     const apiArtworks = artworks.map(convertPrismaArtworkWithRelationsToAPI);
 

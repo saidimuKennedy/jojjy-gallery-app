@@ -89,16 +89,14 @@ export default async function handler(
         ];
       }
 
-      const [entries, total] = await prisma.$transaction([
-        prisma.mediaBlogEntry.findMany({
-          where,
-          orderBy: { createdAt: "desc" },
-          skip,
-          take: limitNum,
-          include: { mediaFiles: { orderBy: { order: 'asc' } } },
-        }),
-        prisma.mediaBlogEntry.count({ where }),
-      ]);
+      const entries = await prisma.mediaBlogEntry.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limitNum,
+        include: { mediaFiles: { orderBy: { order: 'asc' } } },
+      });
+      const total = await prisma.mediaBlogEntry.count({ where });
 
       const apiEntries = entries.map(convertPrismaMediaBlogEntryToAPI);
 
