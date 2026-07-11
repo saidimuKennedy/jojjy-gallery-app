@@ -8,23 +8,25 @@ declare global {
 
 const connectionString = process.env.DATABASE_URL;
 
-let prisma: PrismaClient;
-
-if (process.env.NODE_ENV === "production") {
+function createPrismaClient() {
   const pool = new Pool({
     connectionString,
     max: 1,
+    // Managed Postgres (Supabase/Neon/etc.) often presents a cert chain
+    // Node rejects under pg's verify-full SSL behavior.
+    ssl: { rejectUnauthorized: false },
   });
   const adapter = new PrismaPg(pool);
-  prisma = new PrismaClient({ adapter });
+  return new PrismaClient({ adapter });
+}
+
+let prisma: PrismaClient;
+
+if (process.env.NODE_ENV === "production") {
+  prisma = createPrismaClient();
 } else {
   if (!global.prisma) {
-    const pool = new Pool({
-      connectionString,
-      max: 1,
-    });
-    const adapter = new PrismaPg(pool);
-    global.prisma = new PrismaClient({ adapter });
+    global.prisma = createPrismaClient();
   }
   prisma = global.prisma;
 }
