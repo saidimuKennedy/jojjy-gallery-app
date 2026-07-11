@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
-import { Palette } from "lucide-react";
+import { Palette, X } from "lucide-react";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -53,10 +54,24 @@ export default function RegisterPage() {
       <Head>
         <title>Register - Njenga Ngugi</title>
       </Head>
-      <div className="min-h-screen bg-white flex">
-        <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 lg:px-16">
+      <div className="min-h-screen bg-white flex relative">
+        <Link
+          href="/"
+          className="absolute top-0 right-0 z-20 flex h-12 w-12 items-center justify-center border-l border-b border-white bg-white text-black transition-colors hover:bg-black hover:text-white hover:border-white lg:h-14 lg:w-14"
+          aria-label="Close and return to site"
+        >
+          <X className="h-5 w-5 stroke-[1.5]" />
+        </Link>
+
+        <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 lg:px-16 pt-16">
           <div className="max-w-md mx-auto w-full">
             <div className="mb-12">
+              <Link
+                href="/"
+                className="mb-8 inline-flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-gray-900 lg:hidden"
+              >
+                ← Back to site
+              </Link>
               <h1 className="text-4xl font-bold text-black mb-2">
                 Create Account
               </h1>
@@ -151,31 +166,34 @@ export default function RegisterPage() {
               </div>
             </form>
 
-            <div className="mt-8 text-center">
+            <div className="mt-8 text-center space-y-3">
               <p className="text-gray-600">
                 Already have an account?{" "}
-                <a
+                <Link
                   href="/login"
                   className="text-black font-semibold hover:underline"
                 >
                   Sign in here
-                </a>
+                </Link>
+              </p>
+              <p>
+               
               </p>
             </div>
           </div>
         </div>
 
-        <div className="hidden lg:flex lg:w-1/2 bg-black flex-col justify-center items-center px-16">
+        <div className="hidden lg:flex lg:w-1/2 bg-black flex-col justify-between px-16 py-12">
+      
           <div className="text-white text-center">
-            <div className="mb-8">
-              <Palette className="w-24 h-24 mx-auto mb-6" />
-              <h2 className="text-4xl font-bold mb-4">Welcome</h2>
-              <p className="text-xl text-gray-300 max-w-md">
-                Create your account and join our community of innovators and
-                creators.
-              </p>
-            </div>
+            <Palette className="w-24 h-24 mx-auto mb-6" />
+            <h2 className="text-4xl font-bold mb-4">Welcome</h2>
+            <p className="text-xl text-gray-300 max-w-md mx-auto">
+              Create your account and join our community of innovators and
+              creators.
+            </p>
           </div>
+          <div aria-hidden className="h-5" />
         </div>
       </div>
     </>

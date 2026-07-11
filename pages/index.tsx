@@ -55,12 +55,15 @@ export default function Home() {
                   </div>
                 </div>
 
-                <p className="mt-8 text-xl text-black leading-relaxed max-w-3xl mx-auto">
+                <h1 className="mt-6 font-display text-5xl font-light tracking-tight text-white sm:text-6xl md:text-7xl">
+                  Njenga Ngugi
+                </h1>
+
+                <p className="mt-8 text-lg font-light leading-relaxed text-white/85 max-w-2xl mx-auto md:text-xl">
                   Exploring the intersection of traditional African artistry and
                   contemporary expression. Each piece is a journey through
                   culture, memory, and innovation, creating a bridge between
-                  generations and continents. Discover his unique series of
-                  works, each telling its own compelling story.
+                  generations and continents.
                 </p>
 
                 <div className="mt-12 flex flex-col sm:flex-row justify-center gap-4">
@@ -69,7 +72,7 @@ export default function Home() {
                     href="/gallery"
                     className="inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800 transition-colors duration-200 shadow-lg backdrop-blur-sm"
                   >
-                    Explore Gallery
+                    Enter Archive
                   </Link>
 
                   {/* Link to the About page */}
@@ -83,19 +86,19 @@ export default function Home() {
 
                 <div className="mt-16 flex justify-center space-x-6 text-sm text-gray-200">
                   <div className="flex flex-col items-center">
-                    <StatCounter end={15} label="Years of experience" />
+                    <StatCounter end={15} label="Years of experience" light />
                   </div>
 
-                  <div className="w-px h-12 bg-gray-400"></div>
+                  <div className="w-px h-12 bg-white/30"></div>
 
                   <div className="flex flex-col items-center">
-                    <StatCounter end={15} label="Major exhibitions" />
+                    <StatCounter end={15} label="Major exhibitions" light />
                   </div>
 
-                  <div className="w-px h-12 bg-gray-400"></div>
+                  <div className="w-px h-12 bg-white/30"></div>
 
                   <div className="flex flex-col items-center">
-                    <StatCounter end={20} label="Artworks" />
+                    <StatCounter end={20} label="Artworks" light />
                   </div>
                 </div>
               </div>

@@ -52,7 +52,7 @@ const SeriesSection: React.FC<SeriesSectionProps> = ({
           viewport={{ once: true, amount: 0.2 }}
           className="mb-12 md:mb-16 text-center"
         >
-          <h2 className="text-3xl md:text-4xl font-light text-neutral-900 mb-4">
+          <h2 className="font-display text-3xl md:text-4xl font-light text-neutral-900 mb-4 tracking-tight">
             {series.name}
           </h2>
           <p className="text-neutral-600 max-w-3xl mx-auto leading-relaxed">
@@ -79,7 +79,7 @@ const SeriesSection: React.FC<SeriesSectionProps> = ({
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
-                  <h4 className="text-neutral-900 font-light group-hover:text-neutral-600 transition-colors duration-300">
+                  <h4 className="font-display text-neutral-900 font-light group-hover:text-neutral-600 transition-colors duration-300">
                     {art.title}
                   </h4>
                   {art.dimensions && art.medium && (

@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import useSWR from "swr";
 import { motion } from "framer-motion";
-import { Play, ExternalLink, Image, Mic, Video, FileText } from "lucide-react";
 import Navbar from "@/components/ui/Navbar";
 import { APIResponse, MediaBlogEntryWithRelations } from "@/types/api";
 
@@ -15,24 +15,15 @@ const fetcher = async (url: string) => {
   return res.json();
 };
 
-const getMediaIcon = (type: string) => {
-  switch (type) {
-    case "VIDEO":
-      return <Video className="w-6 h-6" />;
-    case "IMAGES":
-      return <Image className="w-6 h-6" />;
-    case "AUDIO":
-      return <Mic className="w-6 h-6" />;
-    case "BLOG_POST":
-      return <FileText className="w-6 h-6" />;
-    case "EXTERNAL_LINK":
-      return <ExternalLink className="w-6 h-6" />;
-    default:
-      return <Image className="w-6 h-6" />;
-  }
+const CATALOGUE_LABEL: Record<string, string> = {
+  VIDEO: "Film",
+  IMAGES: "Photograph",
+  AUDIO: "Sound",
+  BLOG_POST: "Essay",
+  EXTERNAL_LINK: "Note",
 };
 
-const SingleMediaBlogEntryPage = () => {
+const SingleArchiveEntryPage = () => {
   const router = useRouter();
   const { id } = router.query;
 
@@ -46,267 +37,296 @@ const SingleMediaBlogEntryPage = () => {
     fetcher
   );
 
-  const mediaBlogEntry = apiResponse?.data;
+  const entry = apiResponse?.data;
 
-  // Loading state
+  useEffect(() => {
+    document.documentElement.classList.add("archive-page");
+    return () => document.documentElement.classList.remove("archive-page");
+  }, []);
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white text-black flex flex-col items-center justify-center p-8">
+      <div className="min-h-screen bg-white text-[#1a1a1a]">
         <Navbar />
-        <p className="text-xl font-semibold">Loading media blog entry...</p>
+        <div className="flex min-h-[70vh] items-center justify-center">
+          <p className="font-archive-display text-lg tracking-wide text-[#8a8a8a]">
+            Loading…
+          </p>
+        </div>
       </div>
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-white text-black flex flex-col items-center justify-center p-8">
+      <div className="min-h-screen bg-white text-[#1a1a1a]">
         <Navbar />
-        <p className="text-xl font-semibold text-red-500">
-          Error: {error.message}
-        </p>
-        <p className="text-gray-600 mt-2">Failed to load media blog entry.</p>
+        <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
+          <p className="font-archive-display text-2xl">{error.message}</p>
+          <Link
+            href="/gallery"
+            className="mt-8 font-archive-display text-[0.7rem] uppercase tracking-[0.28em] text-[#8a8a8a] hover:text-[#1a1a1a]"
+          >
+            Back to archive
+          </Link>
+        </div>
       </div>
     );
   }
 
-  // Not found state
-  if (!mediaBlogEntry) {
+  if (!entry) {
     return (
-      <div className="min-h-screen bg-white text-black flex flex-col items-center justify-center p-8">
+      <div className="min-h-screen bg-white text-[#1a1a1a]">
         <Navbar />
-        <p className="text-xl font-semibold text-gray-500">
-          Media blog entry not found.
-        </p>
+        <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
+          <p className="font-archive-display text-2xl text-[#8a8a8a]">
+            This entry could not be found.
+          </p>
+          <Link
+            href="/gallery"
+            className="mt-8 font-archive-display text-[0.7rem] uppercase tracking-[0.28em] text-[#8a8a8a] hover:text-[#1a1a1a]"
+          >
+            Back to archive
+          </Link>
+        </div>
       </div>
     );
   }
 
-  // Determine main media for display
-  const mainMediaFile = mediaBlogEntry.mediaFiles?.[0];
-  const isVideoOrAudio =
-    mediaBlogEntry.type === "VIDEO" || mediaBlogEntry.type === "AUDIO";
+  const label = CATALOGUE_LABEL[entry.type] || entry.type;
+  const year = entry.createdAt
+    ? new Date(entry.createdAt).getFullYear().toString()
+    : null;
+  const mainMediaFile = entry.mediaFiles?.[0];
 
-  // Function to render media content based on type
-  const renderMediaContent = () => {
-    switch (mediaBlogEntry.type) {
+  const renderMedia = () => {
+    switch (entry.type) {
       case "VIDEO":
-        // For YouTube/Vimeo, you'd typically extract the video ID and use an iframe
         if (
-          mediaBlogEntry.externalLink &&
-          (mediaBlogEntry.externalLink.includes("youtube.com") ||
-            mediaBlogEntry.externalLink.includes("youtu.be"))
+          entry.externalLink &&
+          (entry.externalLink.includes("youtube.com") ||
+            entry.externalLink.includes("youtu.be") ||
+            entry.externalLink.includes("vimeo.com"))
         ) {
-          const videoId =
-            mediaBlogEntry.externalLink.split("v=")[1] ||
-            mediaBlogEntry.externalLink.split("/").pop();
+          let embedSrc = entry.externalLink;
+          if (entry.externalLink.includes("youtu")) {
+            const videoId =
+              entry.externalLink.split("v=")[1]?.split("&")[0] ||
+              entry.externalLink.split("/").pop();
+            embedSrc = `https://www.youtube.com/embed/${videoId}?rel=0`;
+          } else if (entry.externalLink.includes("vimeo.com")) {
+            const videoId = entry.externalLink.split("/").pop();
+            embedSrc = `https://player.vimeo.com/video/${videoId}`;
+          }
           return (
-            <div className="relative aspect-video w-full">
+            <div className="relative aspect-video w-full bg-[#111]">
               <iframe
-                className="absolute top-0 left-0 w-full h-full"
-                src={`https://www.youtube.com/embed/${videoId}`}
-                title={mediaBlogEntry.title}
-                frameBorder="0"
+                className="absolute inset-0 h-full w-full"
+                src={embedSrc}
+                title={entry.title}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
-              ></iframe>
+              />
             </div>
           );
         }
-        // Fallback for other video links or if no proper embed link
-        return (
-          <div className="relative bg-gray-100 aspect-video w-full flex items-center justify-center">
-            {mediaBlogEntry.thumbnailUrl && (
-              <img
-                src={mediaBlogEntry.thumbnailUrl}
-                alt={mediaBlogEntry.title}
-                className="w-full h-full object-cover absolute inset-0"
-              />
-            )}
-            <Play className="w-24 h-24 text-white z-10" fill="white" />
-            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-              <p className="text-white text-xl">
-                Video content (Click external link below)
-              </p>
-            </div>
-          </div>
-        );
+        return entry.thumbnailUrl ? (
+          <img
+            src={entry.thumbnailUrl}
+            alt={entry.title}
+            className="w-full object-cover"
+          />
+        ) : null;
 
       case "IMAGES":
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {mediaBlogEntry.mediaFiles &&
-            mediaBlogEntry.mediaFiles.length > 0 ? (
-              mediaBlogEntry.mediaFiles.map((file) => (
-                <motion.img
+          <div className="flex flex-col gap-16 md:gap-24">
+            {entry.mediaFiles && entry.mediaFiles.length > 0 ? (
+              entry.mediaFiles.map((file) => (
+                <motion.figure
                   key={file.id}
-                  src={file.url}
-                  alt={file.description || mediaBlogEntry.title}
-                  className="w-full h-64 object-cover rounded-lg shadow-md"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5 }}
-                />
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-10%" }}
+                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <img
+                    src={file.url}
+                    alt={file.description || entry.title}
+                    className="w-full object-cover"
+                  />
+                  {file.description && (
+                    <figcaption className="mt-4 font-archive-display text-[0.65rem] uppercase tracking-[0.28em] text-[#8a8a8a]">
+                      {file.description}
+                    </figcaption>
+                  )}
+                </motion.figure>
               ))
             ) : (
-              // Optional: Display a message if no images are found
-              <p className="col-span-full text-center text-gray-500">
-                No images available for this entry.
+              <p className="font-archive-body text-[#8a8a8a]">
+                No images available.
               </p>
             )}
           </div>
         );
 
       case "AUDIO":
-        // For audio, you might embed an <audio> tag or link to a player
         return (
-          <div className="bg-gray-100 aspect-video w-full flex items-center justify-center flex-col p-8 rounded-lg shadow-md">
-            <Mic className="w-24 h-24 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-2xl font-bold text-gray-700 mb-2">
-              Audio Entry
-            </h3>
-            {mediaBlogEntry.duration && (
-              <p className="text-xl text-gray-600 mb-4">
-                Duration: {mediaBlogEntry.duration}
-              </p>
+          <div className="py-12">
+            {entry.thumbnailUrl && (
+              <img
+                src={entry.thumbnailUrl}
+                alt=""
+                className="mb-10 aspect-[16/9] w-full object-cover"
+              />
             )}
-            {mainMediaFile?.url && (
-              <audio controls className="w-full max-w-md">
-                <source src={mainMediaFile.url} type="audio/mpeg" />{" "}
-                {/* Adjust type if necessary */}
-                Your browser does not support the audio element.
+            {mainMediaFile?.url ? (
+              <audio controls className="w-full max-w-lg accent-[#1a1a1a]">
+                <source src={mainMediaFile.url} type="audio/mpeg" />
               </audio>
-            )}
-            {!mainMediaFile?.url && (
-              <p className="text-gray-500">
-                Audio file not directly embedded. Click external link to listen.
-              </p>
-            )}
+            ) : entry.externalLink ? (
+              <a
+                href={entry.externalLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-archive-display text-[0.7rem] uppercase tracking-[0.28em] text-[#1a1a1a] underline-offset-4 hover:underline"
+              >
+                Listen
+              </a>
+            ) : null}
           </div>
         );
 
       case "BLOG_POST":
         return (
-          <div className="prose max-w-none lg:prose-lg p-4 bg-gray-50 rounded-lg shadow-inner">
-            {mediaBlogEntry.thumbnailUrl && (
+          <div>
+            {entry.thumbnailUrl && (
               <img
-                src={mediaBlogEntry.thumbnailUrl}
-                alt="Blog Post Cover"
-                className="w-full h-auto max-h-96 object-cover mb-6 rounded-lg"
+                src={entry.thumbnailUrl}
+                alt=""
+                className="mb-16 w-full object-cover md:mb-20"
               />
             )}
-            <div
-              dangerouslySetInnerHTML={{ __html: mediaBlogEntry.content || "" }}
-            />
+            {entry.content && (
+              <div
+                className="archive-prose font-archive-body text-lg font-light leading-[1.8] text-[#2a2a2a] md:text-xl"
+                dangerouslySetInnerHTML={{ __html: entry.content }}
+              />
+            )}
           </div>
         );
 
       case "EXTERNAL_LINK":
         return (
-          <div className="bg-gray-100 p-8 rounded-lg shadow-md text-center">
-            <ExternalLink className="w-24 h-24 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-2xl font-bold text-gray-700 mb-2">
-              External Content
-            </h3>
-            <p className="text-lg text-gray-600 mb-4">
-              {mediaBlogEntry.shortDesc}
-            </p>
-            {mediaBlogEntry.thumbnailUrl && (
+          <div>
+            {entry.thumbnailUrl && (
               <img
-                src={mediaBlogEntry.thumbnailUrl}
-                alt="External Link Thumbnail"
-                className="w-full h-48 object-cover mb-4 rounded-lg"
+                src={entry.thumbnailUrl}
+                alt=""
+                className="mb-10 w-full object-cover"
               />
             )}
-            <motion.a
-              href={mediaBlogEntry.externalLink || "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.05 }}
-              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors font-medium text-lg"
-            >
-              Go to External Content
-              <ExternalLink className="w-6 h-6" />
-            </motion.a>
+            {entry.externalLink && (
+              <a
+                href={entry.externalLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-archive-display text-[0.7rem] uppercase tracking-[0.28em] text-[#1a1a1a] underline-offset-4 hover:underline"
+              >
+                Open source
+              </a>
+            )}
           </div>
         );
 
       default:
-        return (
-          <div className="p-8 text-center text-gray-500">
-            No media content to display for this entry type.
-          </div>
-        );
+        return null;
     }
   };
 
   return (
-    <div
-      className="min-h-screen bg-white text-black"
-      style={{ fontFamily: "Ubuntu, sans-serif" }}
-    >
+    <div className="min-h-screen bg-white text-[#1a1a1a]">
       <Navbar />
-      <div className="border-b border-gray-300 bg-white pt-8 pb-4">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-4 mb-4">
-            {getMediaIcon(mediaBlogEntry.type)}
-            <span className="text-lg text-gray-500 uppercase tracking-wider font-medium">
-              {mediaBlogEntry.type.replace(/_/g, " ")}
-            </span>
-          </div>
-          <h1 className="text-4xl font-bold mb-4 leading-tight">
-            {mediaBlogEntry.title}
-          </h1>
-          <p className="text-gray-600 text-xl leading-relaxed">
-            {mediaBlogEntry.shortDesc}
+
+      <div className="px-6 pt-10 md:px-12 lg:px-20">
+        <Link
+          href="/gallery"
+          className="font-archive-display text-[0.65rem] uppercase tracking-[0.32em] text-[#8a8a8a] transition-colors duration-500 hover:text-[#1a1a1a]"
+        >
+          ← Archive
+        </Link>
+      </div>
+
+      <header className="mx-auto max-w-4xl px-6 pb-12 pt-16 md:px-12 md:pb-16 md:pt-24">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <p className="font-archive-display text-[0.65rem] uppercase tracking-[0.32em] text-[#8a8a8a]">
+            {label}
+            {year ? ` · ${year}` : ""}
+            {entry.duration ? ` · ${entry.duration}` : ""}
           </p>
-          {mediaBlogEntry.externalLink && (
-            <motion.a
-              href={mediaBlogEntry.externalLink}
+          <h1 className="mt-6 font-archive-display text-4xl font-light leading-[1.05] tracking-tight text-[#1a1a1a] md:text-6xl lg:text-7xl">
+            {entry.title}
+          </h1>
+          {entry.shortDesc && (
+            <p className="mt-8 max-w-2xl font-archive-body text-lg font-light leading-relaxed text-[#6b6b6b] md:text-xl">
+              {entry.shortDesc}
+            </p>
+          )}
+          {entry.externalLink && entry.type !== "EXTERNAL_LINK" && (
+            <a
+              href={entry.externalLink}
               target="_blank"
               rel="noopener noreferrer"
-              whileHover={{ x: 5 }}
-              className="inline-flex items-center gap-2 text-black hover:text-gray-600 transition-colors font-medium mt-4"
+              className="mt-8 inline-block font-archive-display text-[0.7rem] uppercase tracking-[0.28em] text-[#1a1a1a] underline-offset-4 hover:underline"
             >
-              <span>View Original Source</span>
-              <ExternalLink className="w-5 h-5" />
-            </motion.a>
+              View original
+            </a>
           )}
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto p-8">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-12"
-        >
-          {renderMediaContent()}
         </motion.div>
+      </header>
 
-        {/* Display main content for all types, especially for BLOG_POST */}
-        {mediaBlogEntry.content &&
-          mediaBlogEntry.type !== "BLOG_POST" && ( // Blog post content is handled in renderMediaContent
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="prose max-w-none lg:prose-lg text-gray-700"
-            >
-              <div
-                dangerouslySetInnerHTML={{ __html: mediaBlogEntry.content }}
-              />
-            </motion.div>
-          )}
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+        className={
+          entry.type === "IMAGES" || entry.type === "VIDEO"
+            ? "w-full px-0 md:px-0"
+            : "mx-auto max-w-4xl px-6 md:px-12"
+        }
+      >
+        <div
+          className={
+            entry.type === "IMAGES" || entry.type === "VIDEO"
+              ? "mx-auto max-w-[1400px] px-0 md:px-12 lg:px-20"
+              : ""
+          }
+        >
+          {renderMedia()}
+        </div>
 
-      <div className="h-20 bg-gray-50 border-t border-gray-200 flex items-center justify-center">
-        <p className="text-gray-500 text-sm">End of entry</p>
-      </div>
+        {entry.content && entry.type !== "BLOG_POST" && (
+          <div
+            className="archive-prose mx-auto mt-20 max-w-3xl px-6 font-archive-body text-lg font-light leading-[1.8] text-[#2a2a2a] md:px-12 md:text-xl"
+            dangerouslySetInnerHTML={{ __html: entry.content }}
+          />
+        )}
+      </motion.div>
+
+      <footer className="mx-auto max-w-4xl px-6 pb-28 pt-24 md:px-12">
+        <Link
+          href="/gallery"
+          className="font-archive-display text-[0.65rem] uppercase tracking-[0.32em] text-[#8a8a8a] transition-colors duration-500 hover:text-[#1a1a1a]"
+        >
+          ← Back to archive
+        </Link>
+      </footer>
     </div>
   );
 };
 
-export default SingleMediaBlogEntryPage;
+export default SingleArchiveEntryPage;

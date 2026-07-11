@@ -54,11 +54,16 @@ export default function Navbar() {
 
   const navItems = [
     { label: "Home", path: "/" },
-    { label: "Gallery", path: "/gallery" },
+    { label: "Archive", path: "/gallery" },
     { label: "Portfolio", path: "/portfolio" },
     { label: "About", path: "/about" },
     { label: "Contact", path: "/contact" },
   ];
+
+  const isNavActive = (path: string) =>
+    path === "/gallery"
+      ? router.pathname === "/gallery" || router.pathname.startsWith("/gallery/")
+      : isActive(path);
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: "/login" });
@@ -85,8 +90,8 @@ export default function Navbar() {
                 <Link
                   key={item.path}
                   href={item.path}
-                  className={`text-sm font-medium ${
-                    isActive(item.path)
+                  className={`text-sm tracking-wide ${
+                    isNavActive(item.path)
                       ? "text-gray-900"
                       : "text-gray-500 hover:text-gray-900"
                   } transition-colors duration-200`}
@@ -144,7 +149,9 @@ export default function Navbar() {
         } flex flex-col`}
       >
         <div className="flex items-center justify-between h-20 px-4 sm:px-6 border-b border-gray-100">
-          <span className="text-2xl font-light text-gray-900">Menu</span>
+          <span className="font-display text-2xl font-light text-gray-900 tracking-tight">
+            Menu
+          </span>
           <button
             onClick={() => setIsMobileMenuOpen(false)}
             className="p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-500"
@@ -161,7 +168,7 @@ export default function Navbar() {
                 href={item.path}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`block text-xl font-medium py-2 px-3 rounded-lg ${
-                  isActive(item.path)
+                  isNavActive(item.path)
                     ? "bg-gray-100 text-gray-900"
                     : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                 } transition-colors duration-200`}

@@ -152,7 +152,7 @@ export default function PortfolioPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center max-w-md"
         >
-          <h1 className="text-2xl font-light text-neutral-900 mb-4">
+          <h1 className="font-display text-2xl font-light text-neutral-900 mb-4">
             Portfolio Empty
           </h1>
           <p className="text-neutral-600 mb-8 leading-relaxed">
@@ -200,7 +200,7 @@ export default function PortfolioPage() {
 
           <div className="relative z-10 max-w-4xl">
             <motion.div variants={fadeInUp} className="mb-8 md:mb-12">
-              <h1 className="text-6xl md:text-8xl lg:text-9xl font-light text-white tracking-tight leading-none">
+              <h1 className="font-display text-6xl md:text-8xl lg:text-9xl font-light text-white tracking-tight leading-none">
                 Njenga
                 <br />
                 Ngugi
@@ -226,7 +226,9 @@ export default function PortfolioPage() {
                   <p className="text-sm tracking-widest uppercase">
                     Explore Work
                   </p>
-                  <p className="text-base font-light">Journey Through Series</p>
+                  <p className="text-base font-display font-light">
+                    Journey Through Series
+                  </p>
                 </div>
               </Link>
             </motion.div>
@@ -255,7 +257,7 @@ export default function PortfolioPage() {
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-16 md:gap-24">
               <motion.div variants={fadeInUp}>
-                <h2 className="text-sm tracking-widest uppercase text-neutral-500 mb-8">
+                <h2 className="font-display text-[0.7rem] tracking-[0.28em] uppercase text-neutral-500 mb-8">
                   Artist Statement
                 </h2>
                 <div className="prose prose-lg text-neutral-700 font-light leading-relaxed">
@@ -275,7 +277,7 @@ export default function PortfolioPage() {
               </motion.div>
 
               <motion.div variants={fadeInUp}>
-                <h2 className="text-sm tracking-widest uppercase text-neutral-500 mb-8">
+                <h2 className="font-display text-[0.7rem] tracking-[0.28em] uppercase text-neutral-500 mb-8">
                   Biography
                 </h2>
                 <div className="prose prose-lg text-neutral-700 font-light leading-relaxed">
@@ -314,7 +316,7 @@ export default function PortfolioPage() {
                     <p className="text-sm tracking-widest uppercase">
                       Continue
                     </p>
-                    <p className="text-base font-light">
+                    <p className="text-base font-display font-light">
                       View First Series: {seriesWithArtworks[0].series.name}
                     </p>
                   </div>
@@ -353,7 +355,7 @@ export default function PortfolioPage() {
                     variants={fadeInUp}
                     className="mb-12 md:mb-16 text-center"
                   >
-                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-neutral-900 mb-6">
+                    <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-light text-neutral-900 mb-6 tracking-tight">
                       {seriesData.series.name}
                     </h2>
                     <p className="text-lg text-neutral-600 max-w-4xl mx-auto leading-relaxed">
@@ -382,7 +384,7 @@ export default function PortfolioPage() {
                                 className="object-cover group-hover:scale-105 transition-transform duration-700"
                               />
                             </div>
-                            <h4 className="text-lg font-light text-neutral-900 group-hover:text-neutral-600 transition-colors duration-300 mb-2">
+                            <h4 className="font-display text-lg font-light text-neutral-900 group-hover:text-neutral-600 transition-colors duration-300 mb-2">
                               {artwork.title}
                             </h4>
                             {artwork.dimensions && artwork.medium && (
@@ -413,7 +415,7 @@ export default function PortfolioPage() {
                           <p className="text-sm tracking-widest uppercase">
                             Continue
                           </p>
-                          <p className="text-base font-light">
+                          <p className="text-base font-display font-light">
                             Next Series:{" "}
                             {seriesWithArtworks[index + 1].series.name}
                           </p>

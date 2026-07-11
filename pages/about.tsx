@@ -25,13 +25,16 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="text-center md:text-left">
-              <h1 className="text-4xl font-extrabold text-gray-900 mb-6">
+              <p className="font-display text-[0.65rem] uppercase tracking-[0.32em] text-gray-500 mb-4">
+                Biography
+              </p>
+              <h1 className="font-display text-4xl font-light tracking-tight text-gray-900 mb-3 md:text-5xl">
                 About the Artist
               </h1>
-              <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+              <h2 className="font-display text-2xl font-light text-gray-600 mb-6 md:text-3xl">
                 Njenga Ngugi
               </h2>
-              <p className="text-lg text-gray-600 leading-relaxed">
+              <p className="text-lg text-gray-600 leading-relaxed font-light">
                 Njenga (b. 1996, Nairobi) crafts raw, expressive pieces in
                 charcoal, bleach, and pastel, blending abstraction and
                 surrealism to explore the depths of the human psyche. His work
@@ -81,7 +84,7 @@ export default function AboutPage() {
             <>
               <hr className="my-16 border-gray-300" />{" "}
               {/* A clear visual separator */}
-              <h2 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">
+              <h2 className="text-2xl font-medium text-gray-900 mb-8 text-center">
                 Artwork Management Panel
               </h2>
               <AdminDashboard />

@@ -3,12 +3,18 @@ import CountUp from "react-countup";
 interface StatProps {
   end: number;
   label: string;
+  /** Use on dark hero surfaces */
+  light?: boolean;
 }
 
-export default function StatCounter({ end, label }: StatProps) {
+export default function StatCounter({ end, label, light = false }: StatProps) {
   return (
     <div className="text-center">
-      <div className="text-2xl font-bold text-gray-900">
+      <div
+        className={`font-display text-3xl font-light tracking-tight ${
+          light ? "text-white" : "text-gray-900"
+        }`}
+      >
         <CountUp
           end={end}
           duration={5}
@@ -18,7 +24,13 @@ export default function StatCounter({ end, label }: StatProps) {
         />
         +
       </div>
-      <p className="text-sm  text-gray-500">{label}</p>
+      <p
+        className={`mt-1 font-display text-[0.65rem] uppercase tracking-[0.22em] ${
+          light ? "text-white/70" : "text-gray-500"
+        }`}
+      >
+        {label}
+      </p>
     </div>
   );
 }

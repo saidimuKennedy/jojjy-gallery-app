@@ -232,6 +232,49 @@ body {
   transition: color 0.2s, background-color 0.2s, border-color 0.2s;
 }
 
+/* Archive — museum wall language */
+.archive-page {
+  --archive-ink: #1a1a1a;
+  --archive-quiet: #8a8a8a;
+  --archive-wall: #ffffff;
+}
+
+.archive-media {
+  cursor: zoom-in;
+}
+
+.archive-prose p + p {
+  margin-top: 1.25em;
+}
+
+.archive-prose h2,
+.archive-prose h3 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin-top: 2em;
+  margin-bottom: 0.6em;
+}
+
+/* Editorial display titles — skip commerce shells (.commerce) */
+.editorial-title {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+.archive-prose a {
+  color: var(--archive-ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .archive-media img {
+    transition: none !important;
+  }
+}
+
 /* portfolio animations */
 @keyframes fadeInUp {
   from {

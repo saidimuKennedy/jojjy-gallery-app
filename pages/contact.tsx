@@ -77,10 +77,12 @@ export default function ContactPage() {
 
         <div className="bg-black py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-5xl font-bold text-white mb-4">Get In Touch</h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+            <h1 className="font-display text-5xl font-light tracking-tight text-white mb-4 md:text-6xl">
+              Visit
+            </h1>
+            <p className="text-lg font-light text-gray-300 max-w-2xl mx-auto md:text-xl">
               Have a question, a commission request, or just want to say hello?
-              Fill out the form below, and we'll get back to you as soon as
+              Fill out the form below, and we&apos;ll get back to you as soon as
               possible.
             </p>
           </div>
@@ -199,10 +201,10 @@ export default function ContactPage() {
         <div className="bg-gray-50 py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-black mb-4">
-                Other Ways to Reach Us
+              <h2 className="font-display text-3xl font-light tracking-tight text-black mb-4 md:text-4xl">
+                Other ways to reach us
               </h2>
-              <p className="text-gray-600 text-lg">
+              <p className="text-gray-600 text-lg font-light">
                 Prefer direct contact? Here are additional ways to get in touch.
               </p>
             </div>
@@ -210,12 +212,12 @@ export default function ContactPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-2xl mx-auto">
               <div className="text-center">
                 <div className="flex items-center justify-center">
-                  <Mails className="w-16 h-16 mx-auto mb-4 " color="black" />
+                  <Mails className="w-10 h-10 mx-auto mb-4" color="black" />
                 </div>
-                <h3 className="text-xl font-semibold text-black mb-2 lowercase tracking-wide">
-                  email
+                <h3 className="font-display text-[0.65rem] uppercase tracking-[0.32em] text-gray-500 mb-2">
+                  Email
                 </h3>
-                <p className="text-gray-600 text-lg">
+                <p className="text-gray-900 text-lg font-light">
                   njengangugi340@gmail.com
                 </p>
               </div>
@@ -223,14 +225,14 @@ export default function ContactPage() {
               <div className="text-center">
                 <div className="flex items-center justify-center">
                   <PhoneCall
-                    className="w-16 h-16 mx-auto mb-4 "
+                    className="w-10 h-10 mx-auto mb-4"
                     color="black"
                   />
                 </div>
-                <h3 className="text-xl font-semibold text-black mb-2 lowercase tracking-wide">
-                  phone
+                <h3 className="font-display text-[0.65rem] uppercase tracking-[0.32em] text-gray-500 mb-2">
+                  Phone
                 </h3>
-                <p className="text-gray-600 text-lg">+254-712-345-67</p>
+                <p className="text-gray-900 text-lg font-light">+254-712-345-67</p>
               </div>
             </div>
           </div>

@@ -8,7 +8,9 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-start gap-12">
           {/* Brand Section */}
           <div className="space-y-4 max-w-md">
-            <h2 className="text-xl font-medium text-gray-900">Njenga Ngugi</h2>
+            <h2 className="font-display text-2xl font-light tracking-tight text-gray-900">
+              Njenga Ngugi
+            </h2>
             <p className="text-sm text-gray-500 leading-relaxed">
               Based in Nairobi, I use charcoal, bleach, and pastel to explore
               the quiet battles and small victories that shape who we are and
@@ -18,7 +20,7 @@ export default function Footer() {
 
           {/* Social Media Section */}
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-gray-900 uppercase tracking-wider">
+            <h3 className="font-display text-[0.65rem] font-normal text-gray-900 uppercase tracking-[0.28em]">
               Connect
             </h3>
             <div className="flex space-x-4">

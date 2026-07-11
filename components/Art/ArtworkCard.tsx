@@ -176,7 +176,7 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
 
         <div className="p-6 bg-white rounded-b-lg">
           <div className="space-y-2">
-            <h3 className="text-base font-medium text-gray-900 truncate group-hover:text-gray-700 transition-colors duration-200">
+            <h3 className="font-display text-base font-light text-gray-900 truncate group-hover:text-gray-700 transition-colors duration-200">
               {artwork.title}
             </h3>
             <p className="text-sm text-gray-600 font-light tracking-wide">
@@ -194,7 +194,7 @@ const ArtworkCard = ({ artwork, onFocus }: ArtworkCardProps) => {
         >
           <motion.div variants={contentVariants} className="space-y-4">
             <div className="space-y-3">
-              <h3 className="text-xl font-light text-gray-900 leading-tight">
+              <h3 className="font-display text-xl font-light text-gray-900 leading-tight">
                 {artwork.title}
               </h3>
               <p className="text-gray-900 text-sm leading-relaxed line-clamp-3 opacity-90">

@@ -8,6 +8,11 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        display: ['"Cormorant Garamond"', "Georgia", "serif"],
+        "archive-display": ['"Cormorant Garamond"', "Georgia", "serif"],
+        "archive-body": ['"Public Sans"', "system-ui", "sans-serif"],
+      },
       colors: {
         border: "var(--border)",
         input: "var(--input)",

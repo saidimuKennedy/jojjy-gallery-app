@@ -81,7 +81,7 @@ const PortfolioSeriesPage: React.FC = () => {
       <>
         <Navbar />
         <div className="container mx-auto px-4 py-20 text-center min-h-screen flex flex-col justify-center">
-          <h1 className="text-4xl font-light text-gray-900 mb-6">
+          <h1 className="font-display text-4xl font-light text-gray-900 mb-6 tracking-tight">
             Series Not Found
           </h1>
           <p className="text-gray-600 text-lg">
@@ -104,7 +104,7 @@ const PortfolioSeriesPage: React.FC = () => {
       <>
         <Navbar />
         <div className="container mx-auto px-4 py-20 text-center min-h-screen flex flex-col justify-center">
-          <h1 className="text-4xl font-light text-gray-900 mb-6">
+          <h1 className="font-display text-4xl font-light text-gray-900 mb-6 tracking-tight">
             {currentSeries.name}
           </h1>
           <p className="text-gray-600 text-lg">
@@ -141,7 +141,7 @@ const PortfolioSeriesPage: React.FC = () => {
       <div className="container mx-auto px-4 py-12 md:py-20 lg:py-24">
         <motion.h1
           variants={fadeInUp}
-          className="text-4xl md:text-5xl font-light text-gray-900 text-center mb-6 md:mb-8 animate-fade-in-up"
+          className="font-display text-4xl md:text-5xl font-light text-gray-900 text-center mb-6 md:mb-8 tracking-tight animate-fade-in-up"
         >
           {currentSeries.name}
         </motion.h1>
@@ -172,7 +172,7 @@ const PortfolioSeriesPage: React.FC = () => {
                   />
                 </div>
                 <div className="p-4">
-                  <h2 className="text-lg font-semibold text-gray-800 truncate mb-1">
+                  <h2 className="font-display text-lg font-light text-gray-800 truncate mb-1">
                     {artwork.title}
                   </h2>
                   <p className="text-sm text-gray-600 truncate mb-2">

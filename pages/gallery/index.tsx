@@ -1,34 +1,28 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Play,
-  ExternalLink,
-  Image,
-  Mic,
-  Video,
-  ChevronUp,
-  FileText,
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
 import Navbar from "@/components/ui/Navbar";
 import useSWR from "swr";
 import { APIResponse, MediaBlogEntryWithRelations } from "@/types/api";
 import { MediaBlogEntryType, MediaFileType } from "@prisma/client";
 
-interface TransformedMediaItem {
+type EntryKind =
+  | "video"
+  | "images"
+  | "audio"
+  | "blog_post"
+  | "external_link"
+  | "unknown";
+
+interface ArchiveEntry {
   id: number;
-  type:
-    | "video"
-    | "images"
-    | "audio"
-    | "blog_post"
-    | "external_link"
-    | "unknown";
+  type: EntryKind;
   title: string;
   shortDesc: string;
   thumbnail?: string;
   images?: string[];
   duration?: string;
-  externalLink?: string;
+  year?: string;
   content?: string;
 }
 
@@ -41,32 +35,72 @@ const fetcher = async (url: string) => {
   return res.json();
 };
 
-const MediaBlogPage = () => {
-  const [currentImageSet, setCurrentImageSet] = useState(0);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const [isVideoPlaying, setIsVideoPlaying] = useState<{
-    [key: number]: boolean;
-  }>({});
+const CATALOGUE_LABEL: Record<Exclude<EntryKind, "unknown">, string> = {
+  video: "Film",
+  images: "Photograph",
+  audio: "Sound",
+  blog_post: "Essay",
+  external_link: "Note",
+};
+
+const reveal = {
+  hidden: { opacity: 0, y: 28 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.75, ease: [0.22, 1, 0.36, 1] as const },
+  },
+};
+
+function getHeroImage(item: ArchiveEntry): string | undefined {
+  if (item.type === "images" && item.images?.length) return item.images[0];
+  return item.thumbnail;
+}
+
+function rhythmPadding(index: number): string {
+  const pads = [
+    "pt-16 pb-32 md:pt-24 md:pb-48",
+    "pt-24 pb-40 md:pt-40 md:pb-56",
+    "pt-20 pb-28 md:pt-28 md:pb-44",
+    "pt-32 pb-48 md:pt-48 md:pb-64",
+  ];
+  return pads[index % pads.length];
+}
+
+function layoutMode(item: ArchiveEntry, index: number): "hero" | "essay" | "offset" {
+  if (item.type === "blog_post" || item.type === "external_link") return "essay";
+  if (item.type === "audio") return "essay";
+  if (index % 3 === 1) return "offset";
+  return "hero";
+}
+
+const ArchivePage = () => {
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   const {
     data: apiResponse,
     error,
     isLoading,
   } = useSWR<APIResponse<MediaBlogEntryWithRelations[]>>(
-    "/api/media-blog",
+    "/api/media-blog?limit=100",
     fetcher
   );
 
   const fetchedMediaEntries = apiResponse?.data || [];
 
-  const mediaItems: TransformedMediaItem[] = fetchedMediaEntries
+  const mediaItems: ArchiveEntry[] = fetchedMediaEntries
     .map((entry) => {
-      const transformedItem: TransformedMediaItem = {
+      const year = entry.createdAt
+        ? new Date(entry.createdAt).getFullYear().toString()
+        : undefined;
+
+      const transformedItem: ArchiveEntry = {
         id: entry.id,
         title: entry.title,
         shortDesc: entry.shortDesc || "",
-        externalLink: entry.externalLink || "",
         type: "unknown",
+        year,
+        content: entry.content || undefined,
       };
 
       switch (entry.type) {
@@ -76,7 +110,7 @@ const MediaBlogPage = () => {
             entry.thumbnailUrl ||
             entry.mediaFiles?.find((f) => f.type === MediaFileType.VIDEO)
               ?.url ||
-            "/api/placeholder/600/400";
+            undefined;
           transformedItem.duration = entry.duration || "";
           break;
         case MediaBlogEntryType.IMAGES:
@@ -84,26 +118,21 @@ const MediaBlogPage = () => {
           transformedItem.images = (entry.mediaFiles ?? [])
             .filter((f) => f.type === MediaFileType.IMAGE)
             .map((f) => f.url);
-          if (transformedItem.images.length === 0) {
-            transformedItem.images = ["/api/placeholder/600/400"];
-          }
+          transformedItem.thumbnail =
+            entry.thumbnailUrl || transformedItem.images[0];
           break;
         case MediaBlogEntryType.AUDIO:
           transformedItem.type = "audio";
           transformedItem.duration = entry.duration || "";
-          transformedItem.thumbnail =
-            entry.thumbnailUrl || "/api/placeholder/600/400";
+          transformedItem.thumbnail = entry.thumbnailUrl || undefined;
           break;
         case MediaBlogEntryType.BLOG_POST:
           transformedItem.type = "blog_post";
-          transformedItem.content = entry.content || "";
-          transformedItem.thumbnail =
-            entry.thumbnailUrl || "/api/placeholder/600/400";
+          transformedItem.thumbnail = entry.thumbnailUrl || undefined;
           break;
         case MediaBlogEntryType.EXTERNAL_LINK:
           transformedItem.type = "external_link";
-               transformedItem.thumbnail =
-            entry.thumbnailUrl || "/api/placeholder/600/400";
+          transformedItem.thumbnail = entry.thumbnailUrl || undefined;
           break;
         default:
           transformedItem.type = "unknown";
@@ -111,284 +140,261 @@ const MediaBlogPage = () => {
       }
       return transformedItem;
     })
-      .filter((item) =>
+    .filter((item) =>
       ["video", "images", "audio", "blog_post", "external_link"].includes(
         item.type
       )
     );
 
-  // Handle scroll events
   useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 400);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    document.documentElement.classList.add("archive-page");
+    return () => document.documentElement.classList.remove("archive-page");
   }, []);
 
-  // Auto-rotate image sets - now depends on the fetched `mediaItems`
-  useEffect(() => {
-    const imageItems = mediaItems.filter((item) => item.type === "images");
-    if (imageItems.length > 0) {
-      const interval = setInterval(() => {
-        setCurrentImageSet((prev) => (prev + 1) % imageItems.length);
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-    // Clear interval if no image items, or if component unmounts
-    return () => {};
-  }, [mediaItems]); // Add mediaItems to dependency array
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const toggleVideo = useCallback((id: number) => {
-    setIsVideoPlaying((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  }, []);
-
-  // Updated to accept the string type from transformed mediaItems
-  const getMediaIcon = useCallback((type: TransformedMediaItem["type"]) => {
-    switch (type) {
-      case "video":
-        return <Video className="w-5 h-5" />;
-      case "images":
-        return <Image className="w-5 h-5" />;
-      case "audio":
-        return <Mic className="w-5 h-5" />;
-      case "blog_post":
-        return <FileText className="w-5 h-5" />; // New icon for blog post
-      case "external_link":
-        return <ExternalLink className="w-5 h-5" />; // New icon for external link
-      default:
-        return <Image className="w-5 h-5" />;
-    }
-  }, []);
-
-  // Render loading/error states before attempting to map data
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white text-black flex flex-col items-center justify-center">
-        <p className="text-xl font-semibold">Loading media content...</p>
+      <div className="min-h-screen bg-white text-[#1a1a1a]">
+        <Navbar />
+        <div className="flex min-h-[70vh] items-center justify-center">
+          <p className="font-archive-display text-lg tracking-wide text-[#8a8a8a]">
+            Loading archive…
+          </p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div
-        className="min-h-screen bg-white text-black flex flex-col items-center justify-center"
-        style={{ fontFamily: "Ubuntu, sans-serif" }}
-      >
-        <p className="text-xl font-semibold text-red-500">
-          Error:{" "}
-          {typeof error === "object" && error !== null && "message" in error
-            ? (error as any).message
-            : String(error)}
-        </p>
-        <p className="text-gray-600 mt-2">
-          Failed to load media entries. Please try again later.
-        </p>
+      <div className="min-h-screen bg-white text-[#1a1a1a]">
+        <Navbar />
+        <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
+          <p className="font-archive-display text-2xl text-[#1a1a1a]">
+            Unable to open the archive
+          </p>
+          <p className="mt-3 max-w-md font-archive-body text-sm text-[#8a8a8a]">
+            {typeof error === "object" && error !== null && "message" in error
+              ? String((error as Error).message)
+              : String(error)}
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="min-h-screen bg-white text-[#1a1a1a]">
       <Navbar />
-      {/* Header */}
-      <div className="border-b border-gray-300 bg-white sticky top-0 z-10">
-        <div className="px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-4xl font-bold mb-2">Media Archive</h1>
-          <p className="text-gray-600">
-            A curated collection of visual stories and experiences
+
+      {/* Quiet entrance — one composition */}
+      <header className="px-6 pb-8 pt-20 md:px-12 md:pb-12 md:pt-28 lg:px-20">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <p className="font-archive-display text-[0.65rem] uppercase tracking-[0.35em] text-[#8a8a8a]">
+            Njenga Ngugi
           </p>
-        </div>
-      </div>
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto p-8">
+          <h1 className="mt-6 font-archive-display text-6xl font-light leading-[0.95] tracking-tight text-[#1a1a1a] md:text-7xl lg:text-[5.5rem]">
+            Archive
+          </h1>
+          <p className="mt-8 max-w-md font-archive-body text-base font-light leading-relaxed text-[#6b6b6b] md:text-lg">
+            Traces of a life spent making work.
+          </p>
+        </motion.div>
+      </header>
+
+      <main>
         {mediaItems.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">
-            No media entries found.
+          <div className="px-6 py-40 text-center md:px-12">
+            <p className="font-archive-display text-xl text-[#8a8a8a]">
+              The archive is empty for now.
+            </p>
           </div>
         ) : (
-          mediaItems.map((item, index) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true, margin: "-100px" }}
-              className={`flex items-center gap-12 mb-24 ${
-                index % 2 === 1 ? "flex-row-reverse" : ""
-              }`}
-            >
-              {/* Media Side */}
-              <div className="flex-1">
-                {/* Video Items */}
-                {item.type === "video" && (
-                  <div className="relative bg-gray-100 aspect-video">
-                    {/* Placeholder for actual video embed */}
-                    <img
-                      src={item.thumbnail}
-                      alt={item.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => toggleVideo(item.id)}
-                      className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 hover:bg-opacity-20 transition-all"
-                    >
-                      <Play className="w-20 h-20 text-white" fill="white" />
-                    </motion.button>
-                    {isVideoPlaying[item.id] && (
-                      <div className="absolute inset-0 bg-black flex items-center justify-center">
-                        <p className="text-white text-2xl">Video Playing</p>
-                        {/* Here you would embed the actual video player */}
+          mediaItems.map((item, index) => {
+            const mode = layoutMode(item, index);
+            const label =
+              item.type !== "unknown" ? CATALOGUE_LABEL[item.type] : "";
+            const hero = getHeroImage(item);
+            const isHovered = hoveredId === item.id;
+
+            return (
+              <motion.article
+                key={item.id}
+                variants={reveal}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-12% 0px" }}
+                className={rhythmPadding(index)}
+              >
+                {mode === "hero" && (
+                  <Link
+                    href={`/gallery/${item.id}`}
+                    className="group block outline-none focus-visible:ring-1 focus-visible:ring-[#1a1a1a]/40"
+                    onMouseEnter={() => setHoveredId(item.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                  >
+                    {hero && (
+                      <div className="archive-media relative w-full overflow-hidden bg-[#f5f5f5]">
+                        <img
+                          src={hero}
+                          alt={item.title}
+                          className="h-[55vh] w-full object-cover transition-transform duration-700 ease-in-out md:h-[72vh] lg:h-[85vh]"
+                          style={{
+                            transform: isHovered ? "scale(1.02)" : "scale(1)",
+                          }}
+                        />
+                        {item.type === "video" && (
+                          <div
+                            className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                            aria-hidden
+                          >
+                            <span
+                              className="h-14 w-14 rounded-full border border-white/70 bg-white/10 backdrop-blur-[2px] transition-opacity duration-500"
+                              style={{ opacity: isHovered ? 0.9 : 0.55 }}
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
-                  </div>
-                )}
 
-                {/* Image Items */}
-                {item.type === "images" && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2">
-                      <img
-                        src={item.images?.[0]} // Use optional chaining
-                        alt={item.title}
-                        className="w-full h-80 object-cover"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 col-span-2">
-                      {item.images?.slice(1, 4).map(
-                        (
-                          image,
-                          idx // Use optional chaining
-                        ) => (
-                          <img
-                            key={idx}
-                            src={image}
-                            alt={`${item.title} ${idx + 2}`}
-                            className="w-full h-32 object-cover"
-                          />
-                        )
+                    <div className="mx-auto max-w-4xl px-6 pt-10 md:px-12 md:pt-14 lg:px-0">
+                      <div className="flex items-baseline gap-4">
+                        <span className="font-archive-display text-[0.65rem] uppercase tracking-[0.32em] text-[#8a8a8a]">
+                          {label}
+                        </span>
+                        {item.year && (
+                          <span className="font-archive-display text-[0.65rem] tracking-[0.2em] text-[#b0b0b0]">
+                            {item.year}
+                          </span>
+                        )}
+                        {item.duration && (
+                          <span className="font-archive-display text-[0.65rem] tracking-[0.2em] text-[#b0b0b0]">
+                            {item.duration}
+                          </span>
+                        )}
+                      </div>
+
+                      <h2
+                        className="mt-4 font-archive-display text-4xl font-light leading-[1.05] tracking-tight text-[#1a1a1a] transition-opacity duration-500 md:text-5xl lg:text-6xl xl:text-[4.25rem]"
+                        style={{ opacity: isHovered ? 0.7 : 1 }}
+                      >
+                        {item.title}
+                      </h2>
+
+                      {item.shortDesc && (
+                        <p
+                          className="mt-6 max-w-xl font-archive-body text-base font-light leading-relaxed text-[#6b6b6b] transition-opacity duration-700 md:text-lg"
+                          style={{ opacity: isHovered ? 1 : 0.85 }}
+                        >
+                          {item.shortDesc}
+                        </p>
                       )}
                     </div>
-                  </div>
+                  </Link>
                 )}
 
-                {/* Audio Items */}
-                {item.type === "audio" && (
-                  <div className="bg-gray-100 aspect-video flex items-center justify-center">
-                    <div className="text-center">
-                      <Mic className="w-24 h-24 text-gray-400 mx-auto mb-4" />
-                      <p className="text-2xl font-bold text-gray-600">
-                        {item.duration}
-                      </p>
-                      <p className="text-gray-500 mt-2">Audio Recording</p>
-                      {/* Here you would embed the actual audio player */}
-                    </div>
-                  </div>
-                )}
-
-                {/* Blog Post / External Link - Basic display if no primary media */}
-                {(item.type === "blog_post" ||
-                  item.type === "external_link") && (
-                  <div className="bg-gray-100 aspect-video flex items-center justify-center flex-col p-4 text-center">
-                    {item.thumbnail && (
-                      <img
-                        src={item.thumbnail}
-                        alt="Entry thumbnail"
-                        className="w-full h-48 object-cover mb-4 rounded-md"
-                      />
-                    )}
-                    <h3 className="text-xl font-bold text-gray-700 mb-2">
-                      {item.type === "blog_post"
-                        ? "Blog Post"
-                        : "External Link"}
-                    </h3>
-                    <p className="text-gray-500 text-sm">{item.shortDesc}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Description Side */}
-              <div className="flex-1 space-y-6">
-                <div className="flex items-center gap-3">
-                  {getMediaIcon(item.type)}
-                  <span className="text-sm text-gray-500 uppercase tracking-wider font-medium">
-                    {item.type.replace(/_/g, " ")}{" "}
-                    {/* Display type name nicely */}
-                  </span>
-                </div>
-
-                <h2 className="text-3xl font-bold leading-tight">
-                  {item.title}
-                </h2>
-
-                <p className="text-gray-600 text-lg leading-relaxed">
-                  {item.shortDesc}
-                </p>
-
-                <div className="pt-4">
-                  <motion.a
-                    href={item.externalLink}
-                    target="_blank" // Open external links in new tab
-                    rel="noopener noreferrer" // Security best practice
-                    whileHover={{ x: 5 }}
-                    className="inline-flex items-center gap-2 text-black hover:text-gray-600 transition-colors font-medium"
+                {mode === "offset" && (
+                  <Link
+                    href={`/gallery/${item.id}`}
+                    className="group block outline-none focus-visible:ring-1 focus-visible:ring-[#1a1a1a]/40"
+                    onMouseEnter={() => setHoveredId(item.id)}
+                    onMouseLeave={() => setHoveredId(null)}
                   >
-                    <span>
-                      {item.type === "blog_post"
-                        ? "Read Full Post"
-                        : "View Content"}
+                    <div className="grid items-end gap-10 px-6 md:grid-cols-12 md:gap-8 md:px-12 lg:px-20">
+                      <div className="md:col-span-8 lg:col-span-9">
+                        {hero && (
+                          <div className="archive-media overflow-hidden bg-[#f5f5f5]">
+                            <img
+                              src={hero}
+                              alt={item.title}
+                              className="aspect-[4/3] w-full object-cover transition-transform duration-700 ease-in-out md:aspect-[16/10]"
+                              style={{
+                                transform: isHovered
+                                  ? "scale(1.02)"
+                                  : "scale(1)",
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                      <div className="md:col-span-4 lg:col-span-3 md:pb-4">
+                        <span className="font-archive-display text-[0.65rem] uppercase tracking-[0.32em] text-[#8a8a8a]">
+                          {label}
+                          {item.year ? ` · ${item.year}` : ""}
+                        </span>
+                        <h2 className="mt-4 font-archive-display text-3xl font-light leading-tight tracking-tight text-[#1a1a1a] md:text-4xl">
+                          {item.title}
+                        </h2>
+                        {item.shortDesc && (
+                          <p className="mt-4 font-archive-body text-sm font-light leading-relaxed text-[#6b6b6b] md:text-base">
+                            {item.shortDesc}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                )}
+
+                {mode === "essay" && (
+                  <Link
+                    href={`/gallery/${item.id}`}
+                    className="group mx-auto block max-w-3xl px-6 outline-none focus-visible:ring-1 focus-visible:ring-[#1a1a1a]/40 md:px-12"
+                    onMouseEnter={() => setHoveredId(item.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                  >
+                    <span className="font-archive-display text-[0.65rem] uppercase tracking-[0.32em] text-[#8a8a8a]">
+                      {label}
+                      {item.year ? ` · ${item.year}` : ""}
+                      {item.duration ? ` · ${item.duration}` : ""}
                     </span>
-                    <ExternalLink className="w-5 h-5" />
-                    {/* The "chevron right" text might be redundant if using icon */}
-                  </motion.a>
-                </div>
-              </div>
-            </motion.div>
-          ))
+
+                    <h2 className="mt-5 font-archive-display text-4xl font-light leading-[1.08] tracking-tight text-[#1a1a1a] transition-opacity duration-500 md:text-5xl lg:text-6xl">
+                      {item.title}
+                    </h2>
+
+                    {item.shortDesc && (
+                      <p className="mt-8 font-archive-body text-lg font-light leading-[1.7] text-[#4a4a4a] md:text-xl">
+                        {item.shortDesc}
+                      </p>
+                    )}
+
+                    {hero && (
+                      <div className="archive-media mt-14 overflow-hidden bg-[#f5f5f5]">
+                        <img
+                          src={hero}
+                          alt=""
+                          className="aspect-[16/9] w-full object-cover transition-transform duration-700 ease-in-out"
+                          style={{
+                            transform: isHovered ? "scale(1.02)" : "scale(1)",
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    <span
+                      className="mt-10 inline-block font-archive-display text-[0.7rem] uppercase tracking-[0.28em] text-[#1a1a1a] transition-opacity duration-500"
+                      style={{ opacity: isHovered ? 1 : 0.45 }}
+                    >
+                      {item.type === "blog_post" ? "Read" : "Open"}
+                    </span>
+                  </Link>
+                )}
+              </motion.article>
+            );
+          })
         )}
-      </div>
-      {/* Scroll to Top Button */}
-      <AnimatePresence>
-        {showScrollTop && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-              y: [0, -10, 0],
-            }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{
-              y: {
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              },
-            }}
-            onClick={scrollToTop}
-            className="fixed bottom-8 right-8 bg-black text-white p-4 hover:bg-gray-800 transition-colors z-20"
-          >
-            <ChevronUp className="w-6 h-6" />
-          </motion.button>
-        )}
-      </AnimatePresence>
-      {/* Footer Space */}
-      <div className="h-20 bg-gray-50 border-t border-gray-200 flex items-center justify-center">
-        <p className="text-gray-500 text-sm">End of media archive</p>
-      </div>
+      </main>
+
+      <footer className="px-6 pb-24 pt-8 md:px-12 lg:px-20">
+        <p className="font-archive-display text-[0.65rem] uppercase tracking-[0.35em] text-[#b0b0b0]">
+          End of archive
+        </p>
+      </footer>
     </div>
   );
 };
 
-export default MediaBlogPage;
+export default ArchivePage;

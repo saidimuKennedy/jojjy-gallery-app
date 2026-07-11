@@ -1,26 +1,24 @@
-import React, { useState, useEffect } from 'react'; // Added useEffect
-import Head from 'next/head';
-import { useRouter } from 'next/router';
-import { useSession, signIn } from 'next-auth/react'; // CHANGED: Import useSession and signIn
-import { Brush } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import Head from "next/head";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { useSession, signIn } from "next-auth/react";
+import { Brush, X } from "lucide-react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // CHANGED: Use useSession directly
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
 
-  // Redirect if already logged in (authenticated session)
   useEffect(() => {
     if (status === "authenticated") {
-      router.push('/');
+      router.push("/");
     }
-  }, [status, router]); // Dependency array includes status and router
+  }, [status, router]);
 
-  // Don't render anything while session status is loading
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -29,7 +27,6 @@ export default function LoginPage() {
     );
   }
 
-  // If already authenticated, return null as useEffect will handle redirect
   if (status === "authenticated") {
     return null;
   }
@@ -39,20 +36,16 @@ export default function LoginPage() {
     setError(null);
     setIsSubmitting(true);
 
-    // CHANGED: Use signIn from next-auth/react
-    const result = await signIn('credentials', {
-      redirect: false, // Prevent NextAuth.js from redirecting automatically
+    const result = await signIn("credentials", {
+      redirect: false,
       email,
       password,
     });
 
     if (result?.error) {
-      setError(result.error); // Display error message from NextAuth.js
+      setError(result.error);
     } else {
-      // If no error, sign-in was successful.
-      // NextAuth.js updates the session, and the useEffect above will handle the redirect.
-      // Alternatively, you could explicitly push here if you don't rely on useEffect:
-      router.push('/');
+      router.push("/");
     }
     setIsSubmitting(false);
   };
@@ -62,27 +55,42 @@ export default function LoginPage() {
       <Head>
         <title>Login - Njenga Ngugi</title>
       </Head>
-      <div className="min-h-screen bg-white flex">
-        {/* Left side - Visual element */}
-        <div className="hidden lg:flex lg:w-1/2 bg-black flex-col justify-center items-center px-16">
+      <div className="min-h-screen bg-white flex relative">
+        <Link
+          href="/"
+          className="absolute top-0 right-0 z-20 flex h-12 w-12 items-center justify-center border-l border-b border-black bg-black text-white transition-colors hover:bg-white hover:text-black lg:h-14 lg:w-14"
+          aria-label="Close and return to site"
+        >
+          <X className="h-5 w-5 stroke-[1.5]" />
+        </Link>
+
+        <div className="hidden lg:flex lg:w-1/2 bg-black flex-col justify-between px-16 py-12">
+          <Link
+            href="/"
+            className="text-sm tracking-wide text-white/60 transition-colors hover:text-white"
+          >
+            ← Njenga Ngugi
+          </Link>
           <div className="text-white text-center">
-            <div className="mb-8">
-              <Brush className="w-24 h-24 mx-auto mb-6" />
-              <h2 className="text-4xl font-bold mb-4">Welcome Back</h2>
-              <p className="text-xl text-gray-300 max-w-md">
-                Sign in to continue your journey with us and access your account.
-              </p>
-            </div>
+            <Brush className="w-24 h-24 mx-auto mb-6" />
+            <h2 className="text-4xl font-bold mb-4">Welcome Back</h2>
+            <p className="text-xl text-gray-300 max-w-md mx-auto">
+              Sign in to continue your journey with us and access your account.
+            </p>
           </div>
+          <div aria-hidden className="h-5" />
         </div>
 
-        {/* Right side - Form */}
-        <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 lg:px-16">
+        <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 lg:px-16 pt-16">
           <div className="max-w-md mx-auto w-full">
             <div className="mb-12">
-              <h1 className="text-4xl font-bold text-black mb-2">
-                Sign In
-              </h1>
+              <Link
+                href="/"
+                className="mb-8 inline-flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-gray-900 lg:hidden"
+              >
+                ← Back to site
+              </Link>
+              <h1 className="text-4xl font-bold text-black mb-2">Sign In</h1>
               <p className="text-gray-600 text-lg">
                 Access your account and continue
               </p>
@@ -90,7 +98,10 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-black mb-2 uppercase tracking-wide">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-black mb-2 uppercase tracking-wide"
+                >
                   Email Address
                 </label>
                 <input
@@ -107,7 +118,10 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-black mb-2 uppercase tracking-wide">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-black mb-2 uppercase tracking-wide"
+                >
                   Password
                 </label>
                 <input
@@ -135,18 +149,22 @@ export default function LoginPage() {
                   disabled={isSubmitting}
                   className="w-full bg-black text-white py-4 px-6 text-lg font-semibold hover:bg-gray-800 disabled:bg-gray-400 transition-colors duration-200 uppercase tracking-wide"
                 >
-                  {isSubmitting ? 'Signing In...' : 'Sign In'}
+                  {isSubmitting ? "Signing In..." : "Sign In"}
                 </button>
               </div>
             </form>
 
-            <div className="mt-8 text-center">
+            <div className="mt-8 text-center space-y-3">
               <p className="text-gray-600">
-                Don't have an account?{' '}
-                <a href="/register" className="text-black font-semibold hover:underline">
+                Don&apos;t have an account?{" "}
+                <Link
+                  href="/register"
+                  className="text-black font-semibold hover:underline"
+                >
                   Create one here
-                </a>
+                </Link>
               </p>
+              
             </div>
           </div>
         </div>
