@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "prisma:seed": "prisma db seed",
+    "prisma:seed-archive": "tsx prisma/seed-archive.ts",
     "db:reset": "prisma migrate reset"
   },
   "prisma": {
