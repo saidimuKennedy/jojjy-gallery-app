@@ -6,14 +6,32 @@ declare global {
   var prisma: PrismaClient | undefined;
 }
 
-const connectionString = process.env.DATABASE_URL;
+/**
+ * Newer `pg` treats sslmode=require as verify-full, which fails against
+ * managed Postgres cert chains (Prisma Postgres, Neon, Supabase, etc.).
+ */
+function withRelaxedSsl(connectionString: string | undefined) {
+  if (!connectionString) return connectionString;
+
+  try {
+    const url = new URL(connectionString);
+    url.searchParams.set("sslmode", "no-verify");
+    return url.toString();
+  } catch {
+    const cleaned = connectionString
+      .replace(/([?&])sslmode=[^&]*/gi, "$1")
+      .replace(/[?&]$/, "");
+    const sep = cleaned.includes("?") ? "&" : "?";
+    return `${cleaned}${sep}sslmode=no-verify`;
+  }
+}
+
+const connectionString = withRelaxedSsl(process.env.DATABASE_URL);
 
 function createPrismaClient() {
   const pool = new Pool({
     connectionString,
     max: 1,
-    // Managed Postgres (Supabase/Neon/etc.) often presents a cert chain
-    // Node rejects under pg's verify-full SSL behavior.
     ssl: { rejectUnauthorized: false },
   });
   const adapter = new PrismaPg(pool);
