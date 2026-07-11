@@ -59,11 +59,10 @@ export default function Home() {
                   Njenga Ngugi
                 </h1>
 
-                <p className="mt-8 text-lg font-light leading-relaxed text-white/85 max-w-2xl mx-auto md:text-xl">
+                <p className="mt-8 text-sm font-light leading-relaxed text-white/80 max-w-xl mx-auto md:text-[0.9375rem] md:leading-[1.7]">
                   Exploring the intersection of traditional African artistry and
-                  contemporary expression. Each piece is a journey through
-                  culture, memory, and innovation, creating a bridge between
-                  generations and continents.
+                  contemporary expression—a bridge between generations and
+                  continents.
                 </p>
 
                 <div className="mt-12 flex flex-col sm:flex-row justify-center gap-4">

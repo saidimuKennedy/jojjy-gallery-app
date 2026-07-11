@@ -1,11 +1,10 @@
-import { ShoppingCart } from "lucide-react";
 import { Artwork } from "../../types/api";
 import { useCart } from "@/context/CartContext";
 
 interface AddToCartButtonProps {
   artwork: Artwork;
   className?: string;
-  variant?: "default" | "minimal";
+  variant?: "default" | "minimal" | "acquire";
 }
 
 const AddToCartButton = ({
@@ -22,14 +21,25 @@ const AddToCartButton = ({
     }
   };
 
+  if (variant === "acquire") {
+    return (
+      <button
+        onClick={handleClick}
+        disabled={isInCart}
+        className={`w-full border border-neutral-900 bg-neutral-900 py-5 text-xs font-normal uppercase tracking-[0.28em] text-white transition-colors duration-500 hover:bg-white hover:text-neutral-900 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:bg-neutral-300 disabled:text-white ${className}`}
+      >
+        {isInCart ? "Reserved" : "Acquire Artwork"}
+      </button>
+    );
+  }
+
   if (variant === "minimal") {
     return (
       <button
         onClick={handleClick}
         disabled={isInCart}
-        className={`w-full bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 text-white text-sm font-medium py-2 flex items-center justify-center transition-colors duration-200 ${className}`}
+        className={`w-full bg-gray-900 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-gray-800 disabled:bg-gray-400 ${className}`}
       >
-        <ShoppingCart className="w-4 h-4 mr-2" />
         {isInCart ? "Added" : "Add to Cart"}
       </button>
     );
@@ -39,9 +49,8 @@ const AddToCartButton = ({
     <button
       onClick={handleClick}
       disabled={isInCart}
-      className={`rounded-lg bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 text-white px-6 py-3 flex items-center justify-center transition-colors duration-200 ${className}`}
+      className={`rounded-lg bg-gray-900 px-6 py-3 text-white transition-colors duration-200 hover:bg-gray-800 disabled:bg-gray-400 ${className}`}
     >
-      <ShoppingCart className="w-5 h-5 mr-2" />
       {isInCart ? "Added" : "Add to Cart"}
     </button>
   );

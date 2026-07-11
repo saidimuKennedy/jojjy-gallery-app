@@ -156,7 +156,7 @@ const ArchivePage = () => {
       <div className="min-h-screen bg-white text-[#1a1a1a]">
         <Navbar />
         <div className="flex min-h-[70vh] items-center justify-center">
-          <p className="font-archive-display text-lg tracking-wide text-[#8a8a8a]">
+          <p className="font-display text-lg tracking-wide text-[#8a8a8a]">
             Loading archive…
           </p>
         </div>
@@ -169,10 +169,10 @@ const ArchivePage = () => {
       <div className="min-h-screen bg-white text-[#1a1a1a]">
         <Navbar />
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
-          <p className="font-archive-display text-2xl text-[#1a1a1a]">
+          <p className="font-display text-2xl text-[#1a1a1a]">
             Unable to open the archive
           </p>
-          <p className="mt-3 max-w-md font-archive-body text-sm text-[#8a8a8a]">
+          <p className="mt-3 max-w-md font-light text-sm text-[#8a8a8a]">
             {typeof error === "object" && error !== null && "message" in error
               ? String((error as Error).message)
               : String(error)}
@@ -193,13 +193,13 @@ const ArchivePage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className="font-archive-display text-[0.65rem] uppercase tracking-[0.35em] text-[#8a8a8a]">
+          <p className="font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a]">
             Njenga Ngugi
           </p>
-          <h1 className="mt-6 font-archive-display text-6xl font-light leading-[0.95] tracking-tight text-[#1a1a1a] md:text-7xl lg:text-[5.5rem]">
+          <h1 className="mt-6 font-display text-6xl font-light leading-[0.95] tracking-tight text-[#1a1a1a] md:text-7xl lg:text-[5.5rem]">
             Archive
           </h1>
-          <p className="mt-8 max-w-md font-archive-body text-base font-light leading-relaxed text-[#6b6b6b] md:text-lg">
+          <p className="mt-8 max-w-md text-sm font-light leading-relaxed text-[#6b6b6b]">
             Traces of a life spent making work.
           </p>
         </motion.div>
@@ -208,7 +208,7 @@ const ArchivePage = () => {
       <main>
         {mediaItems.length === 0 ? (
           <div className="px-6 py-40 text-center md:px-12">
-            <p className="font-archive-display text-xl text-[#8a8a8a]">
+            <p className="font-display text-xl text-[#8a8a8a]">
               The archive is empty for now.
             </p>
           </div>
@@ -262,23 +262,23 @@ const ArchivePage = () => {
 
                     <div className="mx-auto max-w-4xl px-6 pt-10 md:px-12 md:pt-14 lg:px-0">
                       <div className="flex items-baseline gap-4">
-                        <span className="font-archive-display text-[0.65rem] uppercase tracking-[0.32em] text-[#8a8a8a]">
+                        <span className="font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a]">
                           {label}
                         </span>
                         {item.year && (
-                          <span className="font-archive-display text-[0.65rem] tracking-[0.2em] text-[#b0b0b0]">
+                          <span className="font-display text-xs tracking-[0.16em] text-[#9a9a9a]">
                             {item.year}
                           </span>
                         )}
                         {item.duration && (
-                          <span className="font-archive-display text-[0.65rem] tracking-[0.2em] text-[#b0b0b0]">
+                          <span className="font-display text-xs tracking-[0.16em] text-[#9a9a9a]">
                             {item.duration}
                           </span>
                         )}
                       </div>
 
                       <h2
-                        className="mt-4 font-archive-display text-4xl font-light leading-[1.05] tracking-tight text-[#1a1a1a] transition-opacity duration-500 md:text-5xl lg:text-6xl xl:text-[4.25rem]"
+                        className="mt-4 font-display text-4xl font-light leading-[1.05] tracking-tight text-[#1a1a1a] transition-opacity duration-500 md:text-5xl lg:text-6xl xl:text-[4.25rem]"
                         style={{ opacity: isHovered ? 0.7 : 1 }}
                       >
                         {item.title}
@@ -286,7 +286,7 @@ const ArchivePage = () => {
 
                       {item.shortDesc && (
                         <p
-                          className="mt-6 max-w-xl font-archive-body text-base font-light leading-relaxed text-[#6b6b6b] transition-opacity duration-700 md:text-lg"
+                          className="mt-6 max-w-xl text-sm font-light leading-relaxed text-[#6b6b6b] transition-opacity duration-700"
                           style={{ opacity: isHovered ? 1 : 0.85 }}
                         >
                           {item.shortDesc}
@@ -321,15 +321,15 @@ const ArchivePage = () => {
                         )}
                       </div>
                       <div className="md:col-span-4 lg:col-span-3 md:pb-4">
-                        <span className="font-archive-display text-[0.65rem] uppercase tracking-[0.32em] text-[#8a8a8a]">
+                        <span className="font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a]">
                           {label}
                           {item.year ? ` · ${item.year}` : ""}
                         </span>
-                        <h2 className="mt-4 font-archive-display text-3xl font-light leading-tight tracking-tight text-[#1a1a1a] md:text-4xl">
+                        <h2 className="mt-4 font-display text-3xl font-light leading-tight tracking-tight text-[#1a1a1a] md:text-4xl">
                           {item.title}
                         </h2>
                         {item.shortDesc && (
-                          <p className="mt-4 font-archive-body text-sm font-light leading-relaxed text-[#6b6b6b] md:text-base">
+                          <p className="mt-4 text-sm font-light leading-relaxed text-[#6b6b6b]">
                             {item.shortDesc}
                           </p>
                         )}
@@ -345,18 +345,18 @@ const ArchivePage = () => {
                     onMouseEnter={() => setHoveredId(item.id)}
                     onMouseLeave={() => setHoveredId(null)}
                   >
-                    <span className="font-archive-display text-[0.65rem] uppercase tracking-[0.32em] text-[#8a8a8a]">
+                    <span className="font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a]">
                       {label}
                       {item.year ? ` · ${item.year}` : ""}
                       {item.duration ? ` · ${item.duration}` : ""}
                     </span>
 
-                    <h2 className="mt-5 font-archive-display text-4xl font-light leading-[1.08] tracking-tight text-[#1a1a1a] transition-opacity duration-500 md:text-5xl lg:text-6xl">
+                    <h2 className="mt-5 font-display text-4xl font-light leading-[1.08] tracking-tight text-[#1a1a1a] transition-opacity duration-500 md:text-5xl lg:text-6xl">
                       {item.title}
                     </h2>
 
                     {item.shortDesc && (
-                      <p className="mt-8 font-archive-body text-lg font-light leading-[1.7] text-[#4a4a4a] md:text-xl">
+                      <p className="mt-6 text-sm font-light leading-relaxed text-[#5a5a5a]">
                         {item.shortDesc}
                       </p>
                     )}
@@ -375,7 +375,7 @@ const ArchivePage = () => {
                     )}
 
                     <span
-                      className="mt-10 inline-block font-archive-display text-[0.7rem] uppercase tracking-[0.28em] text-[#1a1a1a] transition-opacity duration-500"
+                      className="mt-10 inline-block font-display text-xs uppercase tracking-[0.28em] text-[#1a1a1a] transition-opacity duration-500"
                       style={{ opacity: isHovered ? 1 : 0.45 }}
                     >
                       {item.type === "blog_post" ? "Read" : "Open"}
@@ -389,7 +389,7 @@ const ArchivePage = () => {
       </main>
 
       <footer className="px-6 pb-24 pt-8 md:px-12 lg:px-20">
-        <p className="font-archive-display text-[0.65rem] uppercase tracking-[0.35em] text-[#b0b0b0]">
+        <p className="font-display text-xs uppercase tracking-[0.28em] text-[#b0b0b0]">
           End of archive
         </p>
       </footer>

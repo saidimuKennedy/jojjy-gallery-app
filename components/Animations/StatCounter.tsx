@@ -25,7 +25,7 @@ export default function StatCounter({ end, label, light = false }: StatProps) {
         +
       </div>
       <p
-        className={`mt-1 font-display text-[0.65rem] uppercase tracking-[0.22em] ${
+        className={`mt-1 text-xs uppercase tracking-[0.18em] ${
           light ? "text-white/70" : "text-gray-500"
         }`}
       >

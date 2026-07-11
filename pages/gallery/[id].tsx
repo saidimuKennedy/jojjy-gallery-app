@@ -49,7 +49,7 @@ const SingleArchiveEntryPage = () => {
       <div className="min-h-screen bg-white text-[#1a1a1a]">
         <Navbar />
         <div className="flex min-h-[70vh] items-center justify-center">
-          <p className="font-archive-display text-lg tracking-wide text-[#8a8a8a]">
+          <p className="font-display text-lg tracking-wide text-[#8a8a8a]">
             Loading…
           </p>
         </div>
@@ -62,10 +62,10 @@ const SingleArchiveEntryPage = () => {
       <div className="min-h-screen bg-white text-[#1a1a1a]">
         <Navbar />
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
-          <p className="font-archive-display text-2xl">{error.message}</p>
+          <p className="font-display text-2xl">{error.message}</p>
           <Link
             href="/gallery"
-            className="mt-8 font-archive-display text-[0.7rem] uppercase tracking-[0.28em] text-[#8a8a8a] hover:text-[#1a1a1a]"
+            className="mt-8 font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a] hover:text-[#1a1a1a]"
           >
             Back to archive
           </Link>
@@ -79,12 +79,12 @@ const SingleArchiveEntryPage = () => {
       <div className="min-h-screen bg-white text-[#1a1a1a]">
         <Navbar />
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
-          <p className="font-archive-display text-2xl text-[#8a8a8a]">
+          <p className="font-display text-2xl text-[#8a8a8a]">
             This entry could not be found.
           </p>
           <Link
             href="/gallery"
-            className="mt-8 font-archive-display text-[0.7rem] uppercase tracking-[0.28em] text-[#8a8a8a] hover:text-[#1a1a1a]"
+            className="mt-8 font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a] hover:text-[#1a1a1a]"
           >
             Back to archive
           </Link>
@@ -156,14 +156,14 @@ const SingleArchiveEntryPage = () => {
                     className="w-full object-cover"
                   />
                   {file.description && (
-                    <figcaption className="mt-4 font-archive-display text-[0.65rem] uppercase tracking-[0.28em] text-[#8a8a8a]">
+                    <figcaption className="mt-4 font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a]">
                       {file.description}
                     </figcaption>
                   )}
                 </motion.figure>
               ))
             ) : (
-              <p className="font-archive-body text-[#8a8a8a]">
+              <p className="font-light text-[#8a8a8a]">
                 No images available.
               </p>
             )}
@@ -189,7 +189,7 @@ const SingleArchiveEntryPage = () => {
                 href={entry.externalLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-archive-display text-[0.7rem] uppercase tracking-[0.28em] text-[#1a1a1a] underline-offset-4 hover:underline"
+                className="font-display text-xs uppercase tracking-[0.28em] text-[#1a1a1a] underline-offset-4 hover:underline"
               >
                 Listen
               </a>
@@ -209,7 +209,7 @@ const SingleArchiveEntryPage = () => {
             )}
             {entry.content && (
               <div
-                className="archive-prose font-archive-body text-lg font-light leading-[1.8] text-[#2a2a2a] md:text-xl"
+                className="archive-prose text-sm font-light leading-relaxed text-[#2a2a2a] md:text-[0.9375rem] md:leading-[1.75]"
                 dangerouslySetInnerHTML={{ __html: entry.content }}
               />
             )}
@@ -231,7 +231,7 @@ const SingleArchiveEntryPage = () => {
                 href={entry.externalLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-archive-display text-[0.7rem] uppercase tracking-[0.28em] text-[#1a1a1a] underline-offset-4 hover:underline"
+                className="font-display text-xs uppercase tracking-[0.28em] text-[#1a1a1a] underline-offset-4 hover:underline"
               >
                 Open source
               </a>
@@ -251,7 +251,7 @@ const SingleArchiveEntryPage = () => {
       <div className="px-6 pt-10 md:px-12 lg:px-20">
         <Link
           href="/gallery"
-          className="font-archive-display text-[0.65rem] uppercase tracking-[0.32em] text-[#8a8a8a] transition-colors duration-500 hover:text-[#1a1a1a]"
+          className="font-display text-xs uppercase tracking-[0.32em] text-[#8a8a8a] transition-colors duration-500 hover:text-[#1a1a1a]"
         >
           ← Archive
         </Link>
@@ -263,16 +263,16 @@ const SingleArchiveEntryPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className="font-archive-display text-[0.65rem] uppercase tracking-[0.32em] text-[#8a8a8a]">
+          <p className="font-display text-xs uppercase tracking-[0.32em] text-[#8a8a8a]">
             {label}
             {year ? ` · ${year}` : ""}
             {entry.duration ? ` · ${entry.duration}` : ""}
           </p>
-          <h1 className="mt-6 font-archive-display text-4xl font-light leading-[1.05] tracking-tight text-[#1a1a1a] md:text-6xl lg:text-7xl">
+          <h1 className="mt-6 font-display text-4xl font-light leading-[1.05] tracking-tight text-[#1a1a1a] md:text-6xl lg:text-7xl">
             {entry.title}
           </h1>
           {entry.shortDesc && (
-            <p className="mt-8 max-w-2xl font-archive-body text-lg font-light leading-relaxed text-[#6b6b6b] md:text-xl">
+            <p className="mt-8 max-w-2xl text-sm font-light leading-relaxed text-[#6b6b6b]">
               {entry.shortDesc}
             </p>
           )}
@@ -281,7 +281,7 @@ const SingleArchiveEntryPage = () => {
               href={entry.externalLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-8 inline-block font-archive-display text-[0.7rem] uppercase tracking-[0.28em] text-[#1a1a1a] underline-offset-4 hover:underline"
+              className="mt-8 inline-block font-display text-xs uppercase tracking-[0.28em] text-[#1a1a1a] underline-offset-4 hover:underline"
             >
               View original
             </a>
@@ -311,7 +311,7 @@ const SingleArchiveEntryPage = () => {
 
         {entry.content && entry.type !== "BLOG_POST" && (
           <div
-            className="archive-prose mx-auto mt-20 max-w-3xl px-6 font-archive-body text-lg font-light leading-[1.8] text-[#2a2a2a] md:px-12 md:text-xl"
+            className="archive-prose mx-auto mt-20 max-w-3xl px-6 text-sm font-light leading-relaxed text-[#2a2a2a] md:px-12 md:text-[0.9375rem] md:leading-[1.75]"
             dangerouslySetInnerHTML={{ __html: entry.content }}
           />
         )}
@@ -320,7 +320,7 @@ const SingleArchiveEntryPage = () => {
       <footer className="mx-auto max-w-4xl px-6 pb-28 pt-24 md:px-12">
         <Link
           href="/gallery"
-          className="font-archive-display text-[0.65rem] uppercase tracking-[0.32em] text-[#8a8a8a] transition-colors duration-500 hover:text-[#1a1a1a]"
+          className="font-display text-xs uppercase tracking-[0.32em] text-[#8a8a8a] transition-colors duration-500 hover:text-[#1a1a1a]"
         >
           ← Back to archive
         </Link>

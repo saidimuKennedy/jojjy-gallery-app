@@ -232,6 +232,13 @@ body {
   transition: color 0.2s, background-color 0.2s, border-color 0.2s;
 }
 
+/* Editorial type scale — keep body below titles */
+:root {
+  --type-body: 0.875rem; /* 14px */
+  --type-body-lg: 0.9375rem; /* 15px */
+  --type-label: 0.75rem; /* 12px */
+}
+
 /* Archive — museum wall language */
 .archive-page {
   --archive-ink: #1a1a1a;

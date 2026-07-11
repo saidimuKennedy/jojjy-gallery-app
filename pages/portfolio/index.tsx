@@ -3,70 +3,160 @@ import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, Variants } from "framer-motion";
-import { ChevronRight, ArrowDown, ChevronDown } from "lucide-react";
 import { useSeriesList, useArtworks } from "@/hooks/useArtWorks";
-import { Artwork, Series } from "@/types/api";
+import { Artwork } from "@/types/api";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 
-// Explicitly type all variants
-const pageVariants: Variants = {
+const ease = [0.22, 1, 0.36, 1] as const;
+
+const heroStagger: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      duration: 1.2,
-      ease: [0.25, 0.1, 0.25, 1],
-      staggerChildren: 0.15,
-    },
+    transition: { staggerChildren: 0.2, delayChildren: 0.15 },
   },
 };
 
-const fadeInUp: Variants = {
-  hidden: { opacity: 0, y: 30 },
+const heroItem: Variants = {
+  hidden: { opacity: 0, y: 12 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.8,
-      ease: [0.25, 0.1, 0.25, 1],
-    },
+    transition: { duration: 1, ease },
   },
 };
 
-const dropDownVariants: Variants = {
-  hidden: {
-    opacity: 0,
-    y: -100,
-    scale: 0.98,
-  },
+const reveal: Variants = {
+  hidden: { opacity: 0, y: 15 },
   visible: {
     opacity: 1,
     y: 0,
-    scale: 1,
-    transition: {
-      duration: 0.8,
-      ease: [0.25, 0.1, 0.25, 1],
-      staggerChildren: 0.1,
-    },
+    transition: { duration: 0.75, ease },
   },
 };
 
-const artworkVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
+const sectionReveal: Variants = {
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.6,
-      ease: [0.25, 0.1, 0.25, 1],
-    },
+    transition: { staggerChildren: 0.1, delayChildren: 0.05 },
   },
 };
 
-interface SeriesWithArtworks {
-  series: Series;
-  artworks: Artwork[];
+/** Asymmetric hang spans — leaves intentional empty wall */
+const HANG_SPANS = [
+  "md:col-span-7",
+  "md:col-span-5",
+  "md:col-span-5 md:col-start-2",
+  "md:col-span-6",
+  "md:col-span-6",
+  "md:col-span-4 md:col-start-3",
+  "md:col-span-7 md:col-start-6",
+  "md:col-span-5 md:col-start-1",
+];
+
+const HANG_ASPECTS = [
+  "aspect-[4/5]",
+  "aspect-[3/4]",
+  "aspect-[5/6]",
+  "aspect-[4/5]",
+  "aspect-square",
+  "aspect-[3/4]",
+];
+
+function formatDimensions(dimensions: string | null | undefined): string | null {
+  if (!dimensions) return null;
+  return dimensions.replace(/x/gi, " × ").replace(/\s+/g, " ").trim();
+}
+
+function hangWorks(artworks: Artwork[]) {
+  if (artworks.length === 0) {
+    return { opening: null, middle: [] as Artwork[], closing: null };
+  }
+  if (artworks.length === 1) {
+    return { opening: artworks[0], middle: [], closing: null };
+  }
+  if (artworks.length === 2) {
+    return { opening: artworks[0], middle: [], closing: artworks[1] };
+  }
+  return {
+    opening: artworks[0],
+    middle: artworks.slice(1, -1),
+    closing: artworks[artworks.length - 1],
+  };
+}
+
+function MuseumLabel({
+  artwork,
+  align = "left",
+}: {
+  artwork: Artwork;
+  align?: "left" | "center";
+}) {
+  return (
+    <figcaption
+      className={`mt-5 space-y-1 ${
+        align === "center" ? "text-center" : "text-left"
+      }`}
+    >
+      <p className="font-display text-lg font-light text-neutral-900 md:text-xl">
+        {artwork.title}
+      </p>
+      {artwork.year != null && (
+        <p className="text-sm font-light tracking-wide text-neutral-600">
+          {artwork.year}
+        </p>
+      )}
+      {artwork.medium && (
+        <p className="text-sm font-light tracking-wide text-neutral-600">
+          {artwork.medium}
+        </p>
+      )}
+      {formatDimensions(artwork.dimensions) && (
+        <p className="text-sm font-light tracking-wide text-neutral-600">
+          {formatDimensions(artwork.dimensions)}
+        </p>
+      )}
+    </figcaption>
+  );
+}
+
+function ArtworkLink({
+  artwork,
+  className = "",
+  aspect = "aspect-[4/5]",
+  sizes = "(max-width: 768px) 100vw, 50vw",
+  labelAlign = "left",
+}: {
+  artwork: Artwork;
+  className?: string;
+  aspect?: string;
+  sizes?: string;
+  labelAlign?: "left" | "center";
+}) {
+  return (
+    <motion.figure variants={reveal} className={`group ${className}`}>
+      <Link
+        href={`/artworks/${artwork.id}`}
+        className="block outline-none focus-visible:ring-1 focus-visible:ring-neutral-400"
+        style={{ cursor: "zoom-in" }}
+      >
+        <div className={`relative overflow-hidden bg-neutral-100 ${aspect}`}>
+          <Image
+            src={artwork.imageUrl}
+            alt={artwork.title}
+            fill
+            sizes={sizes}
+            className="object-cover transition-transform duration-[800ms] ease-in-out group-hover:scale-[1.02]"
+            placeholder="blur"
+            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0iI2Y1ZjVmNSIvPjwvc3ZnPg=="
+          />
+        </div>
+        <MuseumLabel artwork={artwork} align={labelAlign} />
+      </Link>
+    </motion.figure>
+  );
 }
 
 export default function PortfolioPage() {
@@ -121,324 +211,238 @@ export default function PortfolioPage() {
       ? seriesWithArtworks[0]?.artworks[0]
       : undefined;
 
-  const getNextSeriesId = (currentSeriesIndex: number) => {
-    if (currentSeriesIndex < seriesWithArtworks.length - 1) {
-      const nextSeries = seriesWithArtworks[currentSeriesIndex + 1].series;
-      return nextSeries.slug || `series-${nextSeries.id}`;
-    }
-    return null;
-  };
-
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center"
-        >
-          <div className="w-8 h-8 border border-neutral-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-neutral-600 text-sm tracking-wide">LOADING</p>
-        </motion.div>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <p className="font-display text-xs uppercase tracking-[0.28em] text-neutral-400">
+          Loading
+        </p>
       </div>
     );
   }
 
   if (!heroArtwork || seriesWithArtworks.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-50 p-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center max-w-md"
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white p-8">
+        <h1 className="font-display text-2xl font-light text-neutral-900 mb-4">
+          Portfolio Empty
+        </h1>
+        <Link
+          href="/gallery"
+          className="font-display text-xs uppercase tracking-[0.28em] text-neutral-500 hover:text-neutral-900"
         >
-          <h1 className="font-display text-2xl font-light text-neutral-900 mb-4">
-            Portfolio Empty
-          </h1>
-          <p className="text-neutral-600 mb-8 leading-relaxed">
-            No artworks have been marked for portfolio display or no series
-            found.
-          </p>
-          <Link
-            href="/gallery"
-            className="inline-block px-8 py-3 border border-neutral-900 text-neutral-900 text-sm tracking-wide hover:bg-neutral-900 hover:text-white transition-all duration-300"
-          >
-            VIEW GALLERY
-          </Link>
-        </motion.div>
+          View Archive
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="relative">
+    <div className="relative bg-white">
       <Head>
         <title>Njenga Ngugi — Portfolio</title>
         <meta
           name="description"
-          content="Curated portfolio of Njenga Ngugi, featuring his latest series and selected works"
+          content="Exhibition catalogue of works by Njenga Ngugi"
         />
       </Head>
 
       <Navbar />
 
-      <div className="h-screen overflow-y-scroll snap-y snap-mandatory scroll-smooth">
-        <motion.section
-          id="hero-section"
-          initial="hidden"
-          animate="visible"
-          variants={pageVariants}
-          className="relative h-screen flex flex-col justify-center px-8 md:px-16 lg:px-24 overflow-hidden snap-start"
-        >
-          <div
-            className="absolute inset-0 w-full h-full bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${heroArtwork.imageUrl})`,
-            }}
-          />
-          <div className="absolute inset-0 bg-black/40" />
-
-          <div className="relative z-10 max-w-4xl">
-            <motion.div variants={fadeInUp} className="mb-8 md:mb-12">
-              <h1 className="font-display text-6xl md:text-8xl lg:text-9xl font-light text-white tracking-tight leading-none">
-                Njenga
-                <br />
-                Ngugi
-              </h1>
-            </motion.div>
-
-            <motion.div variants={fadeInUp} className="mb-12 md:mb-16">
-              <p className="text-lg md:text-xl text-white/90 font-light tracking-wide max-w-2xl">
-                "... a space where hidden truths and unspoken fears take shape"
-              </p>
-            </motion.div>
-
-            <motion.div variants={fadeInUp}>
-              <Link
-                href="#about-section"
-                scroll={true}
-                className="group inline-flex items-center gap-4 text-white hover:text-white/80 transition-colors duration-300"
-              >
-                <div className="flex items-center justify-center w-12 h-12 border border-white/30 rounded-full group-hover:border-white/60 transition-all duration-300">
-                  <ChevronDown className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-sm tracking-widest uppercase">
-                    Explore Work
-                  </p>
-                  <p className="text-base font-display font-light">
-                    Journey Through Series
-                  </p>
-                </div>
-              </Link>
-            </motion.div>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.5 }}
-            className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10"
-          >
-            <div className="animate-bounce">
-              <ArrowDown className="w-5 h-5 text-white/60" />
-            </div>
-          </motion.div>
-        </motion.section>
-
-        <motion.section
-          id="about-section"
-          variants={dropDownVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          className="py-20 md:py-32 px-8 md:px-16 lg:px-24 bg-neutral-50 min-h-screen snap-start relative z-10"
-        >
-          <div className="max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-16 md:gap-24">
-              <motion.div variants={fadeInUp}>
-                <h2 className="font-display text-[0.7rem] tracking-[0.28em] uppercase text-neutral-500 mb-8">
-                  Artist Statement
-                </h2>
-                <div className="prose prose-lg text-neutral-700 font-light leading-relaxed">
-                  <p>
-                    "Dark clouds bring waters" is a body of work that dives into
-                    the unconscious — a space where hidden truths and unspoken
-                    fears take shape. It is an invitation to confront the
-                    darkness within, not to erase it but to understand it.
-                  </p>
-                  <p>
-                    I work on paper, drawn to its fragility and resilience. Ink,
-                    bleach, charcoal and pastels allow me to create contrast —
-                    bold sweeping gestures alongside delicate marks, presence
-                    and absence, destruction and repair.
-                  </p>
-                </div>
-              </motion.div>
-
-              <motion.div variants={fadeInUp}>
-                <h2 className="font-display text-[0.7rem] tracking-[0.28em] uppercase text-neutral-500 mb-8">
-                  Biography
-                </h2>
-                <div className="prose prose-lg text-neutral-700 font-light leading-relaxed">
-                  <p>
-                    Njenga Ngugi is a Kenyan artist born (1996) and based in
-                    Nairobi. His work is a profound exploration of the human
-                    psyche, examining the myriad actions, thoughts, dreams, and
-                    emotions that shape our existence.
-                  </p>
-                  <p>
-                    Since 2017, his work has been featured in numerous
-                    exhibitions including the Kenya Art Fair, Nairobi National
-                    Museum, and various galleries across Nairobi.
-                  </p>
-                </div>
-              </motion.div>
-            </div>
-
-            {seriesWithArtworks.length > 0 && (
-              <motion.div
-                variants={fadeInUp}
-                className="mt-16 flex justify-center"
-              >
-                <Link
-                  href={`#${
-                    seriesWithArtworks[0].series.slug ||
-                    `series-${seriesWithArtworks[0].series.id}`
-                  }`}
-                  scroll={true}
-                  className="group inline-flex items-center gap-4 text-neutral-700 hover:text-neutral-900 transition-colors duration-300"
-                >
-                  <div className="flex items-center justify-center w-10 h-10 border border-neutral-300 rounded-full group-hover:border-neutral-500 transition-all duration-300">
-                    <ChevronDown className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="text-sm tracking-widest uppercase">
-                      Continue
-                    </p>
-                    <p className="text-base font-display font-light">
-                      View First Series: {seriesWithArtworks[0].series.name}
-                    </p>
-                  </div>
-                </Link>
-              </motion.div>
-            )}
-          </div>
-        </motion.section>
-
-        {seriesWithArtworks.map((seriesData, index) => {
-          const nextSeriesId = getNextSeriesId(index);
-          return (
-            <motion.section
-              key={seriesData.series.id}
-              id={seriesData.series.slug || `series-${seriesData.series.id}`}
-              variants={dropDownVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              className="relative min-h-screen snap-start"
-            >
-              {seriesData.artworks[0]?.imageUrl && (
-                <div
-                  className="absolute inset-0 w-full h-full bg-cover bg-center opacity-15"
-                  style={{
-                    backgroundImage: `url(${seriesData.artworks[0].imageUrl})`,
-                  }}
-                />
-              )}
-
-              <div className="absolute inset-0 bg-gradient-to-b from-neutral-50/95 via-white/90 to-neutral-50/95" />
-
-              <div className="relative z-10 py-24 px-8 md:px-16 lg:px-24">
-                <div className="max-w-7xl mx-auto">
-                  <motion.div
-                    variants={fadeInUp}
-                    className="mb-12 md:mb-16 text-center"
-                  >
-                    <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-light text-neutral-900 mb-6 tracking-tight">
-                      {seriesData.series.name}
-                    </h2>
-                    <p className="text-lg text-neutral-600 max-w-4xl mx-auto leading-relaxed">
-                      {seriesData.series.description}
-                    </p>
-                  </motion.div>
-
-                  <motion.div
-                    variants={fadeInUp}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12"
-                  >
-                    {seriesData.artworks.map((artwork, artIndex) => (
-                      <motion.div
-                        key={artwork.id}
-                        variants={artworkVariants}
-                        transition={{ delay: artIndex * 0.1 }}
-                      >
-                        <Link href={`/artworks/${artwork.id}`}>
-                          <div className="group cursor-pointer">
-                            <div className="relative aspect-[4/5] overflow-hidden mb-4 rounded-lg bg-neutral-100">
-                              <Image
-                                src={artwork.imageUrl}
-                                alt={artwork.title}
-                                fill
-                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                className="object-cover group-hover:scale-105 transition-transform duration-700"
-                              />
-                            </div>
-                            <h4 className="font-display text-lg font-light text-neutral-900 group-hover:text-neutral-600 transition-colors duration-300 mb-2">
-                              {artwork.title}
-                            </h4>
-                            {artwork.dimensions && artwork.medium && (
-                              <p className="text-sm text-neutral-500">
-                                {artwork.dimensions} | {artwork.medium}
-                              </p>
-                            )}
-                          </div>
-                        </Link>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-
-                  {nextSeriesId && (
-                    <motion.div
-                      variants={fadeInUp}
-                      className="mt-16 flex justify-center"
-                    >
-                      <Link
-                        href={`#${nextSeriesId}`}
-                        scroll={true}
-                        className="group inline-flex items-center gap-4 text-neutral-700 hover:text-neutral-900 transition-colors duration-300"
-                      >
-                        <div className="flex items-center justify-center w-10 h-10 border border-neutral-300 rounded-full group-hover:border-neutral-500 transition-all duration-300">
-                          <ChevronDown className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <p className="text-sm tracking-widest uppercase">
-                            Continue
-                          </p>
-                          <p className="text-base font-display font-light">
-                            Next Series:{" "}
-                            {seriesWithArtworks[index + 1].series.name}
-                          </p>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  )}
-                </div>
-              </div>
-            </motion.section>
-          );
-        })}
+      {/* Hero — painting fades, then title, then line */}
+      <section className="relative flex h-[100svh] flex-col justify-center overflow-hidden px-8 md:px-16 lg:px-24">
+        <motion.div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${heroArtwork.imageUrl})` }}
+          initial={{ opacity: 0, scale: 1.03 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.1, ease }}
+        />
+        <motion.div
+          className="absolute inset-0 bg-black/35"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.1, ease }}
+        />
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ delay: 0.5 }}
-          className="snap-start"
+          className="relative z-10 max-w-4xl pt-10 md:pt-14"
+          variants={heroStagger}
+          initial="hidden"
+          animate="visible"
         >
-          <Footer />
+          <motion.h1
+            variants={heroItem}
+            className="font-display text-6xl font-light leading-[0.92] tracking-tight text-white md:text-8xl lg:text-9xl"
+          >
+            Njenga
+            <br />
+            Ngugi
+          </motion.h1>
+
+          <motion.p
+            variants={heroItem}
+            className="mt-10 max-w-md font-display text-base font-light italic leading-relaxed text-white/80 md:mt-12 md:text-lg"
+          >
+            Dreams are not escapes from reality—they are another way reality
+            speaks.
+          </motion.p>
+
+          <motion.div variants={heroItem} className="mt-14">
+            <a
+              href="#introduction"
+              className="font-display text-sm uppercase tracking-[0.28em] text-white/80 transition-colors duration-500 hover:text-white"
+            >
+              Enter exhibition ↓
+            </a>
+          </motion.div>
         </motion.div>
-      </div>
+      </section>
+
+      {/* Introduction */}
+      <motion.section
+        id="introduction"
+        variants={sectionReveal}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-12%" }}
+        className="px-8 py-28 md:px-16 md:py-36 lg:px-24"
+      >
+        <div className="mx-auto max-w-3xl text-center">
+          <motion.blockquote
+            variants={reveal}
+            className="font-display text-3xl font-light leading-[1.35] tracking-tight text-neutral-900 md:text-4xl lg:text-[2.75rem]"
+          >
+            “Dark clouds bring waters—a space where hidden truths and unspoken
+            fears take shape.”
+          </motion.blockquote>
+          <motion.p
+            variants={reveal}
+            className="mt-10 font-display text-sm uppercase tracking-[0.24em] text-neutral-500"
+          >
+            — Njenga Ngugi
+          </motion.p>
+          <motion.div
+            variants={reveal}
+            className="mx-auto mt-16 h-px w-12 bg-neutral-200"
+            aria-hidden
+          />
+          <motion.p
+            variants={reveal}
+            className="mx-auto mt-16 max-w-md text-sm font-light leading-relaxed text-neutral-500"
+          >
+            Kenyan artist, born 1996, based in Nairobi. Works on paper in ink,
+            bleach, charcoal and pastel—exploring the unconscious through mark
+            and void.
+          </motion.p>
+        </div>
+      </motion.section>
+
+      {seriesWithArtworks.map((seriesData, index) => {
+        const seriesId =
+          seriesData.series.slug || `series-${seriesData.series.id}`;
+        const { opening, middle, closing } = hangWorks(seriesData.artworks);
+
+        return (
+          <React.Fragment key={seriesData.series.id}>
+            {index === 1 && (
+              <motion.section
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-20%" }}
+                transition={{ duration: 0.85, ease }}
+                className="flex min-h-[70vh] items-center justify-center bg-neutral-950 px-8 py-32 md:px-16"
+              >
+                <div className="max-w-3xl text-center">
+                  <p className="font-display text-3xl font-light leading-[1.4] tracking-tight text-white md:text-5xl lg:text-6xl">
+                    “I have always been fascinated
+                    <br className="hidden sm:block" /> by dreams.”
+                  </p>
+                  <p className="mt-12 font-display text-sm uppercase tracking-[0.28em] text-white/60">
+                    — Njenga Ngugi
+                  </p>
+                </div>
+              </motion.section>
+            )}
+
+            <motion.section
+              id={seriesId}
+              variants={sectionReveal}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-8%" }}
+              className="px-6 py-24 md:px-12 md:py-32 lg:px-20"
+            >
+              <div
+                className="mx-auto mb-16 h-px w-8 bg-neutral-200 md:mb-20"
+                aria-hidden
+              />
+
+              <motion.header
+                variants={reveal}
+                className="mb-16 text-center md:mb-24"
+              >
+                <p className="font-display text-sm uppercase tracking-[0.28em] text-neutral-500">
+                  Series {String(index + 1).padStart(2, "0")}
+                </p>
+                <h2 className="mt-5 font-display text-4xl font-light tracking-tight text-neutral-900 md:text-5xl lg:text-6xl xl:text-7xl">
+                  {seriesData.series.name}
+                </h2>
+                {seriesData.series.description && (
+                  <p className="mx-auto mt-6 max-w-md text-sm font-light leading-relaxed text-neutral-500">
+                    {seriesData.series.description.length > 120
+                      ? `${seriesData.series.description.slice(0, 120).trim()}…`
+                      : seriesData.series.description}
+                  </p>
+                )}
+              </motion.header>
+
+              <div className="mx-auto max-w-[1400px]">
+                {/* Opening wall — one dominant work */}
+                {opening && (
+                  <div className="mb-20 md:mb-28 md:px-[8%]">
+                    <ArtworkLink
+                      artwork={opening}
+                      aspect="aspect-[4/5] md:aspect-[16/11]"
+                      sizes="(max-width: 768px) 100vw, 84vw"
+                      labelAlign="center"
+                    />
+                  </div>
+                )}
+
+                {/* Asymmetric hang — varied spans, empty wall */}
+                {middle.length > 0 && (
+                  <div className="mb-20 grid grid-cols-1 gap-x-8 gap-y-16 md:mb-28 md:grid-cols-12 md:gap-y-24">
+                    {middle.map((artwork, i) => (
+                      <ArtworkLink
+                        key={artwork.id}
+                        artwork={artwork}
+                        className={HANG_SPANS[i % HANG_SPANS.length]}
+                        aspect={HANG_ASPECTS[i % HANG_ASPECTS.length]}
+                        sizes="(max-width: 768px) 100vw, 45vw"
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Closing wall — quieter, centered, more margin */}
+                {closing && (
+                  <div className="mx-auto max-w-xl md:max-w-2xl">
+                    <ArtworkLink
+                      artwork={closing}
+                      aspect="aspect-[4/5]"
+                      sizes="(max-width: 768px) 100vw, 42vw"
+                      labelAlign="center"
+                    />
+                  </div>
+                )}
+              </div>
+            </motion.section>
+          </React.Fragment>
+        );
+      })}
+
+      <Footer />
     </div>
   );
 }

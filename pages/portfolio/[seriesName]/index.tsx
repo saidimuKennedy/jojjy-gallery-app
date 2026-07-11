@@ -84,7 +84,7 @@ const PortfolioSeriesPage: React.FC = () => {
           <h1 className="font-display text-4xl font-light text-gray-900 mb-6 tracking-tight">
             Series Not Found
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-600 text-sm font-light">
             The series "{seriesSlug.replace(/-/g, " ")}" could not be found.
           </p>
           <Link
@@ -107,7 +107,7 @@ const PortfolioSeriesPage: React.FC = () => {
           <h1 className="font-display text-4xl font-light text-gray-900 mb-6 tracking-tight">
             {currentSeries.name}
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-600 text-sm font-light">
             No artworks found for this series.
           </p>
           <Link
@@ -148,7 +148,7 @@ const PortfolioSeriesPage: React.FC = () => {
         {currentSeries.description && (
           <motion.p
             variants={fadeInUp}
-            className="text-lg md:text-xl text-gray-700 text-center max-w-screen mx-auto mb-12 md:mb-16 leading-relaxed"
+            className="text-sm font-light text-gray-600 text-center max-w-xl mx-auto mb-12 md:mb-16 leading-relaxed"
           >
             {currentSeries.description}
           </motion.p>

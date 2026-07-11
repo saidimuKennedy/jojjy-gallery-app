@@ -25,43 +25,40 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="text-center md:text-left">
-              <p className="font-display text-[0.65rem] uppercase tracking-[0.32em] text-gray-500 mb-4">
+              <p className="font-display text-xs uppercase tracking-[0.28em] text-gray-500 mb-4">
                 Biography
               </p>
               <h1 className="font-display text-4xl font-light tracking-tight text-gray-900 mb-3 md:text-5xl">
                 About the Artist
               </h1>
-              <h2 className="font-display text-2xl font-light text-gray-600 mb-6 md:text-3xl">
+              <h2 className="font-display text-2xl font-light text-gray-600 mb-8 md:text-3xl">
                 Njenga Ngugi
               </h2>
-              <p className="text-lg text-gray-600 leading-relaxed font-light">
-                Njenga (b. 1996, Nairobi) crafts raw, expressive pieces in
-                charcoal, bleach, and pastel, blending abstraction and
-                surrealism to explore the depths of the human psyche. His work
-                invites viewers to engage with the depths of human emotion and
-                explore themes such as individuation, mental struggle, identity,
-                growth and resilience.
-                <br />
-                Since 2017, Njenga’s work has appeared in the Kenya Art Fair
-                (2017) and the Nairobi National Museum Affordable Art Show
-                (2017). He has also participated in notable group exhibitions
-                such as A Bad Idea (Nafasi Art Gallery, 2019), Shadows (Brush‑tu
-                Art Studio, 2022), and Hidden Treasures (Gravitart Gallery,
-                2024). His debut solo exhibition, Dark Clouds Bring Waters, was
-                held at Kamene Cultural Centre in 2025. The exhibition explored
-                themes of individuation and the shadow self, tracing inner
-                transformation through layered, introspective works. His studio
-                practice begins with an intuitive process, starting by
-                introducing water, ink, and bleach to create a chaotic
-                foundation. Then he gradually bringing clarity and form using
-                charcoal and pastel, layering dry media to define what emerges,
-                uncovering subconscious stories in every layer. Featured in
-                Kenyan Arts Diary (2025) and profiled by Business Daily for his
-                alchemical approach, Njenga continues to push boundaries,
-                exploring the subconscious, inviting viewers to engage with the
-                unpredictable interplay of mark and void, and hoping each piece
-                draws them into a deeper psychological journey.
-              </p>
+              <div className="max-w-xl space-y-4 text-sm font-light leading-relaxed text-gray-500 md:text-[0.9375rem] md:leading-[1.75]">
+                <p>
+                  Njenga (b. 1996, Nairobi) crafts raw, expressive pieces in
+                  charcoal, bleach, and pastel, blending abstraction and
+                  surrealism to explore the depths of the human psyche. His work
+                  invites viewers to engage with themes such as individuation,
+                  mental struggle, identity, growth and resilience.
+                </p>
+                <p>
+                  Since 2017, his work has appeared in the Kenya Art Fair and
+                  the Nairobi National Museum Affordable Art Show. He has
+                  participated in group exhibitions including A Bad Idea
+                  (Nafasi Art Gallery, 2019), Shadows (Brush‑tu Art Studio,
+                  2022), and Hidden Treasures (Gravitart Gallery, 2024). His
+                  debut solo exhibition, Dark Clouds Bring Waters, was held at
+                  Kamene Cultural Centre in 2025.
+                </p>
+                <p>
+                  His studio practice begins intuitively—water, ink, and bleach
+                  create a chaotic foundation, then charcoal and pastel bring
+                  form, uncovering subconscious stories in every layer. Featured
+                  in Kenyan Arts Diary (2025) and profiled by Business Daily, he
+                  continues exploring the interplay of mark and void.
+                </p>
+              </div>
               <div className="mt-8 flex justify-center md:justify-start space-x-6">
                 <StatCounter end={15} label="Years of experience" />
                 <StatCounter end={15} label="Exhibitions" />

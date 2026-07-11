@@ -72,15 +72,15 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="bg-white border-b border-gray-100 shadow-sm">
+      <nav className="bg-white border-b border-gray-100">
         <div className="w-full">
-          <div className="flex items-center justify-between h-20 px-4 sm:px-6 lg:px-8">
-            <Link href="/" className="flex items-center py-2">
-              <div className="w-24 h-16 flex items-center justify-center">
+          <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+            <Link href="/" className="flex items-center">
+              <div className="h-14 w-28 flex items-center justify-center sm:h-16 sm:w-32">
                 <img
                   src="https://res.cloudinary.com/dq3wkbgts/image/upload/v1751641327/logo_v51aad.png"
                   alt="Njenga Ngugi Logo"
-                  className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
+                  className="w-full h-full object-contain"
                 />
               </div>
             </Link>
@@ -148,7 +148,7 @@ export default function Navbar() {
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         } flex flex-col`}
       >
-        <div className="flex items-center justify-between h-20 px-4 sm:px-6 border-b border-gray-100">
+        <div className="flex items-center justify-between h-16 px-4 sm:px-6 border-b border-gray-100">
           <span className="font-display text-2xl font-light text-gray-900 tracking-tight">
             Menu
           </span>
