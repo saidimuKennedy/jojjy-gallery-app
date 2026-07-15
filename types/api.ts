@@ -7,6 +7,7 @@ import {
   Series as PrismaSeries,
   // MODIFIED: Renamed import from MediaFile to ArtworkMediaFile
   ArtworkMediaFile as PrismaArtworkMediaFile,
+  SeriesMediaFile as PrismaSeriesMediaFile,
   // NEW: Import for MediaBlogEntry and MediaBlogFile
   MediaBlogEntry as PrismaMediaBlogEntry,
   MediaBlogFile as PrismaMediaBlogFile,
@@ -45,6 +46,18 @@ export interface ArtworkMediaFile
   type: PrismaMediaFileType; // NEW: Added type field from enum
 }
 
+export interface SeriesMediaFile
+  extends Omit<
+    PrismaSeriesMediaFile,
+    "createdAt" | "updatedAt" | "description" | "thumbnailUrl" | "type"
+  > {
+  createdAt: string;
+  updatedAt: string;
+  description: string | null;
+  thumbnailUrl: string | null;
+  type: PrismaMediaFileType;
+}
+
 export interface Artwork
   extends Omit<
     PrismaArtwork,
@@ -59,6 +72,8 @@ export interface Artwork
     // | "featured" // Assuming 'featured' was removed from PrismaArtwork based on Artwork in schema.prisma
     | "seriesId"
     | "inGallery"
+    | "reservedUntil"
+    | "reservedByUserId"
   > {
   price: number | null;
   createdAt: string;
@@ -69,6 +84,9 @@ export interface Artwork
   medium: string | null;
   isAvailable: boolean | null;
   inGallery: boolean;
+  reservedUntil: string | null;
+  /** Present on public artwork responses; true only for the session user who holds the hold. */
+  reservedByCurrentUser?: boolean;
 }
 
 export interface Transaction
@@ -149,6 +167,7 @@ export type MediaBlogEntriesResponse = APIResponse<
 
 export interface SeriesWithArtworks extends Series {
   artworks: Artwork[];
+  mediaFiles?: SeriesMediaFile[];
 }
 export type SeriesResponse = APIResponse<SeriesWithArtworks>;
 export type SeriesListResponse = APIResponse<Series[]>;
@@ -163,6 +182,7 @@ export interface ArtworkFilters {
   medium?: string;
   year?: number;
   isAvailable?: boolean;
+  status?: string;
   seriesId?: number;
   sort?:
     | "price_asc"
@@ -215,11 +235,17 @@ export function convertPrismaSeriesToAPI(series: PrismaSeries): Series {
 }
 
 export function convertPrismaArtworkToAPI(artwork: PrismaArtwork): Artwork {
+  // reservedByUserId is intentionally dropped: it would leak another user's
+  // id to any visitor viewing this artwork.
+  const { reservedByUserId, ...rest } = artwork;
   return {
-    ...artwork,
+    ...rest,
     price: artwork.price.toNumber(),
     createdAt: artwork.createdAt.toISOString(),
     updatedAt: artwork.updatedAt.toISOString(),
+    reservedUntil: artwork.reservedUntil
+      ? artwork.reservedUntil.toISOString()
+      : null,
   };
 }
 
@@ -234,6 +260,19 @@ export function convertPrismaArtworkMediaFileToAPI(
     updatedAt: mediaFile.updatedAt.toISOString(),
     // Type is already a string, no conversion needed unless it's an enum type
     type: mediaFile.type as PrismaMediaFileType, // Ensure type is correctly cast
+  };
+}
+
+export function convertPrismaSeriesMediaFileToAPI(
+  mediaFile: PrismaSeriesMediaFile
+): SeriesMediaFile {
+  return {
+    ...mediaFile,
+    createdAt: mediaFile.createdAt.toISOString(),
+    updatedAt: mediaFile.updatedAt.toISOString(),
+    description: mediaFile.description || null,
+    thumbnailUrl: mediaFile.thumbnailUrl || null,
+    type: mediaFile.type as PrismaMediaFileType,
   };
 }
 
@@ -314,12 +353,18 @@ export function convertPrismaMediaBlogEntryWithRelationsToAPI(
 }
 
 export function convertPrismaSeriesWithArtworksToAPI(
-  series: PrismaSeries & { artworks?: PrismaArtwork[] }
+  series: PrismaSeries & {
+    artworks?: PrismaArtwork[];
+    mediaFiles?: PrismaSeriesMediaFile[];
+  }
 ): SeriesWithArtworks {
   return {
     ...convertPrismaSeriesToAPI(series),
     artworks: series.artworks
       ? series.artworks.map(convertPrismaArtworkToAPI)
+      : [],
+    mediaFiles: series.mediaFiles
+      ? series.mediaFiles.map(convertPrismaSeriesMediaFileToAPI)
       : [],
   };
 }

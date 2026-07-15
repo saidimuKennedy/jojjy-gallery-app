@@ -1,0 +1,5 @@
+-- CreateEnum
+CREATE TYPE "ArtworkStatus" AS ENUM ('AVAILABLE', 'RESERVED', 'ON_EXHIBITION', 'SOLD', 'IN_PRIVATE_COLLECTION');
+
+-- AlterTable
+ALTER TABLE "artworks" ADD COLUMN     "status" "ArtworkStatus" NOT NULL DEFAULT 'AVAILABLE';

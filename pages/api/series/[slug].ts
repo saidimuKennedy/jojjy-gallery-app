@@ -26,7 +26,10 @@ export default async function handler(
       where: { slug },
       include: {
         artworks: {
-          orderBy: { createdAt: "asc" }, 
+          orderBy: { createdAt: "asc" },
+        },
+        mediaFiles: {
+          orderBy: { order: "asc" },
         },
       },
     });

@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
+import { useSession } from "next-auth/react";
+import toast from "react-hot-toast";
 import { useArtwork } from "@/hooks/useArtWorks";
 import Navbar from "@/components/ui/Navbar";
-import AddToCartButton from "@/components/Art/AddToCartButton";
 
 const pageVariants: Variants = {
   hidden: { opacity: 0, y: 16 },
@@ -39,23 +40,81 @@ const itemVariants: Variants = {
   },
 };
 
-function formatCurrency(amount: number, symbol: string): string {
-  const code =
-    symbol === "$" || symbol === "USD"
-      ? "USD"
-      : symbol === "KSh" || symbol === "KES"
-        ? "KES"
-        : symbol.replace(/\s/g, "").toUpperCase() || "USD";
-  return `${code} ${amount.toLocaleString()}`;
+const ARTWORK_STATUS_LABELS: Record<string, string> = {
+  AVAILABLE: "Available",
+  RESERVED: "Reserved",
+  ON_EXHIBITION: "On Exhibition",
+  SOLD: "Sold",
+  IN_PRIVATE_COLLECTION: "In Private Collection",
+};
+
+function buildWhatsAppInquiryLink(title: string): string | null {
+  const number = process.env.NEXT_PUBLIC_ARTIST_WHATSAPP_NUMBER;
+  if (!number) return null;
+  const text = encodeURIComponent(`I'm interested in "${title}"`);
+  return `https://wa.me/${number}?text=${text}`;
 }
 
 export default function ArtworkDetailPage() {
   const router = useRouter();
   const { id } = router.query;
+  const { data: session, status: authStatus } = useSession();
+  const [wishlistBusy, setWishlistBusy] = useState(false);
+  const [onWishlist, setOnWishlist] = useState(false);
 
   const artworkId = typeof id === "string" ? id : undefined;
   const { artwork, isLoading, error } = useArtwork(artworkId);
-  const defaultCurrency = process.env.NEXT_PUBLIC_CURRENCY || "USD";
+
+  useEffect(() => {
+    if (!artworkId || !session?.user) {
+      setOnWishlist(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/wishlist");
+        const body = await res.json();
+        if (!res.ok || !body.success || cancelled) return;
+        const items = body.data as { artworkId: number }[];
+        setOnWishlist(
+          items.some((i) => String(i.artworkId) === String(artworkId))
+        );
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [artworkId, session?.user]);
+
+  const handleWishlistToggle = async () => {
+    if (!artworkId) return;
+    if (authStatus === "loading") return;
+    if (!session?.user) {
+      toast.error("Sign in to save artworks");
+      router.push(`/login?callbackUrl=${encodeURIComponent(router.asPath)}`);
+      return;
+    }
+    setWishlistBusy(true);
+    try {
+      const res = await fetch(`/api/wishlist/${artworkId}`, {
+        method: onWishlist ? "DELETE" : "POST",
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        toast.error(body.message || "Could not update wishlist");
+        return;
+      }
+      setOnWishlist(!onWishlist);
+      toast.success(onWishlist ? "Removed from wishlist" : "Saved to wishlist");
+    } catch {
+      toast.error("Could not update wishlist");
+    } finally {
+      setWishlistBusy(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -86,6 +145,8 @@ export default function ArtworkDetailPage() {
     );
   }
 
+  const whatsappLink = buildWhatsAppInquiryLink(artwork.title);
+
   const metaLines = [
     artwork.year != null ? String(artwork.year) : null,
     artwork.medium,
@@ -106,8 +167,7 @@ export default function ArtworkDetailPage() {
         <meta
           name="description"
           content={
-            artwork.description ||
-            `${artwork.title} by Njenga Ngugi.`
+            artwork.description || `${artwork.title} by Njenga Ngugi.`
           }
         />
       </Head>
@@ -123,7 +183,6 @@ export default function ArtworkDetailPage() {
         </Link>
 
         <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16 xl:gap-20">
-          {/* Artwork — dominant */}
           <motion.div
             variants={contentVariants}
             className="lg:col-span-7 xl:col-span-8"
@@ -137,7 +196,6 @@ export default function ArtworkDetailPage() {
             </div>
           </motion.div>
 
-          {/* Catalogue info */}
           <motion.div
             variants={contentVariants}
             className="flex flex-col lg:col-span-5 xl:col-span-4 lg:sticky lg:top-24 lg:pt-2"
@@ -220,11 +278,9 @@ export default function ArtworkDetailPage() {
                 </dt>
                 <dd className="mt-2 space-y-1.5 text-sm font-light text-neutral-800">
                   <p>
-                    {artwork.isAvailable
-                      ? "Original Artwork"
-                      : "No longer available"}
+                    {ARTWORK_STATUS_LABELS[artwork.status] ?? "Original Artwork"}
                   </p>
-                  {artwork.isAvailable && (
+                  {artwork.status === "AVAILABLE" && (
                     <>
                       <p className="text-neutral-500">Signed</p>
                       <p className="text-neutral-500">Certificate Included</p>
@@ -234,36 +290,57 @@ export default function ArtworkDetailPage() {
               </div>
             </motion.dl>
 
-            <motion.div variants={itemVariants} className="mt-14">
-              {artwork.isAvailable ? (
-                <>
-                  {artwork.price != null && (
-                    <div className="mb-8">
-                      <p className="font-display text-xs uppercase tracking-[0.24em] text-neutral-400">
-                        {artwork.price === 0 ? "Inquiry" : "Available"}
-                      </p>
-                      <p className="mt-2 font-display text-xl font-light tracking-wide text-neutral-900 md:text-2xl">
-                        {artwork.price === 0
-                          ? "Price on Request"
-                          : formatCurrency(artwork.price, defaultCurrency)}
-                      </p>
-                    </div>
-                  )}
-                  {artwork.price != null && artwork.price > 0 && (
-                    <AddToCartButton artwork={artwork} variant="acquire" />
-                  )}
-                </>
+            <motion.div variants={itemVariants} className="mt-14 space-y-4">
+              {(artwork.price ?? 0) > 0 &&
+              artwork.isAvailable &&
+              artwork.status === "AVAILABLE" ? (
+                <Link
+                  href={`/shop/${artwork.id}`}
+                  className="flex w-full items-center justify-center border border-neutral-900 bg-neutral-900 py-5 text-center font-display text-xs font-normal uppercase tracking-[0.28em] text-white transition-colors duration-500 hover:bg-white hover:text-neutral-900"
+                >
+                  Acquire in Studio Shop →
+                </Link>
               ) : (
-                <p className="font-display text-xs uppercase tracking-[0.24em] text-neutral-400">
-                  Currently unavailable
-                </p>
+                <Link
+                  href="/shop"
+                  className="flex w-full items-center justify-center border border-neutral-900 bg-white py-5 text-center font-display text-xs font-normal uppercase tracking-[0.28em] text-neutral-900 transition-colors duration-500 hover:bg-neutral-900 hover:text-white"
+                >
+                  Browse Studio Shop →
+                </Link>
               )}
+
+              <p className="font-archive-body text-sm font-light text-neutral-500">
+                This page is the catalogue. Purchase happens in the Studio Shop.
+              </p>
+
+              {whatsappLink && (
+                <a
+                  href={whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block font-display text-[0.7rem] uppercase tracking-[0.28em] text-neutral-500 underline-offset-4 transition-colors hover:text-neutral-900 hover:underline"
+                >
+                  Ask about this artwork →
+                </a>
+              )}
+
+              <button
+                type="button"
+                onClick={handleWishlistToggle}
+                disabled={wishlistBusy}
+                className="block font-display text-[0.7rem] uppercase tracking-[0.28em] text-neutral-400 underline-offset-4 transition-colors hover:text-neutral-800 hover:underline disabled:opacity-50"
+              >
+                {wishlistBusy
+                  ? "…"
+                  : onWishlist
+                    ? "Saved · remove from wishlist"
+                    : "Save to wishlist"}
+              </button>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* Artist voice — emotional layer below the fold */}
       {artwork.description && (
         <section className="border-t border-neutral-100 px-5 py-20 md:px-10 md:py-28 lg:px-16">
           <motion.div

@@ -1,6 +1,5 @@
 import { ArtworkWithRelations } from "../../types/api";
 import { Heart, Eye, Sparkles, ChevronRightCircle } from "lucide-react";
-import AddToCartButton from "./AddToCartButton";
 import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, easeOut, Variants } from "framer-motion";

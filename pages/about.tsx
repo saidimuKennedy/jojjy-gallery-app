@@ -1,15 +1,59 @@
-import React from "react";
+import React, { useState } from "react";
 import Head from "next/head";
+import Link from "next/link";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import Image from "next/image";
 import StatCounter from "@/components/Animations/StatCounter";
-import { UserRole } from "@prisma/client";
 import { useSession } from "next-auth/react";
-import AdminDashboard from "@/components/Admin/AdminDashboard";
+import useSWR from "swr";
+import toast from "react-hot-toast";
+
+const followFetcher = async (url: string) => {
+  const res = await fetch(url);
+  const body = await res.json();
+  if (!res.ok || !body.success) {
+    throw new Error(body.message || "Failed");
+  }
+  return body.data as { following: boolean };
+};
 
 export default function AboutPage() {
   const { data: session, status } = useSession();
+  const [followBusy, setFollowBusy] = useState(false);
+  const loggedIn = !!session?.user;
+
+  const { data: followData, mutate: mutateFollow } = useSWR(
+    loggedIn ? "/api/subscribe/follow" : null,
+    followFetcher
+  );
+
+  const handleFollow = async () => {
+    if (!session?.user) {
+      toast.error("Sign in to follow");
+      return;
+    }
+    setFollowBusy(true);
+    try {
+      const following = followData?.following;
+      const res = await fetch("/api/subscribe/follow", {
+        method: following ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: following ? undefined : JSON.stringify({}),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        toast.error(body.message || "Could not update");
+        return;
+      }
+      toast.success(following ? "Unfollowed" : "You're following the artist");
+      await mutateFollow();
+    } catch {
+      toast.error("Could not update");
+    } finally {
+      setFollowBusy(false);
+    }
+  };
 
   return (
     <>
@@ -64,9 +108,40 @@ export default function AboutPage() {
                 <StatCounter end={15} label="Exhibitions" />
                 <StatCounter end={20} label="Artworks" />
               </div>
+
+              <div className="mt-10 flex flex-col sm:flex-row items-center md:items-start gap-4">
+                {status !== "loading" && session?.user ? (
+                  <button
+                    type="button"
+                    onClick={handleFollow}
+                    disabled={followBusy}
+                    className="border border-neutral-900 px-6 py-3 font-display text-xs uppercase tracking-[0.24em] text-neutral-900 hover:bg-neutral-900 hover:text-white disabled:opacity-50"
+                  >
+                    {followBusy
+                      ? "…"
+                      : followData?.following
+                        ? "Following — unfollow"
+                        : "Follow the artist"}
+                  </button>
+                ) : (
+                  <Link
+                    href="/login?callbackUrl=%2Fabout"
+                    className="border border-neutral-900 px-6 py-3 font-display text-xs uppercase tracking-[0.24em] text-neutral-900 hover:bg-neutral-900 hover:text-white"
+                  >
+                    Sign in to follow
+                  </Link>
+                )}
+                {session?.user && (
+                  <Link
+                    href="/account"
+                    className="font-display text-xs uppercase tracking-[0.24em] text-neutral-500 underline-offset-4 hover:underline py-3"
+                  >
+                    Your account →
+                  </Link>
+                )}
+              </div>
             </div>
             <div className="flex justify-center md:justify-end">
-              {/* Artist Image */}
               <Image
                 src="https://res.cloudinary.com/dq3wkbgts/image/upload/v1751641304/joj-artist_vkqvbv.jpg"
                 alt="Njenga Ngugi - The Artist"
@@ -76,17 +151,6 @@ export default function AboutPage() {
               />
             </div>
           </div>
-
-          {status !== "loading" && session?.user?.role === UserRole.ADMIN && (
-            <>
-              <hr className="my-16 border-gray-300" />{" "}
-              {/* A clear visual separator */}
-              <h2 className="text-2xl font-medium text-gray-900 mb-8 text-center">
-                Artwork Management Panel
-              </h2>
-              <AdminDashboard />
-            </>
-          )}
         </div>
         <Footer />
       </main>

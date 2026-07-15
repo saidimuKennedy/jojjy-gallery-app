@@ -1,7 +1,7 @@
 import { useState } from "react";
+import Link from "next/link";
 import { ArtworkWithRelations } from "../../types/api";
 import { Heart } from "lucide-react";
-import AddToCartButton from "./AddToCartButton";
 
 interface ArtworkDetailsProps {
   artwork: ArtworkWithRelations;
@@ -9,7 +9,6 @@ interface ArtworkDetailsProps {
 
 const ArtworkDetails = ({ artwork }: ArtworkDetailsProps) => {
   const [likes, setLikes] = useState(artwork.likes);
-  const defaultCurrency = process.env.NEXT_PUBLIC_CURRENCY;
 
   const handleLike = async () => {
     try {
@@ -25,6 +24,11 @@ const ArtworkDetails = ({ artwork }: ArtworkDetailsProps) => {
     }
   };
 
+  const canBuy =
+    artwork.isAvailable &&
+    artwork.status === "AVAILABLE" &&
+    (artwork.price ?? 0) > 0;
+
   return (
     <div className="space-y-6">
       <div>
@@ -33,7 +37,9 @@ const ArtworkDetails = ({ artwork }: ArtworkDetailsProps) => {
         </h3>
         <p className="text-gray-600">{artwork.artist}</p>
         {artwork.series && (
-            <p className="text-sm text-gray-500 mt-1">Series: {artwork.series.name}</p>
+          <p className="text-sm text-gray-500 mt-1">
+            Series: {artwork.series.name}
+          </p>
         )}
       </div>
       <p className="text-gray-600 leading-relaxed">{artwork.description}</p>
@@ -64,18 +70,13 @@ const ArtworkDetails = ({ artwork }: ArtworkDetailsProps) => {
             <Heart className="w-5 h-5 mr-2" />
             {likes} likes
           </button>
-          {/* Conditional pricing based on inGallery */}
-          {!artwork.inGallery ? (
-            <p className="text-2xl font-light text-gray-900">
-              {defaultCurrency} {artwork.price != null ? artwork.price.toLocaleString() : "Bid for quote"}
-            </p>
-          ) : (
-            <p className="text-xl font-light text-gray-700">
-              In Gallery - Contact for Price
-            </p>
-          )}
         </div>
-        {!artwork.inGallery && <AddToCartButton artwork={artwork} />}
+        <Link
+          href={canBuy ? `/shop/${artwork.id}` : "/shop"}
+          className="inline-block border border-neutral-900 bg-neutral-900 px-5 py-3 font-display text-xs uppercase tracking-[0.24em] text-white transition-colors hover:bg-white hover:text-neutral-900"
+        >
+          {canBuy ? "Acquire in Studio Shop →" : "Browse Studio Shop →"}
+        </Link>
       </div>
     </div>
   );

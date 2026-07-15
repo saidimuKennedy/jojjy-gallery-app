@@ -9,6 +9,8 @@
     "lint": "next lint",
     "prisma:seed": "prisma db seed",
     "prisma:seed-archive": "tsx prisma/seed-archive.ts",
+    "prisma:seed-events-shop": "tsx prisma/seed-events-shop.ts",
+    "prisma:seed-music": "tsx prisma/seed-music.ts",
     "db:reset": "prisma migrate reset"
   },
   "prisma": {

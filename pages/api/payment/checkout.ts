@@ -9,6 +9,7 @@ import {
 } from "../../../types/api";
 import { Artwork as PrismaArtwork, Prisma } from "@prisma/client";
 import { authOptions } from "../auth/[...nextauth]";
+import { releaseExpiredReservations } from "@/lib/reservations";
 
 export default async function handler(
   req: NextApiRequest,
@@ -43,8 +44,14 @@ export default async function handler(
   }
 
   try {
+    await releaseExpiredReservations();
+
     const artworksToPurchase: PrismaArtwork[] = await prisma.artwork.findMany({
-      where: { id: { in: artworkIds }, isAvailable: true },
+      where: {
+        id: { in: artworkIds },
+        isAvailable: true,
+        OR: [{ status: "AVAILABLE" }, { status: "RESERVED", reservedByUserId: userId }],
+      },
     });
 
     if (artworksToPurchase.length !== artworkIds.length) {

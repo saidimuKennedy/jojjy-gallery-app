@@ -15,7 +15,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/");
+      const callbackUrl =
+        typeof router.query.callbackUrl === "string"
+          ? router.query.callbackUrl
+          : "/";
+      router.push(callbackUrl);
     }
   }, [status, router]);
 
@@ -36,6 +40,11 @@ export default function LoginPage() {
     setError(null);
     setIsSubmitting(true);
 
+    const callbackUrl =
+      typeof router.query.callbackUrl === "string"
+        ? router.query.callbackUrl
+        : "/";
+
     const result = await signIn("credentials", {
       redirect: false,
       email,
@@ -45,7 +54,7 @@ export default function LoginPage() {
     if (result?.error) {
       setError(result.error);
     } else {
-      router.push("/");
+      router.push(callbackUrl);
     }
     setIsSubmitting(false);
   };

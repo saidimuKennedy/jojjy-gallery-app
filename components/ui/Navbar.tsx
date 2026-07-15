@@ -48,22 +48,49 @@ export default function Navbar() {
 
   const isActive = (path: string) => router.pathname === path;
 
-  const shouldShowCart =
-    router.pathname.startsWith("/artworks/") &&
-    router.pathname.length > "/artworks/".length;
+  const shouldShowCart = router.pathname.startsWith("/shop");
 
   const navItems = [
     { label: "Home", path: "/" },
     { label: "Archive", path: "/gallery" },
     { label: "Portfolio", path: "/portfolio" },
+    { label: "Music", path: "/music" },
+    { label: "Events", path: "/events" },
+    { label: "Studio Shop", path: "/shop" },
     { label: "About", path: "/about" },
     { label: "Contact", path: "/contact" },
   ];
 
-  const isNavActive = (path: string) =>
-    path === "/gallery"
-      ? router.pathname === "/gallery" || router.pathname.startsWith("/gallery/")
-      : isActive(path);
+  const isNavActive = (path: string) => {
+    if (path === "/gallery") {
+      return (
+        router.pathname === "/gallery" ||
+        router.pathname.startsWith("/gallery/")
+      );
+    }
+    if (path === "/music") {
+      return (
+        router.pathname === "/music" || router.pathname.startsWith("/music/")
+      );
+    }
+    if (path === "/events") {
+      return (
+        router.pathname === "/events" || router.pathname.startsWith("/events/")
+      );
+    }
+    if (path === "/shop") {
+      return (
+        router.pathname === "/shop" || router.pathname.startsWith("/shop/")
+      );
+    }
+    if (path === "/portfolio") {
+      return (
+        router.pathname === "/portfolio" ||
+        router.pathname.startsWith("/portfolio/")
+      );
+    }
+    return isActive(path);
+  };
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: "/login" });
@@ -105,6 +132,16 @@ export default function Navbar() {
               {!isLoadingAuth &&
                 (user ? (
                   <>
+                    <Link
+                      href="/account"
+                      className={`text-sm tracking-wide ${
+                        isActive("/account")
+                          ? "text-gray-900"
+                          : "text-gray-500 hover:text-gray-900"
+                      } transition-colors duration-200`}
+                    >
+                      Account
+                    </Link>
                     <span className="text-sm font-medium text-gray-700">
                       Welcome, {user.username || user.email}
                     </span>
@@ -182,6 +219,13 @@ export default function Navbar() {
             <div className="flex flex-col space-y-4 mt-6 border-t border-gray-100 pt-6">
               {user ? (
                 <>
+                  <Link
+                    href="/account"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block text-lg font-medium py-2 px-3 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200"
+                  >
+                    Account
+                  </Link>
                   <span className="text-lg font-medium text-gray-700 px-3">
                     Welcome, {user.username || user.email}
                   </span>

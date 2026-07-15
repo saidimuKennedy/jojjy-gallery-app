@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { convertPrismaArtworkWithRelationsToAPI } from "@/types/api";
+import { releaseExpiredReservations } from "@/lib/reservations";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 
 export default async function handler(
   req: NextApiRequest,
@@ -22,21 +25,32 @@ export default async function handler(
   }
 
   try {
-    const artwork = await prisma.artwork.findUnique({
-      where: { id: parseInt(id) },
-      include: {
-        series: true,
-        mediaFiles: true,
-      },
-    });
+    const artworkId = parseInt(id);
+    await releaseExpiredReservations(artworkId);
+
+    const [artwork, session] = await Promise.all([
+      prisma.artwork.findUnique({
+        where: { id: artworkId },
+        include: {
+          series: true,
+          mediaFiles: true,
+        },
+      }),
+      getServerSession(req, res, authOptions),
+    ]);
     if (!artwork) {
       return res
         .status(404)
         .json({ success: false, message: "Artwork not found" });
     }
+
     return res.status(200).json({
       success: true,
-      data: convertPrismaArtworkWithRelationsToAPI(artwork),
+      data: {
+        ...convertPrismaArtworkWithRelationsToAPI(artwork),
+        reservedByCurrentUser:
+          !!session?.user?.id && artwork.reservedByUserId === session.user.id,
+      },
     });
   } catch (error) {
     console.error("Error fetching artwork:", error);

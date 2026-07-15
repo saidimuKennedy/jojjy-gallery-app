@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { convertPrismaArtworkWithRelationsToAPI } from "@/types/api";
+import { releaseExpiredReservations } from "@/lib/reservations";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 
 export default async function handler(
   req: NextApiRequest,
@@ -25,6 +28,7 @@ export default async function handler(
       search,
       seriesId,
       isAvailable,
+      status,
       sort,
     } = req.query;
 
@@ -74,6 +78,9 @@ export default async function handler(
     }
     if (isAvailable !== undefined) {
       where.isAvailable = String(isAvailable).toLowerCase() === "true";
+    }
+    if (status) {
+      where.status = String(status);
     }
 
     if (seriesId) {
@@ -137,10 +144,19 @@ export default async function handler(
       ...prismaFindManyArgs,
     };
 
-    const artworks = await prisma.artwork.findMany(prismaQuery);
-    const total = await prisma.artwork.count({ where });
+    await releaseExpiredReservations();
 
-    const apiArtworks = artworks.map(convertPrismaArtworkWithRelationsToAPI);
+    const [artworks, total, session] = await Promise.all([
+      prisma.artwork.findMany(prismaQuery),
+      prisma.artwork.count({ where }),
+      getServerSession(req, res, authOptions),
+    ]);
+
+    const apiArtworks = artworks.map((artwork) => ({
+      ...convertPrismaArtworkWithRelationsToAPI(artwork),
+      reservedByCurrentUser:
+        !!session?.user?.id && artwork.reservedByUserId === session.user.id,
+    }));
 
     return res.status(200).json({
       success: true,

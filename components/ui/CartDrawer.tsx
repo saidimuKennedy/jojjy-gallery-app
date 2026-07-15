@@ -45,48 +45,31 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
     <div
       className={`${
         t.visible ? "animate-enter" : "animate-leave"
-      } max-w-md w-full bg-white shadow-lg rounded-md pointer-events-auto flex ring-1 ring-black ring-opacity-5 divide-x divide-gray-200`}
+      } pointer-events-auto flex w-full max-w-md divide-x divide-neutral-800 border border-neutral-900 bg-neutral-950 text-neutral-50`}
     >
-      <div className="flex-1 w-0 p-4">
-        <div className="flex items-start">
-          <div className="flex-shrink-0 pt-0.5">
-            <svg
-              className="h-6 w-6 text-red-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 9v3.75m-9.303 3.376c-.866 1.5.174 3.353 1.94 3.353h14.053c1.766 0 2.806-1.853 1.94-3.353L12 2.25 2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-              />
-            </svg>
-          </div>
-          <div className="ml-3 flex-1">
-            <p className="text-sm font-medium text-gray-900">{message}</p>
-            <button
-              onClick={() => {
-                toast.dismiss(t.id);
-                router.push("/login");
-              }}
-              className="mt-2 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-sm shadow-sm text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-            >
-              Login
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="flex border-l border-gray-200">
+      <div className="flex-1 w-0 px-5 py-4">
+        <p className="font-archive-body text-sm font-medium leading-relaxed text-neutral-50">
+          {message}
+        </p>
         <button
-          onClick={() => toast.dismiss(t.id)}
-          className="w-full border border-transparent rounded-none p-4 flex items-center justify-center text-sm font-medium text-gray-400 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          type="button"
+          onClick={() => {
+            toast.dismiss(t.id);
+            router.push("/login");
+          }}
+          className="mt-4 border border-neutral-50 bg-neutral-50 px-4 py-2 font-archive-body text-xs font-medium uppercase tracking-[0.16em] text-neutral-950 transition-colors hover:bg-transparent hover:text-neutral-50"
         >
-          <X className="w-5 h-5 text-black" />
+          Login
         </button>
       </div>
+      <button
+        type="button"
+        onClick={() => toast.dismiss(t.id)}
+        className="flex items-center justify-center px-4 text-neutral-400 transition-colors hover:text-neutral-50"
+        aria-label="Dismiss"
+      >
+        <X className="h-4 w-4" strokeWidth={1.5} />
+      </button>
     </div>
   );
 
