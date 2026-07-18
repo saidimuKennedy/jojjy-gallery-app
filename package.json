@@ -11,6 +11,8 @@
     "prisma:seed-archive": "tsx prisma/seed-archive.ts",
     "prisma:seed-events-shop": "tsx prisma/seed-events-shop.ts",
     "prisma:seed-music": "tsx prisma/seed-music.ts",
+    "audit:env": "node scripts/audit-env.mjs",
+    "push:env": "node scripts/push-env-to-vercel.mjs",
     "db:reset": "prisma migrate reset"
   },
   "prisma": {

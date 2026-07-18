@@ -5,6 +5,18 @@ import prisma from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth";
 import { UserRole } from "@prisma/client";
 
+// Vercel does not deploy .env.local — infer the public URL when unset.
+if (!process.env.NEXTAUTH_URL && process.env.VERCEL_URL) {
+  process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
+}
+
+const authSecret = process.env.NEXTAUTH_SECRET;
+if (!authSecret && process.env.NODE_ENV === "production") {
+  console.error(
+    "NEXTAUTH_SECRET is missing in production. Set it in Vercel → Settings → Environment Variables, then redeploy."
+  );
+}
+
 declare module "next-auth" {
   interface User {
     id: string;
@@ -72,7 +84,7 @@ export const authOptions: AuthOptions = {
     strategy: "jwt" as SessionStrategy,
     maxAge: 60 * 60 * 24 * 7,
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: authSecret,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
