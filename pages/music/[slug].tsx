@@ -31,7 +31,21 @@ type ReleaseDetail = {
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
-  const body = await res.json();
+  const raw = await res.text();
+  if (
+    res.headers.get("x-vercel-mitigated") === "challenge" ||
+    raw.trimStart().startsWith("<!")
+  ) {
+    throw new Error(
+      "Blocked by Vercel Security Checkpoint. Disable Attack Mode for this project, then reload."
+    );
+  }
+  let body: { success?: boolean; message?: string; data?: ReleaseDetail };
+  try {
+    body = JSON.parse(raw);
+  } catch {
+    throw new Error(`Failed to load release (${res.status}): non-JSON response`);
+  }
   if (!res.ok || !body.success) {
     throw new Error(body.message || "Failed to load release");
   }
@@ -64,9 +78,33 @@ export default function MusicReleasePage() {
         credentials: "include",
         body: JSON.stringify({ releaseId: release.id, trackId }),
       });
-      const json = await res.json();
+      const contentType = res.headers.get("content-type") || "";
+      const raw = await res.text();
+      if (
+        res.headers.get("x-vercel-mitigated") === "challenge" ||
+        (raw.trimStart().startsWith("<!") && !contentType.includes("application/json"))
+      ) {
+        throw new Error(
+          "Playback blocked by Vercel Security Checkpoint. Disable Attack Mode (or WAF challenge rules) for this project, then retry."
+        );
+      }
+      let json: {
+        success?: boolean;
+        message?: string;
+        data?: { streamUrl: string; remainingTease?: number | null };
+      };
+      try {
+        json = JSON.parse(raw);
+      } catch {
+        throw new Error(
+          `Playback failed (${res.status}): server returned non-JSON`
+        );
+      }
       if (!res.ok) {
         throw new Error(json.message || "Playback denied");
+      }
+      if (!json.data?.streamUrl) {
+        throw new Error("Playback denied");
       }
       setStreamUrl(json.data.streamUrl);
       setPlayingId(trackId);
