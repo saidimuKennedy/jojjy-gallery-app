@@ -24,15 +24,19 @@ Follow [music-implementation.md](./music-implementation.md) Phases A→G.
 
 Summary: schema → CRM Free publish → gallery Free stream → Paid tease cookie → CRM grants/Library → Order automation when Paystack fulfillment exists → analytics.
 
+**Paid unlock checkout (gallery):** [plans/09-music-paid-unlock-checkout.md](./plans/09-music-paid-unlock-checkout.md) — tease → Unlock CTA → Paystack (KES) → `ReleaseUnlock` → unlimited play + Library.
+
 ---
 
 # Platform prerequisite
 
 **MVP:** CRM **manual grants** for unlocks and Studio Pass (ADR-019).
 
-**Later:** Music paid unlock and Studio Pass use the shared gallery `Order` payment confirmation path with tickets/merch.
+**In progress:** Music paid unlock checkout — see [plans/09-music-paid-unlock-checkout.md](./plans/09-music-paid-unlock-checkout.md). Checkout API accepts `releaseId`; fulfillment + gallery CTAs are the remaining work.
 
-Content publishing + Free streams + Paid 3-play tease can ship without automated payments.
+**Later:** Studio Pass purchase UI on Music home (same Order path, `MEMBERSHIP_PASS`).
+
+Content publishing + Free streams + Paid 3-play tease can ship without automated payments; conversion requires Plan 09.
 
 ---
 
@@ -45,6 +49,8 @@ Content publishing + Free streams + Paid 3-play tease can ship without automated
 ## Fan (Gallery)
 
 - Browse (badges) · Free stream · Paid 3-play tease · Unlock / Pass CTAs · Library · Streaming
+
+**Paid unlock:** [plans/09-music-paid-unlock-checkout.md](./plans/09-music-paid-unlock-checkout.md)
 
 ## Platform
 

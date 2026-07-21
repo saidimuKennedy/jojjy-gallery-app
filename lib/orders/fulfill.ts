@@ -1,6 +1,7 @@
 import { OrderItemType } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { generateTicketCode } from "@/lib/orders/ticket-code";
+import { grantOrExtendMembership } from "@/lib/music/membership";
 
 export class FulfillmentError extends Error {
   constructor(message: string) {
@@ -122,6 +123,40 @@ export async function fulfillOrder(orderId: string): Promise<void> {
             where: { id: item.productVariantId },
             data: { stock: { decrement: item.quantity } },
           });
+          break;
+        }
+        case OrderItemType.RELEASE: {
+          if (!item.releaseId) break;
+          const existing = await tx.releaseUnlock.findUnique({
+            where: {
+              userId_releaseId: {
+                userId: order.userId,
+                releaseId: item.releaseId,
+              },
+            },
+          });
+          if (!existing) {
+            await tx.releaseUnlock.create({
+              data: {
+                userId: order.userId,
+                releaseId: item.releaseId,
+                orderItemId: item.id,
+                source: "ORDER",
+              },
+            });
+          }
+          break;
+        }
+        case OrderItemType.MEMBERSHIP_PASS: {
+          if (!item.membershipPlanId) break;
+          await grantOrExtendMembership(
+            {
+              userId: order.userId,
+              membershipPlanId: item.membershipPlanId,
+              orderId: order.id,
+            },
+            tx
+          );
           break;
         }
         default:

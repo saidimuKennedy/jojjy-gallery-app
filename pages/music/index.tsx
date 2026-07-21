@@ -6,6 +6,7 @@ import useSWR from "swr";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
+import { formatDisplayPrice } from "@/lib/currency";
 
 type ReleaseCard = {
   id: number;
@@ -33,7 +34,9 @@ function accessBadge(r: ReleaseCard): string {
   if (r.accessMode === "FREE") return "Free";
   if (r.accessMode === "MEMBERS_ONLY") return "Members Only";
   if (r.accessMode === "PAID") {
-    return r.price != null ? `Purchase · ${r.price} ${r.currency}` : "Purchase";
+    return r.price != null
+      ? `Purchase · ${formatDisplayPrice(r.price, r.currency)}`
+      : "Purchase";
   }
   return r.accessMode;
 }

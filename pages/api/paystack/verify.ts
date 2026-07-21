@@ -23,6 +23,8 @@ function serializeOrder(order: NonNullable<Awaited<ReturnType<typeof loadOrder>>
       artwork: item.artwork,
       ticketType: item.ticketType,
       productVariant: item.productVariant,
+      release: item.release,
+      membershipPlan: item.membershipPlan,
     })),
     tickets: order.tickets.map((t) => ({
       id: t.id,
@@ -51,6 +53,8 @@ async function loadOrder(orderId: string) {
               product: { select: { name: true } },
             },
           },
+          release: { select: { id: true, title: true, slug: true } },
+          membershipPlan: { select: { id: true, name: true } },
         },
       },
       tickets: {

@@ -116,6 +116,11 @@ export function verifyWebhookSignature(
   return hash === signatureHeader;
 }
 
-export function paystackCallbackUrl(reference: string): string {
-  return `${getSiteBaseUrl()}/shop/confirmation?reference=${encodeURIComponent(reference)}`;
+export function paystackCallbackUrl(reference: string, returnPath?: string): string {
+  const ref = `reference=${encodeURIComponent(reference)}`;
+  if (returnPath && returnPath.startsWith("/music/") && !returnPath.includes("://")) {
+    const sep = returnPath.includes("?") ? "&" : "?";
+    return `${getSiteBaseUrl()}${returnPath}${sep}${ref}`;
+  }
+  return `${getSiteBaseUrl()}/shop/confirmation?${ref}`;
 }

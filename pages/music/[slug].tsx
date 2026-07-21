@@ -1,18 +1,35 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import useSWR from "swr";
+import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
+import { formatDisplayPrice } from "@/lib/currency";
 
 type Track = {
   id: number;
   title: string;
   trackNumber: number;
   duration: number | null;
+};
+
+type ViewerAccessState =
+  | "free"
+  | "owned"
+  | "tease"
+  | "locked"
+  | "membership_required"
+  | "unavailable";
+
+type ViewerAccess = {
+  state: ViewerAccessState;
+  owned: boolean;
+  remainingTease: number | null;
+  canPlay: boolean;
 };
 
 type ReleaseDetail = {
@@ -28,10 +45,11 @@ type ReleaseDetail = {
   currency: string;
   paidPlayLimit: number;
   tracks: Track[];
+  viewerAccess: ViewerAccess;
 };
 
 const fetcher = async (url: string) => {
-  const res = await fetch(url);
+  const res = await fetch(url, { credentials: "include" });
   const raw = await res.text();
   if (
     res.headers.get("x-vercel-mitigated") === "challenge" ||
@@ -56,20 +74,90 @@ const fetcher = async (url: string) => {
 export default function MusicReleasePage() {
   const router = useRouter();
   const slug = typeof router.query.slug === "string" ? router.query.slug : "";
-  const { data: session } = useSession();
-  const { data: release, error, isLoading } = useSWR(
+  const paymentReference =
+    typeof router.query.reference === "string" ? router.query.reference : undefined;
+
+  const { data: session, status: authStatus } = useSession();
+  const { data: release, error, isLoading, mutate } = useSWR(
     slug ? `/api/music/releases/${slug}` : null,
     fetcher
   );
 
   const [playingId, setPlayingId] = useState<number | null>(null);
   const [streamUrl, setStreamUrl] = useState<string | null>(null);
-  const [remainingTease, setRemainingTease] = useState<number | null>(null);
   const [playError, setPlayError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [checkoutBusy, setCheckoutBusy] = useState(false);
+  const [confirmingPayment, setConfirmingPayment] = useState(false);
+  const [justUnlocked, setJustUnlocked] = useState(false);
+
+  const access = release?.viewerAccess;
+  const remainingTease =
+    access?.state === "tease" ? access.remainingTease : access?.remainingTease;
+
+  useEffect(() => {
+    if (!router.isReady || !paymentReference || !slug) return;
+    if (authStatus === "loading") return;
+    if (authStatus === "unauthenticated") {
+      router.replace(
+        `/login?callbackUrl=${encodeURIComponent(router.asPath)}`
+      );
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      setConfirmingPayment(true);
+      try {
+        const res = await fetch("/api/paystack/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reference: paymentReference }),
+        });
+        const body = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          toast.error(body.message || "Could not confirm payment");
+          return;
+        }
+        if (body.data?.status === "PAID") {
+          setJustUnlocked(true);
+          toast.success("Unlocked — enjoy the full release");
+          await mutate();
+        }
+      } catch {
+        if (!cancelled) toast.error("Could not confirm payment");
+      } finally {
+        if (!cancelled) {
+          setConfirmingPayment(false);
+          router.replace(`/music/${slug}`, undefined, { shallow: true });
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    router.isReady,
+    paymentReference,
+    slug,
+    authStatus,
+    router,
+    mutate,
+  ]);
 
   const playTrack = async (trackId: number) => {
     if (!release) return;
+    if (access && !access.canPlay) {
+      setPlayError(
+        access.state === "locked"
+          ? "Preview ended — unlock to keep listening"
+          : "Playback unavailable"
+      );
+      return;
+    }
     setBusy(true);
     setPlayError(null);
     try {
@@ -92,6 +180,7 @@ export default function MusicReleasePage() {
       let json: {
         success?: boolean;
         message?: string;
+        reason?: string;
         data?: { streamUrl: string; remainingTease?: number | null };
       };
       try {
@@ -102,6 +191,9 @@ export default function MusicReleasePage() {
         );
       }
       if (!res.ok) {
+        if (json.reason === "purchase_required") {
+          await mutate();
+        }
         throw new Error(json.message || "Playback denied");
       }
       if (!json.data?.streamUrl) {
@@ -110,7 +202,24 @@ export default function MusicReleasePage() {
       setStreamUrl(json.data.streamUrl);
       setPlayingId(trackId);
       if (json.data.remainingTease != null) {
-        setRemainingTease(json.data.remainingTease);
+        const nextRemaining = json.data.remainingTease;
+        await mutate(
+          (current) =>
+            current
+              ? {
+                  ...current,
+                  viewerAccess: {
+                    ...current.viewerAccess,
+                    state: nextRemaining === 0 ? "locked" : "tease",
+                    remainingTease: nextRemaining,
+                    canPlay: nextRemaining !== 0,
+                  },
+                }
+              : current,
+          { revalidate: false }
+        );
+      } else if (access?.state === "tease" || access?.state === "owned") {
+        await mutate();
       }
     } catch (e) {
       setPlayError((e as Error).message);
@@ -120,6 +229,55 @@ export default function MusicReleasePage() {
       setBusy(false);
     }
   };
+
+  const handleUnlock = async () => {
+    if (!release) return;
+    if (authStatus === "loading") return;
+    if (!session?.user) {
+      toast.error("Sign in to unlock");
+      router.push(`/login?callbackUrl=${encodeURIComponent(router.asPath)}`);
+      return;
+    }
+    if (access?.owned) {
+      toast.success("Already in your library");
+      return;
+    }
+
+    setCheckoutBusy(true);
+    try {
+      const res = await fetch("/api/orders/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: [{ releaseId: release.id }],
+          paymentProvider: "PAYSTACK",
+          returnPath: `/music/${release.slug}`,
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        toast.error(body.message || "Checkout failed");
+        return;
+      }
+      if (body.data?.authorizationUrl) {
+        window.location.href = body.data.authorizationUrl as string;
+        return;
+      }
+      toast.error("Payment could not be started");
+    } catch {
+      toast.error("Checkout failed");
+    } finally {
+      setCheckoutBusy(false);
+    }
+  };
+
+  const showUnlockCta =
+    release?.accessMode === "PAID" &&
+    access &&
+    (access.state === "locked" || access.state === "tease");
+
+  const playDisabled =
+    busy || confirmingPayment || (access != null && !access.canPlay);
 
   return (
     <div className="min-h-screen bg-white">
@@ -138,14 +296,18 @@ export default function MusicReleasePage() {
           ← Music
         </Link>
 
-        {isLoading && (
+        {confirmingPayment && (
+          <p className="mt-8 text-sm text-neutral-500">Confirming payment…</p>
+        )}
+
+        {isLoading && !confirmingPayment && (
           <p className="mt-12 text-neutral-400">Loading…</p>
         )}
         {error && (
           <p className="mt-12 text-red-600">{(error as Error).message}</p>
         )}
 
-        {release && (
+        {release && access && (
           <div className="mt-10 grid gap-10 md:grid-cols-[240px_1fr]">
             <div className="relative aspect-square bg-neutral-100">
               {release.coverImage ? (
@@ -164,7 +326,7 @@ export default function MusicReleasePage() {
               <p className="text-xs uppercase tracking-[0.2em] text-neutral-400">
                 {release.releaseType.replace(/_/g, " ")} · {release.accessMode}
                 {release.accessMode === "PAID" && release.price != null
-                  ? ` · ${release.price} ${release.currency}`
+                  ? ` · ${formatDisplayPrice(release.price, release.currency)}`
                   : ""}
               </p>
               <h1 className="mt-3 font-display text-4xl font-light text-neutral-900 md:text-5xl">
@@ -177,9 +339,37 @@ export default function MusicReleasePage() {
                 </p>
               )}
 
-              {remainingTease != null && release.accessMode === "PAID" && (
+              {access.state === "owned" && (
+                <p className="mt-4 text-sm text-neutral-600">
+                  {access.owned ? (
+                    <>
+                      In your library —{" "}
+                      <Link href="/music/library" className="underline">
+                        view library
+                      </Link>
+                    </>
+                  ) : (
+                    "Full access"
+                  )}
+                </p>
+              )}
+
+              {justUnlocked && access.state === "owned" && (
+                <p className="mt-4 text-sm text-green-700">
+                  Unlocked — unlimited playback
+                </p>
+              )}
+
+              {access.state === "tease" && remainingTease != null && (
                 <p className="mt-4 text-sm text-neutral-500">
-                  {remainingTease} of {release.paidPlayLimit} free plays left
+                  {remainingTease} of {release.paidPlayLimit} free preview
+                  {remainingTease === 1 ? " play" : " plays"} left
+                </p>
+              )}
+
+              {access.state === "locked" && (
+                <p className="mt-4 text-sm text-neutral-600">
+                  Preview ended. Unlock for unlimited listening.
                 </p>
               )}
 
@@ -187,22 +377,37 @@ export default function MusicReleasePage() {
                 <p className="mt-4 text-sm text-red-600">{playError}</p>
               )}
 
-              {release.accessMode === "PAID" && (
-                <p className="mt-4 text-sm text-neutral-500">
-                  After free plays, ask the studio for access (CRM grant) or
-                  purchase when checkout is live.
-                  {!session && " Sign in to keep unlocks in your library."}
-                </p>
+              {showUnlockCta && release.price != null && (
+                <div className="mt-6">
+                  <button
+                    type="button"
+                    disabled={checkoutBusy || confirmingPayment}
+                    onClick={handleUnlock}
+                    className="inline-flex items-center justify-center border border-neutral-900 bg-neutral-900 px-8 py-4 font-display text-xs uppercase tracking-[0.24em] text-white transition-colors hover:bg-white hover:text-neutral-900 disabled:opacity-50"
+                  >
+                    {checkoutBusy
+                      ? "Redirecting…"
+                      : access.state === "locked"
+                        ? `Unlock · ${formatDisplayPrice(release.price, release.currency)}`
+                        : `Unlock · ${formatDisplayPrice(release.price, release.currency)}`}
+                  </button>
+                  {!session && (
+                    <p className="mt-2 text-xs text-neutral-500">
+                      Sign in required — unlocks stay in your library
+                    </p>
+                  )}
+                </div>
               )}
-              {release.accessMode === "MEMBERS_ONLY" && (
-                <p className="mt-4 text-sm text-neutral-500">
-                  Studio Membership required for full playback.{" "}
-                  <Link href="/music" className="underline">
-                    See plans on Music home
-                  </Link>{" "}
-                  — staff can grant a pass in CRM for now.
-                </p>
-              )}
+
+              {release.accessMode === "MEMBERS_ONLY" &&
+                access.state === "membership_required" && (
+                  <p className="mt-4 text-sm text-neutral-500">
+                    Studio Membership required for full playback.{" "}
+                    <Link href="/music" className="underline">
+                      See plans on Music home
+                    </Link>
+                  </p>
+                )}
 
               {streamUrl && (
                 <audio
@@ -228,7 +433,7 @@ export default function MusicReleasePage() {
                     </span>
                     <button
                       type="button"
-                      disabled={busy}
+                      disabled={playDisabled}
                       onClick={() => playTrack(t.id)}
                       className="text-xs uppercase tracking-[0.18em] text-neutral-600 hover:text-neutral-950 disabled:opacity-50"
                     >

@@ -207,21 +207,23 @@ Entitlement step: ACTIVE membership only when **current** mode is MEMBERS_ONLY. 
 
 # Phase F — Order automation (after shop Paystack works)
 
+> **Action plan:** [plans/09-music-paid-unlock-checkout.md](./plans/09-music-paid-unlock-checkout.md)
+
 Extend `pages/api/orders/checkout.ts` XOR validation:
 
-- Accept `releaseId` → `itemType: RELEASE`
-- Accept `membershipPlanId` → `itemType: MEMBERSHIP_PASS`
+- Accept `releaseId` → `itemType: RELEASE` ✅ (API done)
+- Accept `membershipPlanId` → `itemType: MEMBERSHIP_PASS` ✅ (API done)
 
 On payment confirmation webhook (shared, not Music-specific):
 
 ```text
-RELEASE → create ReleaseUnlock(source=ORDER, orderItemId=…)
-MEMBERSHIP_PASS → create/extend Membership (ADR-023), link orderId
+RELEASE → create ReleaseUnlock(source=ORDER, orderItemId=…)   ← fulfill.ts TODO
+MEMBERSHIP_PASS → create/extend Membership (ADR-023), link orderId   ← fulfill.ts TODO
 ```
 
-Gallery CTAs switch from “Request access” to real checkout when flag/env says fulfillment is live.
+Gallery CTAs switch from “Request access” to real checkout when fulfillment is live (see Plan 09).
 
-Until then keep Phase E grants as source of truth.
+Until fulfillment ships, keep Phase E CRM grants as source of truth.
 
 ---
 

@@ -6,6 +6,7 @@ import type {
   Track,
 } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import { musicDisplayPrice } from "@/lib/currency";
 
 export type ReleaseWithAccess = Release & {
   accessPolicy: AccessPolicy | null;
@@ -154,6 +155,85 @@ export async function mergeAnonymousQuotasToUser(
   }
 }
 
+export type ViewerAccessState =
+  | "free"
+  | "owned"
+  | "tease"
+  | "locked"
+  | "membership_required"
+  | "unavailable";
+
+export type ViewerAccess = {
+  state: ViewerAccessState;
+  owned: boolean;
+  remainingTease: number | null;
+  canPlay: boolean;
+};
+
+export async function resolveViewerAccess(params: {
+  release: ReleaseWithAccess;
+  userId?: string | null;
+  anonymousKey?: string | null;
+}): Promise<ViewerAccess> {
+  const decision = await resolvePlayAccess(params);
+
+  if (decision.allow) {
+    switch (decision.reason) {
+      case "free":
+        return {
+          state: "free",
+          owned: false,
+          remainingTease: null,
+          canPlay: true,
+        };
+      case "owned":
+        return {
+          state: "owned",
+          owned: true,
+          remainingTease: null,
+          canPlay: true,
+        };
+      case "member":
+        return {
+          state: "owned",
+          owned: false,
+          remainingTease: null,
+          canPlay: true,
+        };
+      case "tease":
+        return {
+          state: "tease",
+          owned: false,
+          remainingTease: decision.remainingTease ?? null,
+          canPlay: true,
+        };
+    }
+  }
+
+  if (decision.reason === "membership_required") {
+    return {
+      state: "membership_required",
+      owned: false,
+      remainingTease: null,
+      canPlay: false,
+    };
+  }
+  if (decision.reason === "purchase_required") {
+    return {
+      state: "locked",
+      owned: false,
+      remainingTease: 0,
+      canPlay: false,
+    };
+  }
+  return {
+    state: "unavailable",
+    owned: false,
+    remainingTease: null,
+    canPlay: false,
+  };
+}
+
 export async function resolvePlayAccess(params: {
   release: ReleaseWithAccess;
   userId?: string | null;
@@ -223,6 +303,10 @@ export function serializeReleasePublic(
   }
 ) {
   const mode = release.accessPolicy?.accessMode ?? "PAID";
+  const kesPrice = release.accessPolicy?.price
+    ? Number(release.accessPolicy.price)
+    : null;
+  const { price, currency } = musicDisplayPrice(kesPrice);
   return {
     id: release.id,
     slug: release.slug,
@@ -238,10 +322,9 @@ export function serializeReleasePublic(
     releaseDate: release.releaseDate?.toISOString() ?? null,
     playCount: release.playCount,
     accessMode: mode,
-    price: release.accessPolicy?.price
-      ? Number(release.accessPolicy.price)
-      : null,
-    currency: release.accessPolicy?.currency ?? "KES",
+    price,
+    currency,
+    priceKes: kesPrice,
     paidPlayLimit: release.accessPolicy?.paidPlayLimit ?? 3,
     locked: mode !== "FREE",
     tracks: (release.tracks ?? [])

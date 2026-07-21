@@ -26,6 +26,8 @@ type OrderData = {
     artwork: { title: string } | null;
     ticketType: { name: string; event: { title: string } } | null;
     productVariant: { product: { name: string }; sku: string } | null;
+    release: { title: string; slug: string } | null;
+    membershipPlan: { name: string } | null;
   }>;
   tickets: OrderTicket[];
 };
@@ -84,6 +86,10 @@ export default function ShopConfirmationPage() {
   }, [router.isReady, reference, authStatus, router]);
 
   const isPaid = order?.status === "PAID";
+  const musicRelease = order?.items.find((i) => i.release)?.release ?? null;
+  const hasMusicItem = order?.items.some(
+    (i) => i.itemType === "RELEASE" || i.itemType === "MEMBERSHIP_PASS"
+  );
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -137,6 +143,12 @@ export default function ShopConfirmationPage() {
                 if (item.productVariant) {
                   label = `${item.productVariant.product.name} (${item.productVariant.sku})`;
                 }
+                if (item.release) {
+                  label = item.release.title;
+                }
+                if (item.membershipPlan) {
+                  label = item.membershipPlan.name;
+                }
                 return (
                   <li
                     key={`${item.itemType}-${label}`}
@@ -179,6 +191,22 @@ export default function ShopConfirmationPage() {
             )}
 
             <div className="flex flex-wrap gap-6">
+              {musicRelease && isPaid && (
+                <Link
+                  href={`/music/${musicRelease.slug}`}
+                  className="font-display text-xs uppercase tracking-[0.28em] text-neutral-900 underline-offset-4 hover:underline"
+                >
+                  Listen now
+                </Link>
+              )}
+              {hasMusicItem && isPaid && (
+                <Link
+                  href="/music/library"
+                  className="font-display text-xs uppercase tracking-[0.28em] text-neutral-900 underline-offset-4 hover:underline"
+                >
+                  Your library
+                </Link>
+              )}
               <Link
                 href="/account"
                 className="font-display text-xs uppercase tracking-[0.28em] text-neutral-900 underline-offset-4 hover:underline"
@@ -186,10 +214,10 @@ export default function ShopConfirmationPage() {
                 View account
               </Link>
               <Link
-                href="/shop"
+                href={hasMusicItem ? "/music" : "/shop"}
                 className="font-display text-xs uppercase tracking-[0.28em] text-neutral-500 underline-offset-4 hover:underline"
               >
-                Continue browsing
+                {hasMusicItem ? "Back to music" : "Continue browsing"}
               </Link>
             </div>
           </div>

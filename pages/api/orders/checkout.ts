@@ -16,6 +16,7 @@ import {
   isPaystackConfigured,
   paystackCallbackUrl,
 } from "@/lib/paystack";
+import { MUSIC_PAYMENT_CURRENCY } from "@/lib/currency";
 
 const DELIVERY_METHODS = new Set(Object.values(DeliveryMethod));
 const PACKAGING_TYPES = new Set(Object.values(PackagingType));
@@ -37,6 +38,13 @@ function countItemKinds(item: CheckoutItem) {
     (typeof item.releaseId === "number" ? 1 : 0) +
     (typeof item.membershipPlanId === "number" ? 1 : 0)
   );
+}
+
+function validateReturnPath(path: unknown): string | undefined {
+  if (typeof path !== "string") return undefined;
+  if (!path.startsWith("/music/")) return undefined;
+  if (path.includes("://") || path.startsWith("//")) return undefined;
+  return path;
 }
 
 export default async function handler(
@@ -67,6 +75,7 @@ export default async function handler(
     deliveryFee,
     phoneNumber,
     paymentProvider,
+    returnPath: rawReturnPath,
   } = req.body as {
     items?: CheckoutItem[];
     deliveryMethod?: string;
@@ -75,7 +84,10 @@ export default async function handler(
     deliveryFee?: number;
     phoneNumber?: string;
     paymentProvider?: string;
+    returnPath?: string;
   };
+
+  const returnPath = validateReturnPath(rawReturnPath);
 
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({
@@ -272,6 +284,17 @@ export default async function handler(
             message: `Release ${item.releaseId} is not available for purchase`,
           });
         }
+        const existingUnlock = await prisma.releaseUnlock.findUnique({
+          where: {
+            userId_releaseId: { userId, releaseId: release.id },
+          },
+        });
+        if (existingUnlock) {
+          return res.status(409).json({
+            success: false,
+            message: "You already own this release",
+          });
+        }
         orderItemsData.push({
           itemType: OrderItemType.RELEASE,
           productVariantId: null,
@@ -311,14 +334,35 @@ export default async function handler(
       typeof deliveryFee === "number" && deliveryFee >= 0 ? deliveryFee : 0;
     const amount = subtotal + fee;
 
+    const hasMusicItem = orderItemsData.some(
+      (oi) =>
+        oi.itemType === OrderItemType.RELEASE ||
+        oi.itemType === OrderItemType.MEMBERSHIP_PASS
+    );
+    const hasNonMusicItem = orderItemsData.some(
+      (oi) =>
+        oi.itemType !== OrderItemType.RELEASE &&
+        oi.itemType !== OrderItemType.MEMBERSHIP_PASS
+    );
+    if (hasMusicItem && hasNonMusicItem) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Music purchases must be checked out separately from shop and event items",
+      });
+    }
+
+    const orderCurrency = hasMusicItem
+      ? MUSIC_PAYMENT_CURRENCY
+      : process.env.NEXT_PUBLIC_CURRENCY?.replace(/^\$/, "USD") || "USD";
+
     const order = await prisma.order.create({
       data: {
         userId,
         status: "PENDING",
         paymentProvider: provider,
         amount,
-        currency:
-          process.env.NEXT_PUBLIC_CURRENCY?.replace(/^\$/, "USD") || "USD",
+        currency: orderCurrency,
         phoneNumber: typeof phoneNumber === "string" ? phoneNumber : null,
         deliveryMethod: (deliveryMethod as DeliveryMethod) || null,
         deliveryAddress:
@@ -353,7 +397,7 @@ export default async function handler(
         amount: order.amount.toNumber(),
         currency: order.currency,
         reference,
-        callbackUrl: paystackCallbackUrl(reference),
+        callbackUrl: paystackCallbackUrl(reference, returnPath),
         metadata: { orderId: order.id },
       });
 

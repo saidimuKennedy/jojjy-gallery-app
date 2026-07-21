@@ -16,12 +16,15 @@ These documents are **action plans**, not feature specs. Each one describes how 
 | 6 | [Ticket sales window](./06-ticket-sales-window.md) | CRM + Gallery | M | Plan 2 (for ticket checkout) |
 | 7 | [Production migrations](./07-production-migrations.md) | Both | S | User approval |
 | 8 | [SEO: robots.txt & sitemap](./08-seo-robots-sitemap.md) | Gallery | S | — |
+| 9 | [Music paid unlock checkout](./09-music-paid-unlock-checkout.md) | Gallery | M | Plans 2–3 (Paystack + fulfillment base) |
 
 **Effort key:** S = half day · M = 1–2 days · L = 2–4 days
 
 ## After release blockers
 
-Polish and business items stay tracked in [LAUNCH_CHECKLIST.md](../../LAUNCH_CHECKLIST.md) under **Polish**, **Business**, and **Version 2**. No separate plans yet — create them when blockers are closed.
+Polish and business items stay tracked in [LAUNCH_CHECKLIST.md](../../LAUNCH_CHECKLIST.md) under **Polish**, **Business**, and **Version 2**.
+
+**Music module:** [Plan 09 — Music paid unlock checkout](./09-music-paid-unlock-checkout.md) closes the paid-release loop (tease → Paystack → `ReleaseUnlock`). Not a launch blocker for the core gallery shop; required for music monetization.
 
 ## Repos
 
