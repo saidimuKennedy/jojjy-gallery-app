@@ -27,7 +27,9 @@ export default async function handler(
     let viewerMembership: {
       active: boolean;
       expiresAt: string | null;
+      startedAt: string | null;
       planName: string | null;
+      isFounding: boolean;
     } | null = null;
 
     if (userId) {
@@ -45,10 +47,18 @@ export default async function handler(
         viewerMembership = {
           active: true,
           expiresAt: membership.expiresAt.toISOString(),
+          startedAt: membership.startedAt.toISOString(),
           planName: membership.plan.name,
+          isFounding: membership.isFounding,
         };
       } else {
-        viewerMembership = { active: false, expiresAt: null, planName: null };
+        viewerMembership = {
+          active: false,
+          expiresAt: null,
+          startedAt: null,
+          planName: null,
+          isFounding: false,
+        };
       }
     }
 

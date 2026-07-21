@@ -8,8 +8,10 @@ import { useSession } from "next-auth/react";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
-import StudioPassSection from "@/components/music/StudioPassSection";
+import StudioJoinCompact from "@/components/music/StudioJoinCompact";
+import MusicWelcomeModal from "@/components/music/MusicWelcomeModal";
 import { formatDisplayPrice } from "@/lib/currency";
+import { CHECKOUT_SUPPORT_COPY } from "@/lib/music/studio-defaults";
 
 type Track = {
   id: number;
@@ -29,6 +31,7 @@ type ViewerAccessState =
 type ViewerAccess = {
   state: ViewerAccessState;
   owned: boolean;
+  isStudioMember: boolean;
   remainingTease: number | null;
   canPlay: boolean;
 };
@@ -38,6 +41,8 @@ type ReleaseDetail = {
   slug: string;
   title: string;
   description: string | null;
+  artistNotes: string | null;
+  studioNotes: string | null;
   coverImage: string | null;
   artistName: string;
   releaseType: string;
@@ -89,8 +94,9 @@ export default function MusicReleasePage() {
   const [playError, setPlayError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [checkoutBusy, setCheckoutBusy] = useState(false);
+  const [confirmUnlock, setConfirmUnlock] = useState(false);
   const [confirmingPayment, setConfirmingPayment] = useState(false);
-  const [justUnlocked, setJustUnlocked] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const access = release?.viewerAccess;
   const remainingTease =
@@ -123,17 +129,18 @@ export default function MusicReleasePage() {
           return;
         }
         if (body.data?.status === "PAID") {
-          setJustUnlocked(true);
           const isPass = body.data.items?.some(
             (i: { itemType: string }) => i.itemType === "MEMBERSHIP_PASS"
           );
-          toast.success(
-            isPass
-              ? "Studio Pass active — you can play member releases"
-              : "Unlocked — enjoy the full release"
-          );
-          await mutate();
           await globalMutate("/api/music/membership-plans");
+          if (isPass) {
+            toast.success("Welcome to the Studio");
+            router.replace("/music/studio?welcomed=studio");
+            return;
+          }
+          setShowWelcome(true);
+          toast.success("Added to your collection");
+          await mutate();
         }
       } catch {
         if (!cancelled) toast.error("Could not confirm payment");
@@ -164,7 +171,7 @@ export default function MusicReleasePage() {
         access.state === "locked"
           ? "Preview ended — unlock to keep listening"
           : access.state === "membership_required"
-            ? "Studio Pass required — get a pass below"
+            ? "Join the Studio to listen — see options below"
             : "Playback unavailable"
       );
       return;
@@ -224,6 +231,7 @@ export default function MusicReleasePage() {
                     state: nextRemaining === 0 ? "locked" : "tease",
                     remainingTease: nextRemaining,
                     canPlay: nextRemaining !== 0,
+                    isStudioMember: current.viewerAccess.isStudioMember,
                   },
                 }
               : current,
@@ -250,7 +258,7 @@ export default function MusicReleasePage() {
       return;
     }
     if (access?.owned) {
-      toast.success("Already in your library");
+      toast.success("Already in your collection");
       return;
     }
 
@@ -298,6 +306,14 @@ export default function MusicReleasePage() {
         </title>
       </Head>
       <Navbar />
+
+      {showWelcome && release && (
+        <MusicWelcomeModal
+          type="release"
+          title={release.title}
+          onClose={() => setShowWelcome(false)}
+        />
+      )}
 
       <main className="mx-auto max-w-4xl px-5 py-14 md:px-10 md:py-20">
         <Link
@@ -350,24 +366,18 @@ export default function MusicReleasePage() {
                 </p>
               )}
 
-              {access.state === "owned" && (
+              {access.owned && (
                 <p className="mt-4 text-sm text-neutral-600">
-                  {access.owned ? (
-                    <>
-                      In your library —{" "}
-                      <Link href="/music/library" className="underline">
-                        view library
-                      </Link>
-                    </>
-                  ) : (
-                    "Full access"
-                  )}
+                  In your collection forever —{" "}
+                  <Link href="/music/library" className="underline">
+                    view collection
+                  </Link>
                 </p>
               )}
 
-              {justUnlocked && access.state === "owned" && (
-                <p className="mt-4 text-sm text-green-700">
-                  Unlocked — unlimited playback
+              {access.isStudioMember && (
+                <p className="mt-4 text-sm text-neutral-700">
+                  ✓ Studio Member — you&apos;re listening before public release.
                 </p>
               )}
 
@@ -390,21 +400,55 @@ export default function MusicReleasePage() {
 
               {showUnlockCta && release.price != null && (
                 <div className="mt-6">
-                  <button
-                    type="button"
-                    disabled={checkoutBusy || confirmingPayment}
-                    onClick={handleUnlock}
-                    className="inline-flex items-center justify-center border border-neutral-900 bg-neutral-900 px-8 py-4 font-display text-xs uppercase tracking-[0.24em] text-white transition-colors hover:bg-white hover:text-neutral-900 disabled:opacity-50"
-                  >
-                    {checkoutBusy
-                      ? "Redirecting…"
-                      : access.state === "locked"
+                  {confirmUnlock ? (
+                    <div className="max-w-md space-y-3 border border-neutral-200 p-5">
+                      <p className="text-sm leading-relaxed text-neutral-600">
+                        {CHECKOUT_SUPPORT_COPY}
+                      </p>
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setConfirmUnlock(false)}
+                          className="px-4 py-3 text-xs uppercase tracking-widest text-neutral-500"
+                        >
+                          Back
+                        </button>
+                        <button
+                          type="button"
+                          disabled={checkoutBusy || confirmingPayment}
+                          onClick={handleUnlock}
+                          className="inline-flex flex-1 items-center justify-center border border-neutral-900 bg-neutral-900 px-6 py-3 font-display text-xs uppercase tracking-[0.22em] text-white hover:bg-white hover:text-neutral-900 disabled:opacity-50"
+                        >
+                          {checkoutBusy
+                            ? "Redirecting…"
+                            : `Continue · ${formatDisplayPrice(release.price)}`}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={checkoutBusy || confirmingPayment}
+                      onClick={() => {
+                        if (!session?.user) {
+                          toast.error("Sign in to unlock");
+                          router.push(
+                            `/login?callbackUrl=${encodeURIComponent(router.asPath)}`
+                          );
+                          return;
+                        }
+                        setConfirmUnlock(true);
+                      }}
+                      className="inline-flex items-center justify-center border border-neutral-900 bg-neutral-900 px-8 py-4 font-display text-xs uppercase tracking-[0.24em] text-white transition-colors hover:bg-white hover:text-neutral-900 disabled:opacity-50"
+                    >
+                      {access.state === "locked"
                         ? `Unlock · ${formatDisplayPrice(release.price)}`
                         : `Unlock · ${formatDisplayPrice(release.price)}`}
-                  </button>
-                  {!session && (
+                    </button>
+                  )}
+                  {!session && !confirmUnlock && (
                     <p className="mt-2 text-xs text-neutral-500">
-                      Sign in required — unlocks stay in your library
+                      Sign in required — unlocks stay in your collection
                     </p>
                   )}
                 </div>
@@ -413,29 +457,34 @@ export default function MusicReleasePage() {
               {release.accessMode === "MEMBERS_ONLY" &&
                 access.state === "membership_required" && (
                   <div className="mt-6">
-                    <StudioPassSection
-                      variant="compact"
-                      returnPath={`/music/${release.slug}`}
-                    />
-                    <p className="mt-3 text-xs text-neutral-500">
-                      Or browse{" "}
-                      <Link href="/music#studio-pass" className="underline">
-                        all pass options
-                      </Link>
-                    </p>
+                    <StudioJoinCompact returnPath={`/music/${release.slug}`} />
                   </div>
                 )}
 
-              {release.accessMode === "MEMBERS_ONLY" &&
-                access.state === "owned" &&
-                !access.owned && (
-                  <p className="mt-4 text-sm text-neutral-600">
-                    Included with your Studio Pass —{" "}
-                    <Link href="/music/library" className="underline">
-                      view library
-                    </Link>
+              {release.artistNotes && (
+                <div className="mt-8 border-t border-neutral-100 pt-8">
+                  <p className="font-display text-xs uppercase tracking-[0.24em] text-neutral-400">
+                    Artist notes
                   </p>
-                )}
+                  <p className="mt-4 whitespace-pre-wrap leading-relaxed text-neutral-600">
+                    {release.artistNotes}
+                  </p>
+                </div>
+              )}
+
+              {release.studioNotes && (
+                <div className="mt-8 border-t border-neutral-100 pt-8">
+                  <p className="font-display text-xs uppercase tracking-[0.24em] text-neutral-400">
+                    Studio notes
+                  </p>
+                  <p className="mt-1 text-xs text-neutral-400">
+                    For Studio members only
+                  </p>
+                  <p className="mt-4 whitespace-pre-wrap leading-relaxed text-neutral-600">
+                    {release.studioNotes}
+                  </p>
+                </div>
+              )}
 
               {streamUrl && (
                 <audio

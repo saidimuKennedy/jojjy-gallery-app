@@ -17,6 +17,7 @@ These documents are **action plans**, not feature specs. Each one describes how 
 | 7 | [Production migrations](./07-production-migrations.md) | Both | S | User approval |
 | 8 | [SEO: robots.txt & sitemap](./08-seo-robots-sitemap.md) | Gallery | S | — |
 | 9 | [Music paid unlock checkout](./09-music-paid-unlock-checkout.md) | Gallery | M | Plans 2–3 (Paystack + fulfillment base) |
+| 10 | [The Studio experience](./10-studio-experience.md) | Gallery (+ CRM Phase B) | L | Plan 9 (commerce baseline) |
 
 **Effort key:** S = half day · M = 1–2 days · L = 2–4 days
 
@@ -24,7 +25,7 @@ These documents are **action plans**, not feature specs. Each one describes how 
 
 Polish and business items stay tracked in [LAUNCH_CHECKLIST.md](../../LAUNCH_CHECKLIST.md) under **Polish**, **Business**, and **Version 2**.
 
-**Music module:** [Plan 09 — Music paid unlock checkout](./09-music-paid-unlock-checkout.md) closes the paid-release loop (tease → Paystack → `ReleaseUnlock`). Not a launch blocker for the core gallery shop; required for music monetization.
+**Music module:** [Plan 09 — Music paid unlock checkout](./09-music-paid-unlock-checkout.md) closes the paid-release loop (tease → Paystack → `ReleaseUnlock`). [Plan 10 — The Studio experience](./10-studio-experience.md) adds the emotional layer: dedicated `/music/studio`, language, library split, and belonging UX on top of MVP commerce.
 
 ## Repos
 

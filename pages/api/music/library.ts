@@ -39,13 +39,13 @@ export default async function handler(
       },
     });
 
-    const owned = unlocks.map((u) => ({
+    const collection = unlocks.map((u) => ({
       ...serializeReleasePublic(u.release),
       librarySource: "PURCHASE" as const,
     }));
 
     const member = await hasActiveMembership(userId);
-    let memberReleases: ReturnType<typeof serializeReleasePublic>[] = [];
+    let studioAccess: ReturnType<typeof serializeReleasePublic>[] = [];
     if (member) {
       const rows = await prisma.release.findMany({
         where: {
@@ -57,8 +57,8 @@ export default async function handler(
           tracks: { orderBy: { trackNumber: "asc" } },
         },
       });
-      const ownedIds = new Set(owned.map((r) => r.id));
-      memberReleases = rows
+      const ownedIds = new Set(collection.map((r) => r.id));
+      studioAccess = rows
         .filter((r) => !ownedIds.has(r.id))
         .map((r) => ({
           ...serializeReleasePublic(r),
@@ -66,9 +66,25 @@ export default async function handler(
         }));
     }
 
+    const membership = await prisma.membership.findFirst({
+      where: { userId, status: "ACTIVE", expiresAt: { gt: new Date() } },
+      orderBy: { expiresAt: "desc" },
+    });
+
     return res.status(200).json({
       success: true,
-      data: [...owned, ...memberReleases],
+      data: {
+        collection,
+        studioAccess,
+        studioMembership: membership
+          ? {
+              active: true,
+              expiresAt: membership.expiresAt.toISOString(),
+              startedAt: membership.startedAt.toISOString(),
+              isFounding: membership.isFounding,
+            }
+          : { active: false },
+      },
     });
   } catch (error) {
     console.error("music library", error);

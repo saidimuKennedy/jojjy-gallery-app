@@ -57,6 +57,7 @@ export default function Navbar() {
     { label: "Archive", path: "/gallery" },
     { label: "Portfolio", path: "/portfolio" },
     { label: "Music", path: "/music" },
+    { label: "Studio", path: "/music/studio" },
     { label: "Events", path: "/events" },
     { label: "Studio Shop", path: "/shop" },
     { label: "About", path: "/about" },
@@ -72,8 +73,14 @@ export default function Navbar() {
     }
     if (path === "/music") {
       return (
-        router.pathname === "/music" || router.pathname.startsWith("/music/")
+        router.pathname === "/music" ||
+        (router.pathname.startsWith("/music/") &&
+          router.pathname !== "/music/studio" &&
+          router.pathname !== "/music/library")
       );
+    }
+    if (path === "/music/studio") {
+      return router.pathname === "/music/studio";
     }
     if (path === "/events") {
       return (

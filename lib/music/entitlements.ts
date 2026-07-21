@@ -166,6 +166,7 @@ export type ViewerAccessState =
 export type ViewerAccess = {
   state: ViewerAccessState;
   owned: boolean;
+  isStudioMember: boolean;
   remainingTease: number | null;
   canPlay: boolean;
 };
@@ -183,6 +184,7 @@ export async function resolveViewerAccess(params: {
         return {
           state: "free",
           owned: false,
+          isStudioMember: false,
           remainingTease: null,
           canPlay: true,
         };
@@ -190,6 +192,7 @@ export async function resolveViewerAccess(params: {
         return {
           state: "owned",
           owned: true,
+          isStudioMember: false,
           remainingTease: null,
           canPlay: true,
         };
@@ -197,6 +200,7 @@ export async function resolveViewerAccess(params: {
         return {
           state: "owned",
           owned: false,
+          isStudioMember: true,
           remainingTease: null,
           canPlay: true,
         };
@@ -204,6 +208,7 @@ export async function resolveViewerAccess(params: {
         return {
           state: "tease",
           owned: false,
+          isStudioMember: false,
           remainingTease: decision.remainingTease ?? null,
           canPlay: true,
         };
@@ -214,6 +219,7 @@ export async function resolveViewerAccess(params: {
     return {
       state: "membership_required",
       owned: false,
+      isStudioMember: false,
       remainingTease: null,
       canPlay: false,
     };
@@ -222,6 +228,7 @@ export async function resolveViewerAccess(params: {
     return {
       state: "locked",
       owned: false,
+      isStudioMember: false,
       remainingTease: 0,
       canPlay: false,
     };
@@ -229,6 +236,7 @@ export async function resolveViewerAccess(params: {
   return {
     state: "unavailable",
     owned: false,
+    isStudioMember: false,
     remainingTease: null,
     canPlay: false,
   };
@@ -313,6 +321,7 @@ export function serializeReleasePublic(
     slug: release.slug,
     title: release.title,
     description: release.description,
+    artistNotes: release.artistNotes,
     coverImage: release.coverImage,
     artistName: release.artistName,
     releaseType: release.releaseType,

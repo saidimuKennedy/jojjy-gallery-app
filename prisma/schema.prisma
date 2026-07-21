@@ -531,6 +531,8 @@ model Release {
   slug          String             @unique
   title         String
   description   String?
+  artistNotes   String?
+  studioNotes   String?
   coverImage    String?
   artistName    String             @default("Jojjy Gallery")
   releaseType   MusicReleaseType   @default(SINGLE)
@@ -606,6 +608,7 @@ model Membership {
   startedAt          DateTime         @default(now())
   expiresAt          DateTime
   status             MembershipStatus @default(ACTIVE)
+  isFounding         Boolean          @default(false)
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
   user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -643,6 +646,18 @@ model PaidPlayQuota {
   @@unique([releaseId, userId])
   @@unique([releaseId, anonymousKey])
   @@map("music_paid_play_quotas")
+}
+
+model StudioPageContent {
+  id               Int      @id @default(1)
+  heroTitle        String   @default("Step Inside the Studio")
+  heroSubtitle     String
+  relationshipLead String
+  journeySteps     Json
+  faq              Json
+  updatedAt        DateTime @updatedAt
+
+  @@map("music_studio_page_content")
 }
 
 // ---------------------------------------------------------------------------

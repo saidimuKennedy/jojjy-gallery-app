@@ -52,6 +52,8 @@ Content publishing + Free streams + Paid 3-play tease can ship without automated
 
 **Paid unlock:** [plans/09-music-paid-unlock-checkout.md](./plans/09-music-paid-unlock-checkout.md)
 
+**Studio experience (emotion + belonging):** [plans/10-studio-experience.md](./plans/10-studio-experience.md) — dedicated `/music/studio`, copy/IA, library split; builds on MVP commerce.
+
 ## Platform
 
 - Entitlements + play quota · Secure audio streaming · Order item types ready for when fulfillment lands · Search
@@ -62,7 +64,7 @@ Content publishing + Free streams + Paid 3-play tease can ship without automated
 
 # Phase 1.5
 
-Analytics depth · CRM UX polish · Gallery continue listening / featured shelves
+Analytics depth · CRM UX polish · Gallery continue listening / featured shelves · **[Studio experience](./plans/10-studio-experience.md)** (Phase A: `/music/studio`, language, library split)
 
 ---
 

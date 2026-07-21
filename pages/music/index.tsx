@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { motion } from "framer-motion";
-import useSWR, { mutate as globalMutate } from "swr";
-import toast from "react-hot-toast";
-import { useSession } from "next-auth/react";
+import useSWR from "swr";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
-import StudioPassSection from "@/components/music/StudioPassSection";
 import { formatDisplayPrice } from "@/lib/currency";
 
 type ReleaseCard = {
@@ -36,81 +32,20 @@ const fetcher = async (url: string) => {
 
 function accessBadge(r: ReleaseCard): string {
   if (r.accessMode === "FREE") return "Free";
-  if (r.accessMode === "MEMBERS_ONLY") return "Members Only";
+  if (r.accessMode === "MEMBERS_ONLY") return "Inside the Studio";
   if (r.accessMode === "PAID") {
     return r.price != null
-      ? `Purchase · ${formatDisplayPrice(r.price)}`
-      : "Purchase";
+      ? `Unlock · ${formatDisplayPrice(r.price)}`
+      : "Unlock";
   }
   return r.accessMode;
 }
 
 export default function MusicIndexPage() {
-  const router = useRouter();
-  const { status: authStatus } = useSession();
-  const paymentReference =
-    typeof router.query.reference === "string"
-      ? router.query.reference
-      : undefined;
-
-  const { data: releases, error, isLoading, mutate } = useSWR(
+  const { data: releases, error, isLoading } = useSWR(
     "/api/music/releases",
     fetcher
   );
-  const [confirmingPayment, setConfirmingPayment] = useState(false);
-
-  useEffect(() => {
-    if (!router.isReady || !paymentReference) return;
-    if (authStatus === "loading") return;
-    if (authStatus === "unauthenticated") {
-      router.replace(
-        `/login?callbackUrl=${encodeURIComponent(router.asPath)}`
-      );
-      return;
-    }
-
-    let cancelled = false;
-
-    (async () => {
-      setConfirmingPayment(true);
-      try {
-        const res = await fetch("/api/paystack/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reference: paymentReference }),
-        });
-        const body = await res.json();
-        if (cancelled) return;
-        if (!res.ok) {
-          toast.error(body.message || "Could not confirm payment");
-          return;
-        }
-        if (body.data?.status === "PAID") {
-          const isPass = body.data.items?.some(
-            (i: { itemType: string }) => i.itemType === "MEMBERSHIP_PASS"
-          );
-          toast.success(
-            isPass
-              ? "Studio Pass active — member releases are unlocked"
-              : "Unlocked — enjoy the full release"
-          );
-          await mutate();
-          await globalMutate("/api/music/membership-plans");
-        }
-      } catch {
-        if (!cancelled) toast.error("Could not confirm payment");
-      } finally {
-        if (!cancelled) {
-          setConfirmingPayment(false);
-          router.replace("/music#studio-pass", undefined, { shallow: true });
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [router.isReady, paymentReference, authStatus, router, mutate]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -136,21 +71,21 @@ export default function MusicIndexPage() {
           <p className="mx-auto mt-8 max-w-lg font-archive-body text-lg font-normal leading-[1.7] text-neutral-600 md:text-[1.125rem]">
             First windows for new work — stream here before it goes wider.
           </p>
-          <p className="mt-4">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <Link
               href="/music/library"
               className="text-sm uppercase tracking-[0.2em] text-neutral-500 underline-offset-4 hover:text-neutral-900 hover:underline"
             >
-              Your library
+              Your collection
             </Link>
-          </p>
+            <Link
+              href="/music/studio"
+              className="text-sm uppercase tracking-[0.2em] text-neutral-900 underline-offset-4 hover:underline"
+            >
+              Step inside the Studio →
+            </Link>
+          </div>
         </motion.div>
-
-        {confirmingPayment && (
-          <p className="mb-10 text-center text-sm text-neutral-500">
-            Confirming payment…
-          </p>
-        )}
 
         {isLoading && (
           <p className="text-center font-display text-xs uppercase tracking-[0.28em] text-neutral-400">
@@ -198,8 +133,6 @@ export default function MusicIndexPage() {
         {releases?.length === 0 && !isLoading && (
           <p className="text-center text-neutral-500">No releases yet.</p>
         )}
-
-        <StudioPassSection className="mt-24 md:mt-32" returnPath="/music" />
       </main>
       <Footer />
     </div>

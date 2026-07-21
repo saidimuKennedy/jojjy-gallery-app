@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import {
+  hasActiveMembership,
   resolveViewerAccess,
   serializeReleasePublic,
 } from "@/lib/music/entitlements";
@@ -67,10 +68,16 @@ export default async function handler(
       anonymousKey: userId ? null : anonymousKey,
     });
 
+    const canSeeStudioNotes =
+      viewerAccess.isStudioMember ||
+      viewerAccess.owned ||
+      (userId ? await hasActiveMembership(userId) : false);
+
     return res.status(200).json({
       success: true,
       data: {
         ...serializeReleasePublic(release),
+        studioNotes: canSeeStudioNotes ? release.studioNotes : null,
         viewerAccess,
       },
     });

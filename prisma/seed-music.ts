@@ -13,6 +13,7 @@ import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
+import { DEFAULT_STUDIO_PAGE } from "../lib/music/studio-defaults";
 
 function withRelaxedSsl(connectionString: string | undefined) {
   if (!connectionString) return connectionString;
@@ -53,6 +54,8 @@ async function upsertRelease(params: {
   slug: string;
   title: string;
   description: string;
+  artistNotes?: string | null;
+  studioNotes?: string | null;
   coverImage: string;
   releaseType: "SINGLE" | "EP" | "ALBUM" | "LIVE_SESSION" | "ACOUSTIC_SESSION";
   genre: string;
@@ -65,6 +68,8 @@ async function upsertRelease(params: {
     update: {
       title: params.title,
       description: params.description,
+      artistNotes: params.artistNotes ?? null,
+      studioNotes: params.studioNotes ?? null,
       coverImage: params.coverImage,
       artistName: "Njenga Ngugi",
       releaseType: params.releaseType,
@@ -78,6 +83,8 @@ async function upsertRelease(params: {
       slug: params.slug,
       title: params.title,
       description: params.description,
+      artistNotes: params.artistNotes ?? null,
+      studioNotes: params.studioNotes ?? null,
       coverImage: params.coverImage,
       artistName: "Njenga Ngugi",
       releaseType: params.releaseType,
@@ -161,16 +168,35 @@ async function upsertPlan(params: {
 
 async function main() {
   await upsertPlan({
-    name: "Studio Pass — 30 days",
+    name: "30 days in the Studio",
     description: "Member exclusives and early listens for a month.",
     price: 12,
     durationDays: 30,
   });
   await upsertPlan({
-    name: "Studio Pass — 90 days",
+    name: "90 days in the Studio",
     description: "Quarter of studio access.",
     price: 27,
     durationDays: 90,
+  });
+
+  await prisma.studioPageContent.upsert({
+    where: { id: 1 },
+    update: {
+      heroTitle: DEFAULT_STUDIO_PAGE.heroTitle,
+      heroSubtitle: DEFAULT_STUDIO_PAGE.heroSubtitle,
+      relationshipLead: DEFAULT_STUDIO_PAGE.relationshipLead,
+      journeySteps: DEFAULT_STUDIO_PAGE.journeySteps,
+      faq: DEFAULT_STUDIO_PAGE.faq,
+    },
+    create: {
+      id: 1,
+      heroTitle: DEFAULT_STUDIO_PAGE.heroTitle,
+      heroSubtitle: DEFAULT_STUDIO_PAGE.heroSubtitle,
+      relationshipLead: DEFAULT_STUDIO_PAGE.relationshipLead,
+      journeySteps: DEFAULT_STUDIO_PAGE.journeySteps,
+      faq: DEFAULT_STUDIO_PAGE.faq,
+    },
   });
 
   await upsertRelease({
@@ -192,6 +218,8 @@ async function main() {
     title: "Crossing Session",
     description:
       "Two pieces from an evening session. Three free plays, then unlock.",
+    artistNotes:
+      "I wrote the crossing piece after a long walk through Nairobi at dusk — the city felt like it was holding its breath.",
     coverImage: IMG.crossing,
     releaseType: "EP",
     genre: "Jazz",
@@ -207,7 +235,11 @@ async function main() {
     slug: "members-tug",
     title: "Tug of War (Members)",
     description:
-      "Studio Pass exclusive — early cut ahead of a wider release.",
+      "Studio exclusive — early cut ahead of a wider release.",
+    artistNotes:
+      "A sketch that turned into something I couldn't leave behind. Shared with the Studio first.",
+    studioNotes:
+      "Recorded in one take after midnight. The vocal you hear is the first pass — I kept it raw on purpose.",
     coverImage: IMG.tug,
     releaseType: "SINGLE",
     genre: "Experimental",
@@ -221,6 +253,8 @@ async function main() {
     slug: "sunshine-live",
     title: "Sunshine — Live",
     description: "Live session document. Paid unlock after the tease plays.",
+    artistNotes:
+      "Sunshine was a room full of friends and one microphone. This is that evening, imperfect and alive.",
     coverImage: IMG.sunshine,
     releaseType: "LIVE_SESSION",
     genre: "Live",
