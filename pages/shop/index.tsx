@@ -8,6 +8,7 @@ import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
 import { getArtworks } from "@/lib/data/artworks";
+import { formatUsdPrice } from "@/lib/utils";
 import { ArtworkWithRelations } from "@/types/api";
 
 const fetcher = async (url: string) => {
@@ -29,8 +30,6 @@ export default function ShopIndexPage({
     fetcher,
     { fallbackData: initialArtworks }
   );
-  const currency = process.env.NEXT_PUBLIC_CURRENCY || "USD";
-
   const forSale =
     artworks?.filter(
       (a) => a.isAvailable && a.status === "AVAILABLE" && (a.price ?? 0) > 0
@@ -103,7 +102,7 @@ export default function ShopIndexPage({
                   </p>
                 )}
                 <p className="mt-2 text-sm font-light text-neutral-600">
-                  {currency} {artwork.price!.toLocaleString()}
+                  {formatUsdPrice(artwork.price!)}
                 </p>
               </Link>
             ))}

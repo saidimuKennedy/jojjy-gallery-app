@@ -69,8 +69,8 @@ const VARS = [
   },
   {
     key: "NEXT_PUBLIC_CURRENCY",
-    value: local.NEXT_PUBLIC_CURRENCY || "KES",
-    productionValue: "KES",
+    value: local.NEXT_PUBLIC_CURRENCY || "USD",
+    productionValue: "USD",
   },
 ];
 

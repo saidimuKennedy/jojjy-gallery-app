@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
+import { formatUsdPrice } from "@/lib/utils";
 import { ArtworkWithRelations } from "@/types/api";
 
 const DELIVERY_OPTIONS = [
@@ -50,7 +51,6 @@ export default function ShopArtworkPage() {
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [checkoutBusy, setCheckoutBusy] = useState(false);
 
-  const currency = process.env.NEXT_PUBLIC_CURRENCY || "USD";
   const needsAddress = deliveryMethod !== "LOCAL_PICKUP";
   const canPurchase =
     !!artwork &&
@@ -253,7 +253,7 @@ export default function ShopArtworkPage() {
                 )}
 
                 <p className="font-display text-xl font-light text-neutral-900">
-                  {currency} {artwork.price!.toLocaleString()}
+                  {formatUsdPrice(artwork.price!)}
                 </p>
 
                 <button
