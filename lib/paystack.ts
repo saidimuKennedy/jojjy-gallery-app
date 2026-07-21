@@ -118,7 +118,7 @@ export function verifyWebhookSignature(
 
 export function paystackCallbackUrl(reference: string, returnPath?: string): string {
   const ref = `reference=${encodeURIComponent(reference)}`;
-  if (returnPath && returnPath.startsWith("/music/") && !returnPath.includes("://")) {
+  if (returnPath && returnPath.startsWith("/music") && !returnPath.includes("://")) {
     const sep = returnPath.includes("?") ? "&" : "?";
     return `${getSiteBaseUrl()}${returnPath}${sep}${ref}`;
   }

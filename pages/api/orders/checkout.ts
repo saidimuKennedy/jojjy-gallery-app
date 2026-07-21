@@ -42,7 +42,7 @@ function countItemKinds(item: CheckoutItem) {
 
 function validateReturnPath(path: unknown): string | undefined {
   if (typeof path !== "string") return undefined;
-  if (!path.startsWith("/music/")) return undefined;
+  if (!path.startsWith("/music")) return undefined;
   if (path.includes("://") || path.startsWith("//")) return undefined;
   return path;
 }

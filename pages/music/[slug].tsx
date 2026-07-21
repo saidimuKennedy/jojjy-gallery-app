@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import useSWR from "swr";
+import useSWR, { mutate as globalMutate } from "swr";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
+import StudioPassSection from "@/components/music/StudioPassSection";
 import { formatDisplayPrice } from "@/lib/currency";
 
 type Track = {
@@ -123,8 +124,16 @@ export default function MusicReleasePage() {
         }
         if (body.data?.status === "PAID") {
           setJustUnlocked(true);
-          toast.success("Unlocked — enjoy the full release");
+          const isPass = body.data.items?.some(
+            (i: { itemType: string }) => i.itemType === "MEMBERSHIP_PASS"
+          );
+          toast.success(
+            isPass
+              ? "Studio Pass active — you can play member releases"
+              : "Unlocked — enjoy the full release"
+          );
           await mutate();
+          await globalMutate("/api/music/membership-plans");
         }
       } catch {
         if (!cancelled) toast.error("Could not confirm payment");
@@ -154,7 +163,9 @@ export default function MusicReleasePage() {
       setPlayError(
         access.state === "locked"
           ? "Preview ended — unlock to keep listening"
-          : "Playback unavailable"
+          : access.state === "membership_required"
+            ? "Studio Pass required — get a pass below"
+            : "Playback unavailable"
       );
       return;
     }
@@ -401,10 +412,27 @@ export default function MusicReleasePage() {
 
               {release.accessMode === "MEMBERS_ONLY" &&
                 access.state === "membership_required" && (
-                  <p className="mt-4 text-sm text-neutral-500">
-                    Studio Membership required for full playback.{" "}
-                    <Link href="/music" className="underline">
-                      See plans on Music home
+                  <div className="mt-6">
+                    <StudioPassSection
+                      variant="compact"
+                      returnPath={`/music/${release.slug}`}
+                    />
+                    <p className="mt-3 text-xs text-neutral-500">
+                      Or browse{" "}
+                      <Link href="/music#studio-pass" className="underline">
+                        all pass options
+                      </Link>
+                    </p>
+                  </div>
+                )}
+
+              {release.accessMode === "MEMBERS_ONLY" &&
+                access.state === "owned" &&
+                !access.owned && (
+                  <p className="mt-4 text-sm text-neutral-600">
+                    Included with your Studio Pass —{" "}
+                    <Link href="/music/library" className="underline">
+                      view library
                     </Link>
                   </p>
                 )}
