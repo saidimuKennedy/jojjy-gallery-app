@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 import { ArtworkWithRelations } from "@/types/api";
 
 const DELIVERY_OPTIONS = [
@@ -154,10 +155,14 @@ export default function ShopArtworkPage() {
           className="grid grid-cols-1 md:grid-cols-2 gap-12"
         >
           <div className="relative aspect-square bg-neutral-100 overflow-hidden">
-            <img
+            <OptimizedImage
               src={artwork.imageUrl}
               alt={artwork.title}
-              className="w-full h-full object-contain bg-white"
+              fill
+              preset="hero"
+              priority
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-contain bg-white"
             />
           </div>
 

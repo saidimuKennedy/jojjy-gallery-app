@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { useSession } from "next-auth/react";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 
 type LibItem = {
   id: number;
@@ -65,13 +66,15 @@ export default function MusicLibraryPage() {
                 href={`/music/${r.slug}`}
                 className="flex items-center gap-4 hover:opacity-80"
               >
-                <div className="h-16 w-16 shrink-0 bg-neutral-100">
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden bg-neutral-100">
                   {r.coverImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <OptimizedImage
                       src={r.coverImage}
-                      alt=""
-                      className="h-full w-full object-cover"
+                      alt={r.title}
+                      fill
+                      preset="thumb"
+                      sizes="64px"
+                      className="object-cover"
                     />
                   ) : null}
                 </div>

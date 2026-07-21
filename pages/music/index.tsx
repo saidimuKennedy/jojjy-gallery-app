@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import useSWR from "swr";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 
 type ReleaseCard = {
   id: number;
@@ -95,13 +96,15 @@ export default function MusicIndexPage() {
               href={`/music/${r.slug}`}
               className="group block"
             >
-              <div className="aspect-square overflow-hidden bg-neutral-100">
+              <div className="relative aspect-square overflow-hidden bg-neutral-100">
                 {r.coverImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <OptimizedImage
                     src={r.coverImage}
-                    alt=""
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+                    alt={r.title}
+                    fill
+                    preset="card"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover transition duration-500 group-hover:scale-[1.02]"
                   />
                 ) : null}
               </div>

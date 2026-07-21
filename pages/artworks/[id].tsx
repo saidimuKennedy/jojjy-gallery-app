@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import { useArtwork } from "@/hooks/useArtWorks";
 import Navbar from "@/components/ui/Navbar";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 
 const pageVariants: Variants = {
   hidden: { opacity: 0, y: 16 },
@@ -187,11 +188,15 @@ export default function ArtworkDetailPage() {
             variants={contentVariants}
             className="lg:col-span-7 xl:col-span-8"
           >
-            <div className="relative w-full overflow-hidden bg-neutral-100">
-              <img
+            <div className="relative h-[70vh] w-full overflow-hidden bg-neutral-100 md:h-[75vh] lg:h-[80vh]">
+              <OptimizedImage
                 src={artwork.imageUrl}
                 alt={artwork.title}
-                className="h-[70vh] w-full object-contain object-center md:h-[75vh] lg:h-[80vh]"
+                fill
+                preset="hero"
+                priority
+                sizes="(max-width: 1024px) 100vw, 66vw"
+                className="object-contain object-center"
               />
             </div>
           </motion.div>

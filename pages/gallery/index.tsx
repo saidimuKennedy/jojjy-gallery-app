@@ -1,10 +1,17 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import type { GetStaticProps } from "next";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
-import useSWR from "swr";
-import { APIResponse, MediaBlogEntryWithRelations } from "@/types/api";
+import OptimizedImage from "@/components/ui/OptimizedImage";
+import { pickImageUrl } from "@/lib/cloudinary";
+import { getMediaBlogEntries } from "@/lib/data/media-blog";
+import {
+  ARCHIVE_PAGE_SIZE,
+  useInfiniteMediaBlog,
+} from "@/hooks/useInfiniteMediaBlog";
+import { MediaBlogEntryWithRelations } from "@/types/api";
 
 type EntryKind =
   | "video"
@@ -26,14 +33,10 @@ interface ArchiveEntry {
   content?: string;
 }
 
-const fetcher = async (url: string) => {
-  const res = await fetch(url);
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.message || "Failed to fetch data");
-  }
-  return res.json();
-};
+interface ArchivePageProps {
+  initialEntries: MediaBlogEntryWithRelations[];
+  initialTotal: number;
+}
 
 const CATALOGUE_LABEL: Record<Exclude<EntryKind, "unknown">, string> = {
   video: "Film",
@@ -54,8 +57,68 @@ const reveal = {
   },
 };
 
+function mapEntry(entry: MediaBlogEntryWithRelations): ArchiveEntry {
+  const year = entry.createdAt
+    ? new Date(entry.createdAt).getFullYear().toString()
+    : undefined;
+
+  const transformedItem: ArchiveEntry = {
+    id: entry.id,
+    title: entry.title,
+    shortDesc: entry.shortDesc || "",
+    type: "unknown",
+    year,
+    content: entry.content || undefined,
+  };
+
+  switch (String(entry.type)) {
+    case "VIDEO":
+      transformedItem.type = "video";
+      transformedItem.thumbnail = pickImageUrl(
+        entry.thumbnailUrl,
+        entry.mediaFiles?.find(
+          (f) => String(f.type) === "VIDEO" || String(f.type) === "IMAGE"
+        )?.url,
+        "hero"
+      );
+      transformedItem.duration = entry.duration || "";
+      break;
+    case "IMAGES":
+      transformedItem.type = "images";
+      transformedItem.images = (entry.mediaFiles ?? [])
+        .filter((f) => String(f.type) === "IMAGE")
+        .map((f) => f.url);
+      transformedItem.thumbnail = pickImageUrl(
+        entry.thumbnailUrl,
+        transformedItem.images[0],
+        "hero"
+      );
+      break;
+    case "AUDIO":
+      transformedItem.type = "audio";
+      transformedItem.duration = entry.duration || "";
+      transformedItem.thumbnail = pickImageUrl(entry.thumbnailUrl, undefined, "card");
+      break;
+    case "BLOG_POST":
+      transformedItem.type = "blog_post";
+      transformedItem.thumbnail = pickImageUrl(entry.thumbnailUrl, undefined, "card");
+      break;
+    case "EXTERNAL_LINK":
+      transformedItem.type = "external_link";
+      transformedItem.thumbnail = pickImageUrl(entry.thumbnailUrl, undefined, "card");
+      break;
+    default:
+      transformedItem.type = "unknown";
+      break;
+  }
+
+  return transformedItem;
+}
+
 function getHeroImage(item: ArchiveEntry): string | undefined {
-  if (item.type === "images" && item.images?.length) return item.images[0];
+  if (item.type === "images" && item.images?.length) {
+    return item.thumbnail || item.images[0];
+  }
   return item.thumbnail;
 }
 
@@ -79,76 +142,55 @@ function layoutMode(
   return "hero";
 }
 
-const ArchivePage = () => {
+function ArchiveHeroImage({
+  src,
+  alt,
+  priority = false,
+  preset = "hero" as const,
+  sizes,
+  className,
+  style,
+}: {
+  src: string;
+  alt: string;
+  priority?: boolean;
+  preset?: "hero" | "card";
+  sizes?: string;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <div className={`relative w-full overflow-hidden ${className ?? ""}`} style={style}>
+      <OptimizedImage
+        src={src}
+        alt={alt}
+        fill
+        preset={preset}
+        priority={priority}
+        sizes={sizes}
+        className="object-cover"
+      />
+    </div>
+  );
+}
+
+const ArchivePage = ({ initialEntries, initialTotal }: ArchivePageProps) => {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const {
-    data: apiResponse,
+    entries: fetchedMediaEntries,
     error,
     isLoading,
-  } = useSWR<APIResponse<MediaBlogEntryWithRelations[]>>(
-    "/api/media-blog?limit=100",
-    fetcher
-  );
-
-  const fetchedMediaEntries = apiResponse?.data || [];
+    hasMore,
+    loadMore,
+    isValidating,
+  } = useInfiniteMediaBlog({ entries: initialEntries, total: initialTotal });
 
   const mediaItems: ArchiveEntry[] = useMemo(
     () =>
       fetchedMediaEntries
-        .map((entry) => {
-          const year = entry.createdAt
-            ? new Date(entry.createdAt).getFullYear().toString()
-            : undefined;
-
-          const transformedItem: ArchiveEntry = {
-            id: entry.id,
-            title: entry.title,
-            shortDesc: entry.shortDesc || "",
-            type: "unknown",
-            year,
-            content: entry.content || undefined,
-          };
-
-          switch (String(entry.type)) {
-            case "VIDEO":
-              transformedItem.type = "video";
-              transformedItem.thumbnail =
-                entry.thumbnailUrl ||
-                entry.mediaFiles?.find(
-                  (f) =>
-                    String(f.type) === "VIDEO" || String(f.type) === "IMAGE"
-                )?.url ||
-                undefined;
-              transformedItem.duration = entry.duration || "";
-              break;
-            case "IMAGES":
-              transformedItem.type = "images";
-              transformedItem.images = (entry.mediaFiles ?? [])
-                .filter((f) => String(f.type) === "IMAGE")
-                .map((f) => f.url);
-              transformedItem.thumbnail =
-                entry.thumbnailUrl || transformedItem.images[0];
-              break;
-            case "AUDIO":
-              transformedItem.type = "audio";
-              transformedItem.duration = entry.duration || "";
-              transformedItem.thumbnail = entry.thumbnailUrl || undefined;
-              break;
-            case "BLOG_POST":
-              transformedItem.type = "blog_post";
-              transformedItem.thumbnail = entry.thumbnailUrl || undefined;
-              break;
-            case "EXTERNAL_LINK":
-              transformedItem.type = "external_link";
-              transformedItem.thumbnail = entry.thumbnailUrl || undefined;
-              break;
-            default:
-              transformedItem.type = "unknown";
-              break;
-          }
-          return transformedItem;
-        })
+        .map(mapEntry)
         .filter((item) =>
           ["video", "images", "audio", "blog_post", "external_link"].includes(
             item.type
@@ -157,7 +199,6 @@ const ArchivePage = () => {
     [fetchedMediaEntries]
   );
 
-  // Prefer a visual piece to open on; keep it in the list flow as entrance only
   const openingIndex = Math.max(
     0,
     mediaItems.findIndex((item) => !!getHeroImage(item))
@@ -172,7 +213,24 @@ const ArchivePage = () => {
     return () => document.documentElement.classList.remove("archive-page");
   }, []);
 
-  if (isLoading) {
+  useEffect(() => {
+    const node = loadMoreRef.current;
+    if (!node || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && !isValidating) {
+          loadMore();
+        }
+      },
+      { rootMargin: "400px" }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasMore, isValidating, loadMore]);
+
+  if (isLoading && mediaItems.length === 0) {
     return (
       <div className="min-h-screen bg-white text-[#1a1a1a]">
         <Navbar />
@@ -216,10 +274,6 @@ const ArchivePage = () => {
           </div>
         ) : (
           <>
-            {/*
-              Entrance as museum wall — not portfolio hero.
-              White margins, caption below the image, no dark overlay title.
-            */}
             {opening && openingHero && (
               <section className="px-0 pt-8 md:pt-12">
                 <div className="px-6 md:px-12 lg:px-20">
@@ -254,10 +308,12 @@ const ArchivePage = () => {
                     onMouseLeave={() => setHoveredId(null)}
                   >
                     <div className="archive-media mx-auto max-w-[1600px] overflow-hidden bg-[#f5f5f5] px-0 md:px-8 lg:px-16">
-                      <img
+                      <ArchiveHeroImage
                         src={openingHero}
                         alt={opening.title}
-                        className="aspect-[16/10] w-full object-cover transition-transform duration-[800ms] ease-in-out group-hover:scale-[1.015] md:aspect-[21/9]"
+                        priority
+                        sizes="(max-width: 768px) 100vw, 1600px"
+                        className="aspect-[16/10] transition-transform duration-[800ms] ease-in-out group-hover:scale-[1.015] md:aspect-[21/9]"
                       />
                     </div>
 
@@ -294,6 +350,11 @@ const ArchivePage = () => {
                 item.type !== "unknown" ? CATALOGUE_LABEL[item.type] : "";
               const hero = getHeroImage(item);
               const isHovered = hoveredId === item.id;
+              const imagePreset = mode === "essay" ? "card" : "hero";
+              const imageSizes =
+                mode === "essay"
+                  ? "(max-width: 768px) 100vw, 900px"
+                  : "(max-width: 768px) 100vw, 1400px";
 
               return (
                 <motion.article
@@ -313,10 +374,12 @@ const ArchivePage = () => {
                     >
                       {hero && (
                         <div className="archive-media mx-auto max-w-[1400px] overflow-hidden bg-[#f5f5f5] md:px-8 lg:px-16">
-                          <img
+                          <ArchiveHeroImage
                             src={hero}
                             alt={item.title}
-                            className="aspect-[16/10] w-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-[1.02] md:aspect-[2/1]"
+                            preset={imagePreset}
+                            sizes={imageSizes}
+                            className="aspect-[16/10] transition-transform duration-700 ease-in-out md:aspect-[2/1]"
                             style={{
                               transform: isHovered ? "scale(1.02)" : "scale(1)",
                             }}
@@ -351,10 +414,12 @@ const ArchivePage = () => {
                         <div className="md:col-span-8 lg:col-span-9">
                           {hero && (
                             <div className="archive-media overflow-hidden bg-[#f5f5f5]">
-                              <img
+                              <ArchiveHeroImage
                                 src={hero}
                                 alt={item.title}
-                                className="aspect-[4/3] w-full object-cover transition-transform duration-700 ease-in-out md:aspect-[16/10]"
+                                preset="hero"
+                                sizes="(max-width: 768px) 100vw, 1200px"
+                                className="aspect-[4/3] transition-transform duration-700 ease-in-out md:aspect-[16/10]"
                                 style={{
                                   transform: isHovered
                                     ? "scale(1.02)"
@@ -403,10 +468,12 @@ const ArchivePage = () => {
                       )}
                       {hero && (
                         <div className="archive-media mt-12 overflow-hidden bg-[#f5f5f5]">
-                          <img
+                          <ArchiveHeroImage
                             src={hero}
                             alt=""
-                            className="aspect-[16/9] w-full object-cover transition-transform duration-700 ease-in-out"
+                            preset="card"
+                            sizes="(max-width: 768px) 100vw, 900px"
+                            className="aspect-[16/9] transition-transform duration-700 ease-in-out"
                             style={{
                               transform: isHovered ? "scale(1.02)" : "scale(1)",
                             }}
@@ -424,6 +491,14 @@ const ArchivePage = () => {
                 </motion.article>
               );
             })}
+
+            {hasMore && (
+              <div ref={loadMoreRef} className="py-16 text-center">
+                <p className="font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a]">
+                  {isValidating ? "Loading more" : ""}
+                </p>
+              </div>
+            )}
           </>
         )}
       </main>
@@ -431,6 +506,24 @@ const ArchivePage = () => {
       <Footer />
     </div>
   );
+};
+
+export const getStaticProps: GetStaticProps<ArchivePageProps> = async () => {
+  const { entries, total } = await getMediaBlogEntries({
+    page: 1,
+    limit: ARCHIVE_PAGE_SIZE,
+    minimal: true,
+  });
+
+  return {
+    props: {
+      initialEntries: JSON.parse(
+        JSON.stringify(entries)
+      ) as MediaBlogEntryWithRelations[],
+      initialTotal: total,
+    },
+    revalidate: 120,
+  };
 };
 
 export default ArchivePage;

@@ -6,6 +6,7 @@ import useSWR from "swr";
 import toast from "react-hot-toast";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 import { Artwork } from "@/types/api";
 
 interface WishlistEntry {
@@ -187,10 +188,13 @@ export default function AccountPage() {
                     href={`/artworks/${item.artwork.id}`}
                     className="relative w-20 h-20 bg-neutral-100 shrink-0 overflow-hidden"
                   >
-                    <img
+                    <OptimizedImage
                       src={item.artwork.imageUrl}
-                      alt=""
-                      className="w-full h-full object-cover"
+                      alt={item.artwork.title}
+                      fill
+                      preset="thumb"
+                      sizes="80px"
+                      className="object-cover"
                     />
                   </Link>
                   <div className="flex-1 min-w-0">

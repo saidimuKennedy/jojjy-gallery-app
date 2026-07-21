@@ -3,6 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, Variants } from "framer-motion";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 import { useSeriesList, useArtworks } from "@/hooks/useArtWorks";
 import { Artwork } from "@/types/api";
 import Navbar from "@/components/ui/Navbar";
@@ -161,14 +162,14 @@ function ArtworkLink({
 
 export default function PortfolioPage() {
   const { artworks: allArtworks, isLoading: artworksLoading } = useArtworks({
+    inGallery: true,
+    include: "minimal",
     limit: "all",
   });
   const { seriesList: allSeries, isLoading: seriesLoading } = useSeriesList();
   const isLoading = artworksLoading || seriesLoading;
 
-  const portfolioArtworks = useMemo(() => {
-    return allArtworks?.filter((artwork) => artwork.inGallery === true) || [];
-  }, [allArtworks]);
+  const portfolioArtworks = useMemo(() => allArtworks ?? [], [allArtworks]);
 
   const sortedSeries = useMemo(() => {
     if (!allSeries) return [];
@@ -252,12 +253,21 @@ export default function PortfolioPage() {
       {/* Hero — painting fades, then title, then line */}
       <section className="relative flex h-[100svh] flex-col justify-center overflow-hidden px-8 md:px-16 lg:px-24">
         <motion.div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${heroArtwork.imageUrl})` }}
+          className="absolute inset-0"
           initial={{ opacity: 0, scale: 1.03 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.1, ease }}
-        />
+        >
+          <OptimizedImage
+            src={heroArtwork.imageUrl}
+            alt={heroArtwork.title}
+            fill
+            preset="hero"
+            priority
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+        </motion.div>
         <motion.div
           className="absolute inset-0 bg-black/35"
           initial={{ opacity: 0 }}

@@ -1,6 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import prisma from "@/lib/prisma";
 import { MediaBlogEntryType, MediaFileType } from "@prisma/client";
+import { setPublicCacheHeaders } from "@/lib/api-cache";
+import { thumbnailFromUrl } from "@/lib/cloudinary";
+import {
+  getMediaBlogEntries,
+} from "@/lib/data/media-blog";
+import prisma from "@/lib/prisma";
 
 export interface MediaBlogEntryAPI {
   id: number;
@@ -40,7 +45,28 @@ interface NewMediaBlogEntryFormData {
   }>;
 }
 
-export const convertPrismaMediaBlogEntryToAPI = (entry: any): MediaBlogEntryAPI => {
+export const convertPrismaMediaBlogEntryToAPI = (
+  entry: {
+    id: number;
+    title: string;
+    shortDesc: string | null;
+    type: MediaBlogEntryType;
+    externalLink: string | null;
+    thumbnailUrl: string | null;
+    duration: string | null;
+    content: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    mediaFiles?: Array<{
+      id: number;
+      url: string;
+      type: string;
+      description: string | null;
+      thumbnailUrl: string | null;
+      order: number;
+    }>;
+  }
+): MediaBlogEntryAPI => {
   return {
     id: entry.id,
     title: entry.title,
@@ -52,7 +78,7 @@ export const convertPrismaMediaBlogEntryToAPI = (entry: any): MediaBlogEntryAPI 
     content: entry.content,
     createdAt: entry.createdAt.toISOString(),
     updatedAt: entry.updatedAt.toISOString(),
-    mediaFiles: entry.mediaFiles.map((mf: any) => ({
+    mediaFiles: (entry.mediaFiles ?? []).map((mf) => ({
       id: mf.id,
       url: mf.url,
       type: mf.type,
@@ -65,20 +91,23 @@ export const convertPrismaMediaBlogEntryToAPI = (entry: any): MediaBlogEntryAPI 
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<any>
+  res: NextApiResponse
 ) {
-
   if (req.method === "GET") {
     try {
-      const { page = "1", limit = "10", type, search } = req.query;
+      const { page = "1", limit = "10", type, search, include } = req.query;
+      const minimal = include === "minimal";
 
       const pageNum = parseInt(page as string);
       const limitNum = parseInt(limit as string);
-      const skip = (pageNum - 1) * limitNum;
 
-      const where: any = {};
+      const where: Record<string, unknown> = {};
       if (type) {
-        if (Object.values(MediaBlogEntryType).includes(type.toString().toUpperCase() as MediaBlogEntryType)) {
+        if (
+          Object.values(MediaBlogEntryType).includes(
+            type.toString().toUpperCase() as MediaBlogEntryType
+          )
+        ) {
           where.type = type.toString().toUpperCase();
         }
       }
@@ -89,21 +118,44 @@ export default async function handler(
         ];
       }
 
-      const entries = await prisma.mediaBlogEntry.findMany({
-        where,
-        orderBy: { createdAt: "desc" },
-        skip,
-        take: limitNum,
-        include: { mediaFiles: { orderBy: { order: 'asc' } } },
+      if (Object.keys(where).length > 0) {
+        const skip = (pageNum - 1) * limitNum;
+        const entries = await prisma.mediaBlogEntry.findMany({
+          where,
+          orderBy: { createdAt: "desc" },
+          skip,
+          take: limitNum,
+          include: { mediaFiles: { orderBy: { order: "asc" } } },
+        });
+        const total = await prisma.mediaBlogEntry.count({ where });
+        const apiEntries = entries.map((entry) =>
+          convertPrismaMediaBlogEntryToAPI({
+            ...entry,
+            mediaFiles: minimal ? [] : entry.mediaFiles,
+          })
+        );
+
+        setPublicCacheHeaders(res);
+        return res.status(200).json({
+          success: true,
+          data: apiEntries,
+          total,
+          page: pageNum,
+          limit: limitNum,
+        });
+      }
+
+      const { entries, total } = await getMediaBlogEntries({
+        page: pageNum,
+        limit: limitNum,
+        minimal,
       });
-      const total = await prisma.mediaBlogEntry.count({ where });
 
-      const apiEntries = entries.map(convertPrismaMediaBlogEntryToAPI);
-
+      setPublicCacheHeaders(res);
       return res.status(200).json({
         success: true,
-        data: apiEntries,
-        total: total,
+        data: entries,
+        total,
         page: pageNum,
         limit: limitNum,
       });
@@ -113,13 +165,32 @@ export default async function handler(
         .status(500)
         .json({ success: false, message: "Internal server error" });
     }
-  } else if (req.method === "POST") {
+  }
+
+  if (req.method === "POST") {
     try {
-      const { title, shortDesc, type, externalLink, thumbnailUrl, duration, content, mediaFiles } = req.body as NewMediaBlogEntryFormData;
+      const {
+        title,
+        shortDesc,
+        type,
+        externalLink,
+        thumbnailUrl,
+        duration,
+        content,
+        mediaFiles,
+      } = req.body as NewMediaBlogEntryFormData;
 
       if (!title || !type) {
-        return res.status(400).json({ success: false, message: "Title and Type are required." });
+        return res
+          .status(400)
+          .json({ success: false, message: "Title and Type are required." });
       }
+
+      const resolvedThumbnail =
+        thumbnailUrl ||
+        (mediaFiles?.[0]?.url
+          ? thumbnailFromUrl(mediaFiles[0].url)
+          : undefined);
 
       const newEntry = await prisma.mediaBlogEntry.create({
         data: {
@@ -127,31 +198,37 @@ export default async function handler(
           shortDesc,
           type,
           externalLink,
-          thumbnailUrl,
+          thumbnailUrl: resolvedThumbnail,
           duration,
           content,
           mediaFiles: {
-            create: mediaFiles?.map(file => ({
-              url: file.url,
-              type: file.type,
-              description: file.description,
-              thumbnailUrl: file.thumbnailUrl,
-              order: file.order,
-            })) || [],
+            create:
+              mediaFiles?.map((file) => ({
+                url: file.url,
+                type: file.type,
+                description: file.description,
+                thumbnailUrl:
+                  file.thumbnailUrl || thumbnailFromUrl(file.url),
+                order: file.order,
+              })) || [],
           },
         },
-        include: { mediaFiles: { orderBy: { order: 'asc' } } },
+        include: { mediaFiles: { orderBy: { order: "asc" } } },
       });
 
-      return res.status(201).json({ success: true, data: convertPrismaMediaBlogEntryToAPI(newEntry) });
-
-    } catch (error: any) {
+      return res.status(201).json({
+        success: true,
+        data: convertPrismaMediaBlogEntryToAPI(newEntry),
+      });
+    } catch (error: unknown) {
       console.error("Error creating media blog entry:", error);
-      return res.status(500).json({ success: false, message: error.message || "Internal server error" });
+      const message =
+        error instanceof Error ? error.message : "Internal server error";
+      return res.status(500).json({ success: false, message });
     }
-  } else {
-    return res
-      .status(405)
-      .json({ success: false, message: "Method not allowed" });
   }
+
+  return res
+    .status(405)
+    .json({ success: false, message: "Method not allowed" });
 }

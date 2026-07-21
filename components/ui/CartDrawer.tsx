@@ -184,6 +184,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                       src={item.imageUrl}
                       alt={item.title}
                       fill
+                      sizes="80px"
                       className="object-cover"
                     />
                   </div>

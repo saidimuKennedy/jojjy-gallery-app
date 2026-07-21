@@ -3,7 +3,11 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import useSWR from "swr";
 import { motion } from "framer-motion";
+import type { GetStaticPaths, GetStaticProps } from "next";
 import Navbar from "@/components/ui/Navbar";
+import OptimizedImage from "@/components/ui/OptimizedImage";
+import { pickImageUrl } from "@/lib/cloudinary";
+import { getMediaBlogEntryById } from "@/lib/data/media-blog";
 import { APIResponse, MediaBlogEntryWithRelations } from "@/types/api";
 
 const fetcher = async (url: string) => {
@@ -23,7 +27,39 @@ const CATALOGUE_LABEL: Record<string, string> = {
   EXTERNAL_LINK: "Note",
 };
 
-const SingleArchiveEntryPage = () => {
+interface ArchiveDetailPageProps {
+  initialEntry: MediaBlogEntryWithRelations | null;
+}
+
+function DetailImage({
+  src,
+  alt,
+  priority = false,
+  preset = "hero" as const,
+  className = "aspect-[4/3] w-full",
+}: {
+  src: string;
+  alt: string;
+  priority?: boolean;
+  preset?: "hero" | "card";
+  className?: string;
+}) {
+  return (
+    <div className={`relative overflow-hidden bg-[#f5f5f5] ${className}`}>
+      <OptimizedImage
+        src={src}
+        alt={alt}
+        fill
+        preset={preset}
+        priority={priority}
+        sizes="(max-width: 768px) 100vw, 1400px"
+        className="object-cover"
+      />
+    </div>
+  );
+}
+
+const SingleArchiveEntryPage = ({ initialEntry }: ArchiveDetailPageProps) => {
   const router = useRouter();
   const { id } = router.query;
 
@@ -34,7 +70,8 @@ const SingleArchiveEntryPage = () => {
     isLoading,
   } = useSWR<APIResponse<MediaBlogEntryWithRelations>>(
     shouldFetch ? `/api/media-blog/${id}` : null,
-    fetcher
+    fetcher,
+    { fallbackData: initialEntry ? { success: true, data: initialEntry } : undefined }
   );
 
   const entry = apiResponse?.data;
@@ -44,7 +81,7 @@ const SingleArchiveEntryPage = () => {
     return () => document.documentElement.classList.remove("archive-page");
   }, []);
 
-  if (isLoading) {
+  if (isLoading && !entry) {
     return (
       <div className="min-h-screen bg-white text-[#1a1a1a]">
         <Navbar />
@@ -131,10 +168,10 @@ const SingleArchiveEntryPage = () => {
           );
         }
         return entry.thumbnailUrl ? (
-          <img
-            src={entry.thumbnailUrl}
+          <DetailImage
+            src={pickImageUrl(entry.thumbnailUrl, undefined, "hero")}
             alt={entry.title}
-            className="w-full object-cover"
+            priority
           />
         ) : null;
 
@@ -142,7 +179,7 @@ const SingleArchiveEntryPage = () => {
         return (
           <div className="flex flex-col gap-16 md:gap-24">
             {entry.mediaFiles && entry.mediaFiles.length > 0 ? (
-              entry.mediaFiles.map((file) => (
+              entry.mediaFiles.map((file, index) => (
                 <motion.figure
                   key={file.id}
                   initial={{ opacity: 0, y: 24 }}
@@ -150,10 +187,15 @@ const SingleArchiveEntryPage = () => {
                   viewport={{ once: true, margin: "-10%" }}
                   transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <img
-                    src={file.url}
+                  <DetailImage
+                    src={pickImageUrl(
+                      file.thumbnailUrl,
+                      file.url,
+                      index === 0 ? "hero" : "card"
+                    )}
                     alt={file.description || entry.title}
-                    className="w-full object-cover"
+                    priority={index === 0}
+                    preset={index === 0 ? "hero" : "card"}
                   />
                   {file.description && (
                     <figcaption className="mt-4 font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a]">
@@ -163,9 +205,7 @@ const SingleArchiveEntryPage = () => {
                 </motion.figure>
               ))
             ) : (
-              <p className="font-light text-[#8a8a8a]">
-                No images available.
-              </p>
+              <p className="font-light text-[#8a8a8a]">No images available.</p>
             )}
           </div>
         );
@@ -174,10 +214,11 @@ const SingleArchiveEntryPage = () => {
         return (
           <div className="py-12">
             {entry.thumbnailUrl && (
-              <img
-                src={entry.thumbnailUrl}
+              <DetailImage
+                src={pickImageUrl(entry.thumbnailUrl, undefined, "card")}
                 alt=""
-                className="mb-10 aspect-[16/9] w-full object-cover"
+                preset="card"
+                className="mb-10 aspect-[16/9] w-full"
               />
             )}
             {mainMediaFile?.url ? (
@@ -201,10 +242,11 @@ const SingleArchiveEntryPage = () => {
         return (
           <div>
             {entry.thumbnailUrl && (
-              <img
-                src={entry.thumbnailUrl}
+              <DetailImage
+                src={pickImageUrl(entry.thumbnailUrl, undefined, "hero")}
                 alt=""
-                className="mb-16 w-full object-cover md:mb-20"
+                priority
+                className="mb-16 aspect-[16/10] w-full md:mb-20"
               />
             )}
             {entry.content && (
@@ -220,10 +262,11 @@ const SingleArchiveEntryPage = () => {
         return (
           <div>
             {entry.thumbnailUrl && (
-              <img
-                src={entry.thumbnailUrl}
+              <DetailImage
+                src={pickImageUrl(entry.thumbnailUrl, undefined, "card")}
                 alt=""
-                className="mb-10 w-full object-cover"
+                preset="card"
+                className="mb-10 aspect-[16/10] w-full"
               />
             )}
             {entry.externalLink && (
@@ -320,13 +363,43 @@ const SingleArchiveEntryPage = () => {
       <footer className="mx-auto max-w-4xl px-6 pb-28 pt-24 md:px-12">
         <Link
           href="/gallery"
-          className="font-display text-xs uppercase tracking-[0.32em] text-[#8a8a8a] transition-colors duration-500 hover:text-[#1a1a1a]"
+          className="font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a] transition-colors duration-500 hover:text-[#1a1a1a]"
         >
           ← Back to archive
         </Link>
       </footer>
     </div>
   );
+};
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  return {
+    paths: [],
+    fallback: "blocking",
+  };
+};
+
+export const getStaticProps: GetStaticProps<ArchiveDetailPageProps> = async ({
+  params,
+}) => {
+  const id = parseInt(String(params?.id), 10);
+  if (isNaN(id)) {
+    return { notFound: true };
+  }
+
+  const initialEntry = await getMediaBlogEntryById(id);
+  if (!initialEntry) {
+    return { notFound: true };
+  }
+
+  return {
+    props: {
+      initialEntry: JSON.parse(
+        JSON.stringify(initialEntry)
+      ) as MediaBlogEntryWithRelations,
+    },
+    revalidate: 120,
+  };
 };
 
 export default SingleArchiveEntryPage;

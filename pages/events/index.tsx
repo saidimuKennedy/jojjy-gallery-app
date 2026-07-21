@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import useSWR from "swr";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 
 interface TicketTypeSummary {
   quantity: number;
@@ -126,10 +127,13 @@ export default function EventsIndexPage() {
                     >
                       {event.imageUrl ? (
                         <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
-                          <img
+                          <OptimizedImage
                             src={event.imageUrl}
                             alt=""
-                            className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                            fill
+                            preset="card"
+                            sizes="(max-width: 768px) 100vw, 40vw"
+                            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                           />
                         </div>
                       ) : (

@@ -184,6 +184,8 @@ export interface ArtworkFilters {
   isAvailable?: boolean;
   status?: string;
   seriesId?: number;
+  inGallery?: boolean;
+  include?: "minimal" | "full";
   sort?:
     | "price_asc"
     | "price_desc"

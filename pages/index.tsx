@@ -1,6 +1,8 @@
 import Head from "next/head";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
+import OptimizedImage from "@/components/ui/OptimizedImage";
+import { SITE_LOGO_URL } from "@/lib/cloudinary";
 import StatCounter from "@/components/Animations/StatCounter";
 import React from "react";
 import Link from "next/link"; 
@@ -46,11 +48,14 @@ export default function Home() {
             <div className="relative z-10 py-24 sm:py-32 lg:py-40 px-4 sm:px-6 lg:px-8">
               <div className="text-center max-w-4xl mx-auto">
                 <div className="flex justify-center mb-4">
-                  <div className="w-36 h-24 sm:w-44 sm:h-28 md:w-52 md:h-32">
-                    <img
-                      src="https://res.cloudinary.com/dq3wkbgts/image/upload/v1751641327/logo_v51aad.png"
+                  <div className="w-36 h-24 sm:w-44 sm:h-28 md:w-52 md:h-32 relative">
+                    <OptimizedImage
+                      src={SITE_LOGO_URL}
                       alt="Njenga Ngugi Logo"
-                      className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
+                      fill
+                      preset="thumb"
+                      priority
+                      className="object-contain transition-transform duration-300 hover:scale-105"
                     />
                   </div>
                 </div>

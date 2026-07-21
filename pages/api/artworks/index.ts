@@ -1,9 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getServerSession } from "next-auth/next";
+import { setPublicCacheHeaders } from "@/lib/api-cache";
+import { getSessionUserId } from "@/lib/data/artworks";
 import prisma from "@/lib/prisma";
 import { convertPrismaArtworkWithRelationsToAPI } from "@/types/api";
 import { releaseExpiredReservations } from "@/lib/reservations";
-import { authOptions } from "@/pages/api/auth/[...nextauth]";
 
 export default async function handler(
   req: NextApiRequest,
@@ -29,19 +29,15 @@ export default async function handler(
       seriesId,
       isAvailable,
       status,
+      inGallery,
+      include,
       sort,
     } = req.query;
 
+    const minimal = include === "minimal";
+
     let pageNum: number;
     let limitNum: number | undefined;
-
-    let prismaFindManyArgs: {
-      skip?: number;
-      take?: number;
-      where?: any;
-      orderBy?: any;
-      include?: any;
-    } = {};
 
     const limitQuery = limit as string | undefined;
     if (limitQuery === "all") {
@@ -58,42 +54,48 @@ export default async function handler(
       if (isNaN(pageNum) || pageNum <= 0) {
         pageNum = 1;
       }
+    }
+
+    const prismaFindManyArgs: {
+      skip?: number;
+      take?: number;
+    } = {};
+
+    if (limitNum !== undefined) {
       prismaFindManyArgs.skip = (pageNum - 1) * limitNum;
       prismaFindManyArgs.take = limitNum;
     }
 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
 
-    if (category) {
-      where.category = String(category);
-    }
+    if (category) where.category = String(category);
     if (artist) {
       where.artist = { contains: String(artist), mode: "insensitive" };
     }
     if (medium) {
       where.medium = { contains: String(medium), mode: "insensitive" };
     }
-    if (year) {
-      where.year = parseInt(year as string);
-    }
+    if (year) where.year = parseInt(year as string);
     if (isAvailable !== undefined) {
       where.isAvailable = String(isAvailable).toLowerCase() === "true";
     }
-    if (status) {
-      where.status = String(status);
+    if (status) where.status = String(status);
+    if (inGallery !== undefined) {
+      where.inGallery = String(inGallery).toLowerCase() === "true";
     }
-
-    if (seriesId) {
-      where.seriesId = parseInt(seriesId as string);
-    }
+    if (seriesId) where.seriesId = parseInt(seriesId as string);
 
     if (minPrice || maxPrice) {
       where.price = {};
       if (minPrice) {
-        where.price.gte = parseFloat(minPrice as string);
+        (where.price as Record<string, number>).gte = parseFloat(
+          minPrice as string
+        );
       }
       if (maxPrice) {
-        where.price.lte = parseFloat(maxPrice as string);
+        (where.price as Record<string, number>).lte = parseFloat(
+          maxPrice as string
+        );
       }
     }
 
@@ -107,7 +109,7 @@ export default async function handler(
       ];
     }
 
-    let orderBy: any = { createdAt: "desc" };
+    let orderBy: Record<string, "asc" | "desc"> = { createdAt: "desc" };
     if (sort) {
       switch (sort) {
         case "price_asc":
@@ -137,31 +139,33 @@ export default async function handler(
       }
     }
 
-    const prismaQuery = {
-      where,
-      orderBy,
-      include: { series: true, mediaFiles: true },
-      ...prismaFindManyArgs,
-    };
-
     await releaseExpiredReservations();
 
-    const [artworks, total, session] = await Promise.all([
-      prisma.artwork.findMany(prismaQuery),
+    const sessionUserId = await getSessionUserId(req, res);
+
+    const [artworks, total] = await Promise.all([
+      prisma.artwork.findMany({
+        where,
+        orderBy,
+        include: minimal
+          ? { series: true }
+          : { series: true, mediaFiles: true },
+        ...prismaFindManyArgs,
+      }),
       prisma.artwork.count({ where }),
-      getServerSession(req, res, authOptions),
     ]);
 
     const apiArtworks = artworks.map((artwork) => ({
       ...convertPrismaArtworkWithRelationsToAPI(artwork),
       reservedByCurrentUser:
-        !!session?.user?.id && artwork.reservedByUserId === session.user.id,
+        !!sessionUserId && artwork.reservedByUserId === sessionUserId,
     }));
 
+    setPublicCacheHeaders(res);
     return res.status(200).json({
       success: true,
       data: apiArtworks,
-      total: total,
+      total,
       page: pageNum,
       limit: limitNum,
     });

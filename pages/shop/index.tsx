@@ -2,9 +2,12 @@ import React from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import type { GetStaticProps } from "next";
 import useSWR from "swr";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
+import OptimizedImage from "@/components/ui/OptimizedImage";
+import { getArtworks } from "@/lib/data/artworks";
 import { ArtworkWithRelations } from "@/types/api";
 
 const fetcher = async (url: string) => {
@@ -16,10 +19,15 @@ const fetcher = async (url: string) => {
   return body.data as ArtworkWithRelations[];
 };
 
-export default function ShopIndexPage() {
+export default function ShopIndexPage({
+  initialArtworks,
+}: {
+  initialArtworks: ArtworkWithRelations[];
+}) {
   const { data: artworks, error, isLoading } = useSWR(
-    "/api/artworks?status=AVAILABLE&isAvailable=true&limit=all",
-    fetcher
+    "/api/artworks?status=AVAILABLE&isAvailable=true&limit=all&include=minimal",
+    fetcher,
+    { fallbackData: initialArtworks }
   );
   const currency = process.env.NEXT_PUBLIC_CURRENCY || "USD";
 
@@ -77,10 +85,13 @@ export default function ShopIndexPage() {
                 className="group block"
               >
                 <div className="relative aspect-square bg-neutral-100 overflow-hidden mb-4">
-                  <img
+                  <OptimizedImage
                     src={artwork.imageUrl}
                     alt={artwork.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    fill
+                    preset="card"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
                 <h2 className="font-display text-lg font-light text-neutral-900">
@@ -103,3 +114,25 @@ export default function ShopIndexPage() {
     </div>
   );
 }
+
+export const getStaticProps: GetStaticProps<{
+  initialArtworks: ArtworkWithRelations[];
+}> = async () => {
+  const { artworks } = await getArtworks({
+    status: "AVAILABLE",
+    isAvailable: true,
+    limit: "all",
+    minimal: true,
+  });
+
+  const forSale = artworks.filter(
+    (a) => a.isAvailable && a.status === "AVAILABLE" && (a.price ?? 0) > 0
+  );
+
+  return {
+    props: {
+      initialArtworks: JSON.parse(JSON.stringify(forSale)) as ArtworkWithRelations[],
+    },
+    revalidate: 120,
+  };
+};

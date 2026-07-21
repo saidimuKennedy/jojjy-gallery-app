@@ -6,6 +6,7 @@ import useSWR from "swr";
 import { useSession } from "next-auth/react";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 
 type Track = {
   id: number;
@@ -146,13 +147,16 @@ export default function MusicReleasePage() {
 
         {release && (
           <div className="mt-10 grid gap-10 md:grid-cols-[240px_1fr]">
-            <div className="aspect-square bg-neutral-100">
+            <div className="relative aspect-square bg-neutral-100">
               {release.coverImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <OptimizedImage
                   src={release.coverImage}
-                  alt=""
-                  className="h-full w-full object-cover"
+                  alt={release.title}
+                  fill
+                  preset="card"
+                  priority
+                  sizes="240px"
+                  className="object-cover"
                 />
               ) : null}
             </div>

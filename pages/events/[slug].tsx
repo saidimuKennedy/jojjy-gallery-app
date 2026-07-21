@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 
 interface EventDetail {
   id: number;
@@ -320,10 +321,14 @@ export default function EventDetailPage() {
             className="relative w-full"
           >
             <div className="relative h-[55vh] min-h-[320px] max-h-[720px] w-full overflow-hidden bg-neutral-100 md:h-[70vh]">
-              <img
+              <OptimizedImage
                 src={event.imageUrl}
                 alt=""
-                className="h-full w-full object-cover"
+                fill
+                preset="hero"
+                priority
+                sizes="100vw"
+                className="object-cover"
               />
             </div>
           </motion.section>
@@ -427,10 +432,13 @@ export default function EventDetailPage() {
                       i === 0 ? "sm:col-span-2 aspect-[16/10]" : "aspect-[4/3]"
                     }`}
                   >
-                    <img
+                    <OptimizedImage
                       src={file.url}
                       alt={file.description || ""}
-                      className="h-full w-full object-cover"
+                      fill
+                      preset="card"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover"
                     />
                   </motion.div>
                 ))}

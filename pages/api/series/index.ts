@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { setPublicCacheHeaders } from "@/lib/api-cache";
 import prisma from "@/lib/prisma";
 import { convertPrismaSeriesToAPI } from "@/types/api";
 
@@ -20,6 +21,7 @@ export default async function handler(
 
     const apiSeriesList = seriesList.map(convertPrismaSeriesToAPI);
 
+    setPublicCacheHeaders(res, { sMaxAge: 300, swr: 900 });
     return res.status(200).json({
       success: true,
       data: apiSeriesList,

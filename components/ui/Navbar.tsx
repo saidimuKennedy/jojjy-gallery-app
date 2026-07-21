@@ -8,6 +8,8 @@ import { useSession, signOut } from "next-auth/react";
 
 import CartDrawer from "./CartDrawer";
 import CartButton from "./CartButton";
+import OptimizedImage from "./OptimizedImage";
+import { SITE_LOGO_URL } from "@/lib/cloudinary";
 
 export default function Navbar() {
   const router = useRouter();
@@ -104,9 +106,13 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
             <Link href="/" className="flex items-center">
               <div className="h-14 w-28 flex items-center justify-center sm:h-16 sm:w-32">
-                <img
-                  src="https://res.cloudinary.com/dq3wkbgts/image/upload/v1751641327/logo_v51aad.png"
+                <OptimizedImage
+                  src={SITE_LOGO_URL}
                   alt="Njenga Ngugi Logo"
+                  width={128}
+                  height={64}
+                  preset="thumb"
+                  priority
                   className="w-full h-full object-contain"
                 />
               </div>
