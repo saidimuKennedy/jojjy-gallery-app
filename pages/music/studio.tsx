@@ -6,6 +6,7 @@ import useSWR, { mutate as globalMutate } from "swr";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
+import { Camera, Music, Palette, Ticket } from "lucide-react";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
@@ -219,7 +220,7 @@ export default function MusicStudioPage() {
               </p>
               <div className="mt-10 grid gap-4 sm:grid-cols-2">
                 <div className="border border-neutral-200 p-6">
-                  <p className="text-2xl">🎵</p>
+                  <Music className="h-6 w-6 text-neutral-900" strokeWidth={1.25} aria-hidden />
                   <p className="mt-3 font-display text-xl text-neutral-900">
                     {inside?.memberReleaseCount ?? 0} member{" "}
                     {(inside?.memberReleaseCount ?? 0) === 1
@@ -231,7 +232,7 @@ export default function MusicStudioPage() {
                   </p>
                 </div>
                 <div className="border border-neutral-200 p-6">
-                  <p className="text-2xl">🎨</p>
+                  <Palette className="h-6 w-6 text-neutral-900" strokeWidth={1.25} aria-hidden />
                   <p className="mt-3 font-display text-xl text-neutral-900">
                     Early access window
                   </p>
@@ -241,7 +242,7 @@ export default function MusicStudioPage() {
                   </p>
                 </div>
                 <div className="border border-neutral-200 p-6">
-                  <p className="text-2xl">📷</p>
+                  <Camera className="h-6 w-6 text-neutral-900" strokeWidth={1.25} aria-hidden />
                   <p className="mt-3 font-display text-xl text-neutral-900">
                     Studio notes
                   </p>
@@ -250,7 +251,7 @@ export default function MusicStudioPage() {
                   </p>
                 </div>
                 <div className="border border-neutral-200 p-6">
-                  <p className="text-2xl">🎟</p>
+                  <Ticket className="h-6 w-6 text-neutral-900" strokeWidth={1.25} aria-hidden />
                   <p className="mt-3 font-display text-xl text-neutral-900">
                     Priority access
                   </p>
