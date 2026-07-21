@@ -35,7 +35,7 @@ function accessBadge(r: ReleaseCard): string {
   if (r.accessMode === "MEMBERS_ONLY") return "Members Only";
   if (r.accessMode === "PAID") {
     return r.price != null
-      ? `Purchase · ${formatDisplayPrice(r.price, r.currency)}`
+      ? `Purchase · ${formatDisplayPrice(r.price)}`
       : "Purchase";
   }
   return r.accessMode;

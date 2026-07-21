@@ -326,7 +326,7 @@ export default function MusicReleasePage() {
               <p className="text-xs uppercase tracking-[0.2em] text-neutral-400">
                 {release.releaseType.replace(/_/g, " ")} · {release.accessMode}
                 {release.accessMode === "PAID" && release.price != null
-                  ? ` · ${formatDisplayPrice(release.price, release.currency)}`
+                  ? ` · ${formatDisplayPrice(release.price)}`
                   : ""}
               </p>
               <h1 className="mt-3 font-display text-4xl font-light text-neutral-900 md:text-5xl">
@@ -388,8 +388,8 @@ export default function MusicReleasePage() {
                     {checkoutBusy
                       ? "Redirecting…"
                       : access.state === "locked"
-                        ? `Unlock · ${formatDisplayPrice(release.price, release.currency)}`
-                        : `Unlock · ${formatDisplayPrice(release.price, release.currency)}`}
+                        ? `Unlock · ${formatDisplayPrice(release.price)}`
+                        : `Unlock · ${formatDisplayPrice(release.price)}`}
                   </button>
                   {!session && (
                     <p className="mt-2 text-xs text-neutral-500">

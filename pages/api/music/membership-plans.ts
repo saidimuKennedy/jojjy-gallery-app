@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
-import { musicDisplayPrice } from "@/lib/currency";
+import { musicCatalogPrice } from "@/lib/currency";
 
 export default async function handler(
   req: NextApiRequest,
@@ -21,15 +21,14 @@ export default async function handler(
     return res.status(200).json({
       success: true,
       data: plans.map((p) => {
-        const kesPrice = Number(p.price);
-        const { price, currency } = musicDisplayPrice(kesPrice);
+        const stored = Number(p.price);
+        const { price, currency } = musicCatalogPrice(stored, p.currency);
         return {
           id: p.id,
           name: p.name,
           description: p.description,
           price,
           currency,
-          priceKes: kesPrice,
           durationDays: p.durationDays,
         };
       }),

@@ -4,6 +4,8 @@
  *   npx tsx prisma/seed-music.ts
  *   # or: npm run prisma:seed-music
  *
+ * Catalogue prices are stored in USD. Paystack charges KES at checkout (see KES_PER_USD).
+ *
  * Track `storageKey` values are public https demo MP3s (dev/seed only).
  * Production uploads should use Cloudinary authenticated public_ids.
  */
@@ -95,7 +97,7 @@ async function upsertRelease(params: {
         params.accessMode === "PAID" && params.price != null
           ? params.price
           : null,
-      currency: "KES",
+      currency: "USD",
       paidPlayLimit: 3,
     },
     create: {
@@ -105,7 +107,7 @@ async function upsertRelease(params: {
         params.accessMode === "PAID" && params.price != null
           ? params.price
           : null,
-      currency: "KES",
+      currency: "USD",
       paidPlayLimit: 3,
     },
   });
@@ -139,7 +141,7 @@ async function upsertPlan(params: {
       data: {
         description: params.description,
         price: params.price,
-        currency: "KES",
+        currency: "USD",
         durationDays: params.durationDays,
         active: true,
       },
@@ -150,7 +152,7 @@ async function upsertPlan(params: {
       name: params.name,
       description: params.description,
       price: params.price,
-      currency: "KES",
+      currency: "USD",
       durationDays: params.durationDays,
       active: true,
     },
@@ -161,13 +163,13 @@ async function main() {
   await upsertPlan({
     name: "Studio Pass — 30 days",
     description: "Member exclusives and early listens for a month.",
-    price: 1500,
+    price: 12,
     durationDays: 30,
   });
   await upsertPlan({
     name: "Studio Pass — 90 days",
     description: "Quarter of studio access.",
-    price: 3500,
+    price: 27,
     durationDays: 90,
   });
 
@@ -194,7 +196,7 @@ async function main() {
     releaseType: "EP",
     genre: "Jazz",
     accessMode: "PAID",
-    price: 800,
+    price: 6,
     tracks: [
       { title: "The Crossing", storageKey: AUDIO.two, duration: 420 },
       { title: "After Light", storageKey: AUDIO.three, duration: 355 },
@@ -223,7 +225,7 @@ async function main() {
     releaseType: "LIVE_SESSION",
     genre: "Live",
     accessMode: "PAID",
-    price: 1200,
+    price: 9,
     tracks: [
       { title: "Sunshine (Live)", storageKey: AUDIO.one, duration: 372 },
       { title: "Encore sketch", storageKey: AUDIO.two, duration: 280 },

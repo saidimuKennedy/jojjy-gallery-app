@@ -16,7 +16,7 @@ import {
   isPaystackConfigured,
   paystackCallbackUrl,
 } from "@/lib/paystack";
-import { MUSIC_PAYMENT_CURRENCY } from "@/lib/currency";
+import { CATALOG_CURRENCY, MUSIC_PAYMENT_CURRENCY, musicPaymentAmount, normalizeToUsd } from "@/lib/currency";
 
 const DELIVERY_METHODS = new Set(Object.values(DeliveryMethod));
 const PACKAGING_TYPES = new Set(Object.values(PackagingType));
@@ -295,6 +295,12 @@ export default async function handler(
             message: "You already own this release",
           });
         }
+        const storedCurrency = release.accessPolicy.currency ?? "USD";
+        const usdPrice = normalizeToUsd(
+          release.accessPolicy.price.toNumber(),
+          storedCurrency
+        );
+        const kesCharge = musicPaymentAmount(usdPrice);
         orderItemsData.push({
           itemType: OrderItemType.RELEASE,
           productVariantId: null,
@@ -303,9 +309,9 @@ export default async function handler(
           releaseId: release.id,
           membershipPlanId: null,
           quantity: 1,
-          unitPrice: release.accessPolicy.price,
+          unitPrice: new Prisma.Decimal(kesCharge),
         });
-        subtotal += release.accessPolicy.price.toNumber();
+        subtotal += kesCharge;
       } else if (typeof item.membershipPlanId === "number") {
         const plan = await prisma.membershipPlan.findUnique({
           where: { id: item.membershipPlanId },
@@ -316,6 +322,9 @@ export default async function handler(
             message: `Membership plan ${item.membershipPlanId} not found`,
           });
         }
+        const planCurrency = plan.currency ?? "USD";
+        const usdPrice = normalizeToUsd(plan.price.toNumber(), planCurrency);
+        const kesCharge = musicPaymentAmount(usdPrice);
         orderItemsData.push({
           itemType: OrderItemType.MEMBERSHIP_PASS,
           productVariantId: null,
@@ -324,9 +333,9 @@ export default async function handler(
           releaseId: null,
           membershipPlanId: plan.id,
           quantity: 1,
-          unitPrice: plan.price,
+          unitPrice: new Prisma.Decimal(kesCharge),
         });
-        subtotal += plan.price.toNumber();
+        subtotal += kesCharge;
       }
     }
 
@@ -354,7 +363,7 @@ export default async function handler(
 
     const orderCurrency = hasMusicItem
       ? MUSIC_PAYMENT_CURRENCY
-      : process.env.NEXT_PUBLIC_CURRENCY?.replace(/^\$/, "USD") || "USD";
+      : CATALOG_CURRENCY;
 
     const order = await prisma.order.create({
       data: {

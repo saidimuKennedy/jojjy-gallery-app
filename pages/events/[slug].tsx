@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
+import { CATALOG_CURRENCY } from "@/lib/currency";
 
 interface EventDetail {
   id: number;
@@ -328,7 +329,7 @@ export default function EventDetailPage() {
 
   const isCompleted = event.status === "COMPLETED";
   const isSoldOut = capacity != null && capacity.remaining === 0 && !isCompleted;
-  const currency = process.env.NEXT_PUBLIC_CURRENCY || "USD";
+  const currency = CATALOG_CURRENCY;
   const atmosphere = event.mediaFiles.filter((f) => f.type === "IMAGE");
 
   return (

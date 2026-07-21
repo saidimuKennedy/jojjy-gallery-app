@@ -8,6 +8,7 @@ import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
 import { Artwork } from "@/types/api";
+import { CATALOG_CURRENCY } from "@/lib/currency";
 
 interface WishlistEntry {
   id: string;
@@ -126,7 +127,7 @@ export default function AccountPage() {
     }
   };
 
-  const currency = process.env.NEXT_PUBLIC_CURRENCY || "USD";
+  const currency = CATALOG_CURRENCY;
 
   return (
     <div className="min-h-screen bg-neutral-50">

@@ -6,7 +6,7 @@ import type {
   Track,
 } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { musicDisplayPrice } from "@/lib/currency";
+import { musicCatalogPrice } from "@/lib/currency";
 
 export type ReleaseWithAccess = Release & {
   accessPolicy: AccessPolicy | null;
@@ -303,10 +303,11 @@ export function serializeReleasePublic(
   }
 ) {
   const mode = release.accessPolicy?.accessMode ?? "PAID";
-  const kesPrice = release.accessPolicy?.price
+  const storedPrice = release.accessPolicy?.price
     ? Number(release.accessPolicy.price)
     : null;
-  const { price, currency } = musicDisplayPrice(kesPrice);
+  const storedCurrency = release.accessPolicy?.currency ?? "USD";
+  const { price, currency } = musicCatalogPrice(storedPrice, storedCurrency);
   return {
     id: release.id,
     slug: release.slug,
@@ -324,7 +325,6 @@ export function serializeReleasePublic(
     accessMode: mode,
     price,
     currency,
-    priceKes: kesPrice,
     paidPlayLimit: release.accessPolicy?.paidPlayLimit ?? 3,
     locked: mode !== "FREE",
     tracks: (release.tracks ?? [])

@@ -334,7 +334,7 @@ model Order {
   status          OrderStatus     @default(PENDING)
   paymentProvider PaymentProvider
   amount          Decimal         @db.Decimal(10, 2)
-  currency        String          @default("KES")
+  currency        String          @default("USD")
   phoneNumber     String?
   paystackRef     String?         @unique
   /// Phase 2 delivery/logistics for physical items (merch, and later original
@@ -573,7 +573,7 @@ model AccessPolicy {
   releaseId      Int             @unique
   accessMode     MusicAccessMode @default(PAID)
   price          Decimal?        @db.Decimal(10, 2)
-  currency       String          @default("KES")
+  currency       String          @default("USD")
   paidPlayLimit  Int             @default(3)
   updatedAt      DateTime        @updatedAt
   release        Release         @relation(fields: [releaseId], references: [id], onDelete: Cascade)
@@ -586,7 +586,7 @@ model MembershipPlan {
   name         String
   description  String?
   price        Decimal     @db.Decimal(10, 2)
-  currency     String      @default("KES")
+  currency     String      @default("USD")
   durationDays Int
   active       Boolean     @default(true)
   createdAt    DateTime    @default(now())
