@@ -102,8 +102,30 @@ const ENV_MANIFEST = {
   MPESA_CALLBACK_URL: {
     category: "Payments",
     required: "feature",
-    feature: "Artwork cart M-Pesa checkout",
+    feature: "Legacy artwork cart M-Pesa checkout (deprecated)",
     usedBy: ["pages/api/mpesa/stkpush.ts"],
+  },
+  PAYSTACK_SECRET_KEY: {
+    category: "Payments",
+    required: "feature",
+    feature: "Studio Shop + ticket checkout via Paystack",
+    usedBy: [
+      "lib/paystack.ts",
+      "pages/api/orders/checkout.ts",
+      "pages/api/paystack/webhook.ts",
+    ],
+  },
+  NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: {
+    category: "Payments",
+    required: "feature",
+    feature: "Paystack public key (optional if using redirect-only checkout)",
+    usedBy: ["lib/paystack.ts"],
+  },
+  NEXT_PUBLIC_SITE_URL: {
+    category: "Display",
+    required: "feature",
+    feature: "Canonical URL for sitemap (falls back to NEXTAUTH_URL)",
+    usedBy: ["pages/sitemap.xml.ts", "lib/site-url.ts"],
   },
   EMAIL_HOST: {
     category: "Email",

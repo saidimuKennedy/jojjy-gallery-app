@@ -5,22 +5,24 @@
 
 This is the single source of truth for what stands between **today's codebase** and a product you can confidently put in front of an artist and their audience.
 
+**Implementation plans:** step-by-step guides for each release blocker live in [`docs/plans/`](./docs/plans/README.md).
+
 ---
 
 ## Release Blockers
 
 | Feature | Status | Notes |
 | ------- | ------ | ----- |
-| Payment completion (artwork) | ❌ | Studio Shop creates PENDING orders only (`pages/shop/[id].tsx` → `pages/api/orders/checkout.ts`). Paystack not wired. Legacy M-Pesa path has response-shape bug (`stkData.CheckoutRequestID` vs nested `stkData.data.CheckoutRequestID`). No callback/webhook to finalize orders. |
-| Inventory on purchase | ❌ | Checkout validates stock but never decrements artwork status, ticket `quantitySold`, or variant stock. |
-| Order confirmation / notifications | ❌ | Toast only. No email, no webhook fulfillment. |
-| CRM staff management | ❌ | Read-only role catalog in CRM (`jojjy-gallery-crm/pages/dashboard/staff.tsx`). No create/deactivate/assign/remove APIs. |
-| Ticket operations (CRM) | 🟡 | Ticket types: create/delete only. No sales window UI, no qty edit, no check-in. `salesStart`/`salesEnd` not enforced at checkout. |
-| Permission cleanup | 🟡 | `tickets:*` and `staff:*` seeded in CRM but **never enforced**. Ticket APIs use `events:*` instead. Staff page has no gate. |
-| Unauthenticated write APIs (gallery) | ❌ | `POST/PUT/DELETE` on `pages/api/media-blog/*` have no auth — anyone can mutate archive entries. |
-| Migrations on production DB | 🟡 | Three hand-written migrations exist; **not applied** to live DB per handoff doc. Run only after user approval with `prisma migrate deploy`. |
-| Image naming (Cloudinary) | 🟡 | CRM uploads use random hashes (`artwork_uploads/iubffyxdm2cffywrehvk`), not descriptive names. Seeds use good names (`Dawn_km3ucm.jpg`). Fix in CRM upload handler. |
-| Deployment env | 🟡 | `.env.example` + `scripts/audit-env.mjs` exist. M-Pesa hardcoded to sandbox. No `robots.txt` or sitemap. |
+| Payment completion (artwork) | 🟡 | Paystack wired: checkout → redirect → webhook/verify → fulfillment. Set `PAYSTACK_SECRET_KEY` + webhook URL in Paystack dashboard. |
+| Inventory on purchase | ✅ | `lib/orders/fulfill.ts` — artwork SOLD, tickets issued, variant stock decremented on PAID |
+| Order confirmation / notifications | 🟡 | Confirmation page + SMTP email via existing `EMAIL_*` vars (optional) |
+| CRM staff management | 🟡 | Staff CRUD APIs + UI; `staff:*` enforced. Role changes require re-login (JWT). |
+| Ticket operations (CRM) | 🟡 | Edit + sales window; public buy → Paystack checkout |
+| Permission cleanup | ✅ | `tickets:*` on ticket APIs; `staff:*` on staff routes/page; nav gated by permission |
+| Unauthenticated write APIs (gallery) | ✅ | `POST/PUT/DELETE` removed from `pages/api/media-blog/*` — read-only public API |
+| Migrations on production DB | ✅ | `prisma migrate status` — all 14 migrations applied (2026-07-21) |
+| Image naming (Cloudinary) | ✅ | CRM upload uses slugified `artworkTitle` / filename as Cloudinary `public_id` |
+| Deployment env | 🟡 | `.env.example` + `scripts/audit-env.mjs` exist. M-Pesa hardcoded to sandbox. `robots.txt` + `/sitemap.xml` added. Set `NEXT_PUBLIC_SITE_URL` on Vercel. |
 
 ---
 
@@ -33,8 +35,9 @@ This is the single source of truth for what stands between **today's codebase** 
 | Upload artworks | ✅ | CRM: `pages/api/upload/image.ts` + ArtworkManagement UI. |
 | Edit artworks | ✅ | CRM artwork CRUD with status, media, pricing. |
 | Visitors browse | ✅ | Portfolio, artworks, archive, events, music, shop. |
-| Visitors purchase | 🟡 | Browse + checkout form work; payment does not complete. |
-| Production deployment stable | 🟡 | Builds; live DB migrations pending; commerce not end-to-end. |
+| Visitors purchase | 🟡 | Checkout redirects to Paystack when configured |
+| Payments complete | 🟡 | End-to-end when Paystack keys + webhook URL configured |
+| Production deployment stable | 🟡 | Builds; DB migrations applied; configure Paystack on Vercel before launch |
 
 ---
 
@@ -45,18 +48,18 @@ This is the single source of truth for what stands between **today's codebase** 
 | Artworks CRUD | ✅ | Full management + Cloudinary upload. |
 | Series CRUD | ✅ | Text fields; **no series media upload UI** (schema exists). |
 | Events CRUD | ✅ | Create/edit, publish/unpublish (`DRAFT` → `PUBLISHED`). |
-| Ticket types | 🟡 | Create/delete; no update, no sales window fields in UI. |
+| Ticket types | 🟡 | Create/edit/delete + sales window in CRM UI. |
 | Ticket check-in | ❌ | Schema has `checkedInAt`; no API or UI. |
 | Merch / products | 🟡 | CRM merch page exists; gallery shop sells artworks only, not products. |
 | Announcements (CRUD) | 🟡 | Save/publish to DB. Publish bug: `[id].ts` may clear `publishedAt`. |
 | Announcement delivery (email) | ❌ | `emailSentAt` tracked; SendGrid not wired for blasts. |
 | Announcement delivery (WhatsApp) | ❌ | `whatsappSentAt` tracked; Jiaminie not integrated. |
 | Announcement delivery (notifications) | ❌ | No in-app notification system. |
-| Staff: create | ❌ | Seed/bootstrap only. |
-| Staff: deactivate | 🟡 | `isActive` checked at login; no admin toggle. |
-| Staff: assign role | ❌ | Manual DB/seed. |
-| Staff: remove role | ❌ | No API. |
-| Permission enforcement | 🟡 | `artworks:*`, `series:*`, `events:*`, `merch:*`, `announcements:*`, `music:*` enforced on APIs. `tickets:*`, `staff:*` unused. Nav shows all modules to every user. |
+| Staff: create | ✅ | CRM staff page + `POST /api/staff` |
+| Staff: deactivate | ✅ | PATCH toggle `isActive` |
+| Staff: assign role | ✅ | PATCH role on staff page |
+| Staff: remove role | ✅ | Set role to empty via PATCH |
+| Permission enforcement | ✅ | `tickets:*`, `staff:*` enforced; nav gated by permission |
 | Analytics dashboard | ❌ | Dashboard is a link grid only — no revenue, orders, visitors, top artwork/event. |
 | Music management | 🟡 | CRM music module exists; defer to v2 for public launch. |
 
@@ -70,11 +73,11 @@ This is the single source of truth for what stands between **today's codebase** 
 | Archive (Journal) | ✅ | Infinite scroll, essays/film/photos. Nav label: "Archive". |
 | Artwork detail | 🟡 | Image loading optimized (`OptimizedImage`, Cloudinary transforms). Purchase links to shop. Wishlist works. **No reserve/hold UI** (API exists). Similar works: verify. |
 | Events index | ✅ | Editorial layout, capacity labels. |
-| Event detail | ✅ | Cinematic layout, RSVP, atmosphere gallery, press (past events). **No paid ticket purchase.** |
-| Portfolio / series | ✅ | Exhibition pages with behind-the-scenes media (`SeriesMediaFile`). |
+| Event detail | ✅ | RSVP + paid ticket buy via Paystack (when configured). |
+| Portfolio / series | ✅ | Exhibition pages with behind-the-scenes media. |
 | About | 🟡 | Bio, stats, follow CTA. Older styling vs newer pages. |
-| Contact | 🟡 | Form + SendGrid email. No rate limit/CAPTCHA. Placeholder phone. |
-| Studio Shop | 🟡 | Artwork checkout form; payment stub. Cart drawer orphaned (`AddToCartButton` never imported). |
+| Contact | 🟡 | Form + SMTP email. No rate limit/CAPTCHA. |
+| Studio Shop | 🟡 | Paystack checkout wired; cart drawer still orphaned. |
 | Music | 🔵 | Public pages exist; defer to v2. |
 
 ---
@@ -83,13 +86,13 @@ This is the single source of truth for what stands between **today's codebase** 
 
 | Flow | Status | Notes |
 | ---- | ------ | ----- |
-| Artwork → checkout → payment → confirmation | 🟡 | Form → PENDING order → toast. Payment missing. |
-| Order record | 🟡 | `Order` + `OrderItem` models; legacy `Transaction` for M-Pesa path. |
-| Inventory update | ❌ | Not implemented post-payment. |
+| Artwork → checkout → payment → confirmation | 🟡 | Paystack redirect → confirmation page → verify/webhook |
+| Order record | ✅ | `Order` + `OrderItem`; Paystack ref stored |
+| Inventory update | ✅ | `lib/orders/fulfill.ts` on PAID |
 | Merch variants (size/color/stock) | 🟡 | Schema + read API (`pages/api/products/*`). **No public merch UI.** Checkout backend supports `productVariantId`. |
-| Event ticket purchase (public) | ❌ | RSVP only (`pages/api/events/[slug]/rsvp.ts`). No ticket checkout on event page. |
-| M-Pesa STK push | 🟡 | Sandbox only. Unauthenticated endpoint. Nesting bug in payment handler. No callback route. |
-| Paystack | ❌ | Referenced in schema/orders; zero integration code. |
+| Event ticket purchase (public) | 🟡 | Buy ticket on event page → Paystack (RSVP remains for free events) |
+| M-Pesa STK push | 🟡 | Legacy/deprecated; sandbox only |
+| Paystack | 🟡 | Implemented — set `PAYSTACK_SECRET_KEY` + webhook URL |
 
 ---
 
@@ -132,8 +135,8 @@ This is the single source of truth for what stands between **today's codebase** 
 | Input validation | 🟡 | Good on register/checkout; weak on contact form (HTML injection in email body). |
 | Cloudinary signed URLs (music) | ✅ | `lib/music/playback.ts` for authenticated audio. |
 | SEO meta | 🟡 | Basic `<title>` + description per page. No OG/Twitter/JSON-LD. |
-| Sitemap | ❌ | Not implemented. |
-| robots.txt | ❌ | Not in `public/`. |
+| Sitemap | ✅ | Dynamic `/sitemap.xml` |
+| robots.txt | ✅ | `public/robots.txt` |
 
 ---
 

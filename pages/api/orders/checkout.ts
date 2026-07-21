@@ -10,6 +10,12 @@ import {
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { releaseExpiredReservations } from "@/lib/reservations";
+import {
+  buildPaystackReference,
+  initializeTransaction,
+  isPaystackConfigured,
+  paystackCallbackUrl,
+} from "@/lib/paystack";
 
 const DELIVERY_METHODS = new Set(Object.values(DeliveryMethod));
 const PACKAGING_TYPES = new Set(Object.values(PackagingType));
@@ -46,6 +52,7 @@ export default async function handler(
 
   const session = await getServerSession(req, res, authOptions);
   const userId = session?.user?.id;
+  const userEmail = session?.user?.email;
   if (!userId) {
     return res
       .status(401)
@@ -149,9 +156,17 @@ export default async function handler(
         if (
           !artwork ||
           !artwork.isAvailable ||
-          artwork.status !== "AVAILABLE" ||
           artwork.price.toNumber() <= 0
         ) {
+          return res.status(404).json({
+            success: false,
+            message: `Artwork ${item.artworkId} is not available for purchase`,
+          });
+        }
+        const reservedByBuyer =
+          artwork.status === "RESERVED" &&
+          artwork.reservedByUserId === userId;
+        if (artwork.status !== "AVAILABLE" && !reservedByBuyer) {
           return res.status(404).json({
             success: false,
             message: `Artwork ${item.artworkId} is not available for purchase`,
@@ -207,6 +222,19 @@ export default async function handler(
           return res.status(404).json({
             success: false,
             message: `Ticket type ${item.ticketTypeId} not found`,
+          });
+        }
+        const now = new Date();
+        if (ticketType.salesStart && now < ticketType.salesStart) {
+          return res.status(403).json({
+            success: false,
+            message: "Ticket sales have not opened yet",
+          });
+        }
+        if (ticketType.salesEnd && now > ticketType.salesEnd) {
+          return res.status(403).json({
+            success: false,
+            message: "Ticket sales have ended",
           });
         }
         const remaining = ticketType.quantity - ticketType.quantitySold;
@@ -304,9 +332,67 @@ export default async function handler(
       include: { items: true },
     });
 
+    if (provider === "PAYSTACK") {
+      if (!isPaystackConfigured()) {
+        return res.status(503).json({
+          success: false,
+          message:
+            "Online payment is not configured. Set PAYSTACK_SECRET_KEY on the server.",
+        });
+      }
+      if (!userEmail) {
+        return res.status(400).json({
+          success: false,
+          message: "Your account must have an email address to pay online.",
+        });
+      }
+
+      const reference = buildPaystackReference(order.id);
+      const paystack = await initializeTransaction({
+        email: userEmail,
+        amount: order.amount.toNumber(),
+        currency: order.currency,
+        reference,
+        callbackUrl: paystackCallbackUrl(reference),
+        metadata: { orderId: order.id },
+      });
+
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { paystackRef: reference },
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: "Redirecting to payment…",
+        data: {
+          id: order.id,
+          status: order.status,
+          amount: order.amount.toNumber(),
+          currency: order.currency,
+          paystackRef: reference,
+          authorizationUrl: paystack.authorization_url,
+          accessCode: paystack.access_code,
+          deliveryMethod: order.deliveryMethod,
+          deliveryFee: order.deliveryFee?.toNumber() ?? null,
+          items: order.items.map((oi) => ({
+            id: oi.id,
+            itemType: oi.itemType,
+            productVariantId: oi.productVariantId,
+            ticketTypeId: oi.ticketTypeId,
+            artworkId: oi.artworkId,
+            releaseId: oi.releaseId,
+            membershipPlanId: oi.membershipPlanId,
+            quantity: oi.quantity,
+            unitPrice: oi.unitPrice.toNumber(),
+          })),
+        },
+      });
+    }
+
     return res.status(201).json({
       success: true,
-      message: "Order created — payment coming soon.",
+      message: "Order created — complete payment to confirm.",
       data: {
         id: order.id,
         status: order.status,

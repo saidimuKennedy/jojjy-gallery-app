@@ -1,5 +1,5 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { getServerSession } from "next-auth";
+import type { NextApiRequest, NextApiResponse } from "next";
+import { getServerSession } from "next-auth/next";
 import prisma from "../../../lib/prisma";
 import {
   PaymentResponse,
@@ -10,6 +10,8 @@ import {
 import { Artwork as PrismaArtwork, Prisma } from "@prisma/client";
 import { authOptions } from "../auth/[...nextauth]";
 import { releaseExpiredReservations } from "@/lib/reservations";
+
+/** @deprecated v1 launch uses Paystack via POST /api/orders/checkout. Kept for legacy cart UI. */
 
 export default async function handler(
   req: NextApiRequest,

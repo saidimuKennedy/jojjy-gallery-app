@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { MediaBlogEntryType, MediaFileType } from "@prisma/client";
+import { MediaBlogEntryType } from "@prisma/client";
 import { setPublicCacheHeaders } from "@/lib/api-cache";
-import { thumbnailFromUrl } from "@/lib/cloudinary";
 import {
   getMediaBlogEntries,
 } from "@/lib/data/media-blog";
@@ -24,23 +23,6 @@ export interface MediaBlogEntryAPI {
     type: string;
     description: string | null;
     thumbnailUrl: string | null;
-    order: number;
-  }>;
-}
-
-interface NewMediaBlogEntryFormData {
-  title: string;
-  shortDesc?: string;
-  type: MediaBlogEntryType;
-  externalLink?: string;
-  thumbnailUrl?: string;
-  duration?: string;
-  content?: string;
-  mediaFiles?: Array<{
-    url: string;
-    type: MediaFileType;
-    description: string;
-    thumbnailUrl?: string;
     order: number;
   }>;
 }
@@ -167,68 +149,10 @@ export default async function handler(
     }
   }
 
-  if (req.method === "POST") {
-    try {
-      const {
-        title,
-        shortDesc,
-        type,
-        externalLink,
-        thumbnailUrl,
-        duration,
-        content,
-        mediaFiles,
-      } = req.body as NewMediaBlogEntryFormData;
-
-      if (!title || !type) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Title and Type are required." });
-      }
-
-      const resolvedThumbnail =
-        thumbnailUrl ||
-        (mediaFiles?.[0]?.url
-          ? thumbnailFromUrl(mediaFiles[0].url)
-          : undefined);
-
-      const newEntry = await prisma.mediaBlogEntry.create({
-        data: {
-          title,
-          shortDesc,
-          type,
-          externalLink,
-          thumbnailUrl: resolvedThumbnail,
-          duration,
-          content,
-          mediaFiles: {
-            create:
-              mediaFiles?.map((file) => ({
-                url: file.url,
-                type: file.type,
-                description: file.description,
-                thumbnailUrl:
-                  file.thumbnailUrl || thumbnailFromUrl(file.url),
-                order: file.order,
-              })) || [],
-          },
-        },
-        include: { mediaFiles: { orderBy: { order: "asc" } } },
-      });
-
-      return res.status(201).json({
-        success: true,
-        data: convertPrismaMediaBlogEntryToAPI(newEntry),
-      });
-    } catch (error: unknown) {
-      console.error("Error creating media blog entry:", error);
-      const message =
-        error instanceof Error ? error.message : "Internal server error";
-      return res.status(500).json({ success: false, message });
-    }
-  }
-
-  return res
-    .status(405)
-    .json({ success: false, message: "Method not allowed" });
+  res.setHeader("Allow", ["GET"]);
+  return res.status(405).json({
+    success: false,
+    message:
+      "Archive entries are managed in the CRM. This public API is read-only.",
+  });
 }

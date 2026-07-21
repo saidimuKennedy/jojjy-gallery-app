@@ -92,7 +92,11 @@ export default function ShopArtworkPage() {
         toast.error(body.message || "Checkout failed");
         return;
       }
-      toast.success(body.message || "Order created — payment coming soon.");
+      if (body.data?.authorizationUrl) {
+        window.location.href = body.data.authorizationUrl as string;
+        return;
+      }
+      toast.success(body.message || "Order created.");
     } catch {
       toast.error("Checkout failed");
     } finally {
@@ -262,10 +266,10 @@ export default function ShopArtworkPage() {
                   disabled={checkoutBusy}
                   className="w-full border border-neutral-900 bg-neutral-900 py-4 font-display text-xs uppercase tracking-[0.28em] text-white hover:bg-neutral-800 disabled:opacity-50"
                 >
-                  {checkoutBusy ? "Placing order…" : "Place order"}
+                  {checkoutBusy ? "Redirecting to payment…" : "Proceed to payment"}
                 </button>
                 <p className="text-xs font-light text-neutral-400">
-                  Creates a pending order. Online payment wiring comes next.
+                  Secure checkout via Paystack. You&apos;ll return here after payment.
                 </p>
               </div>
             )}

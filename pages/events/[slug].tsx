@@ -29,6 +29,8 @@ interface EventDetail {
     price: number;
     quantity: number;
     quantitySold: number;
+    salesStart: string | null;
+    salesEnd: string | null;
   }[];
   mediaFiles: {
     id: number;
@@ -88,6 +90,33 @@ function ticketPerks(name: string): string[] {
     ];
   }
   return ["Access to the evening", "Exhibition viewing"];
+}
+
+type TicketSaleStatus = "upcoming" | "open" | "closed" | "sold_out";
+
+function ticketSaleStatus(tt: EventDetail["ticketTypes"][number]): TicketSaleStatus {
+  const left = Math.max(0, tt.quantity - tt.quantitySold);
+  if (left === 0) return "sold_out";
+  const now = Date.now();
+  if (tt.salesStart && now < new Date(tt.salesStart).getTime()) {
+    return "upcoming";
+  }
+  if (tt.salesEnd && now > new Date(tt.salesEnd).getTime()) {
+    return "closed";
+  }
+  return "open";
+}
+
+function ticketSaleLabel(
+  tt: EventDetail["ticketTypes"][number],
+  status: TicketSaleStatus
+): string {
+  if (status === "sold_out") return "Sold out";
+  if (status === "closed") return "Ticket sales closed";
+  if (status === "upcoming" && tt.salesStart) {
+    return `On sale from ${formatDay(tt.salesStart)}`;
+  }
+  return "";
 }
 
 function buildGoogleCalendarUrl(event: EventDetail): string {
@@ -155,6 +184,7 @@ export default function EventDetailPage() {
   const eventSlug = typeof slug === "string" ? slug : undefined;
   const { data: session, status: authStatus } = useSession();
   const [rsvpBusy, setRsvpBusy] = useState(false);
+  const [ticketBusyId, setTicketBusyId] = useState<number | null>(null);
 
   const { data: event, error, isLoading, mutate } = useSWR(
     eventSlug ? `/api/events/${eventSlug}` : null,
@@ -215,6 +245,41 @@ export default function EventDetailPage() {
       toast.error("Could not cancel");
     } finally {
       setRsvpBusy(false);
+    }
+  };
+
+  const handleBuyTicket = async (ticketTypeId: number) => {
+    if (!event) return;
+    if (authStatus === "loading") return;
+    if (!session?.user) {
+      toast.error("Sign in to purchase tickets");
+      router.push(`/login?callbackUrl=${encodeURIComponent(router.asPath)}`);
+      return;
+    }
+    setTicketBusyId(ticketTypeId);
+    try {
+      const res = await fetch("/api/orders/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: [{ ticketTypeId, quantity: 1 }],
+          paymentProvider: "PAYSTACK",
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        toast.error(body.message || "Checkout failed");
+        return;
+      }
+      if (body.data?.authorizationUrl) {
+        window.location.href = body.data.authorizationUrl as string;
+        return;
+      }
+      toast.success(body.message || "Order created.");
+    } catch {
+      toast.error("Checkout failed");
+    } finally {
+      setTicketBusyId(null);
     }
   };
 
@@ -482,6 +547,12 @@ export default function EventDetailPage() {
                 <div className="mb-16">
                   {event.ticketTypes.map((tt) => {
                     const left = Math.max(0, tt.quantity - tt.quantitySold);
+                    const saleStatus = ticketSaleStatus(tt);
+                    const saleLabel = ticketSaleLabel(tt, saleStatus);
+                    const canBuy =
+                      tt.price > 0 &&
+                      saleStatus === "open" &&
+                      ticketBusyId !== tt.id;
                     return (
                       <div
                         key={tt.id}
@@ -503,10 +574,33 @@ export default function EventDetailPage() {
                         <p className="mt-6 font-display text-xl font-light text-neutral-900">
                           {currency} {tt.price.toLocaleString()}
                         </p>
-                        {left > 0 && left <= 15 && (
+                        {saleLabel && (
+                          <p className="mt-2 font-archive-body text-sm text-neutral-500">
+                            {saleLabel}
+                          </p>
+                        )}
+                        {left > 0 && left <= 15 && saleStatus === "open" && (
                           <p className="mt-2 font-archive-body text-sm text-neutral-500">
                             {left} left
                           </p>
+                        )}
+                        {tt.price > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => handleBuyTicket(tt.id)}
+                            disabled={!canBuy}
+                            className="mt-6 border border-neutral-900 bg-neutral-900 px-8 py-4 font-display text-xs uppercase tracking-[0.28em] text-white transition-colors hover:bg-white hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            {ticketBusyId === tt.id
+                              ? "…"
+                              : saleStatus === "open"
+                                ? "Buy ticket"
+                                : saleStatus === "sold_out"
+                                  ? "Sold out"
+                                  : saleStatus === "upcoming"
+                                    ? "Not on sale yet"
+                                    : "Sales closed"}
+                          </button>
                         )}
                       </div>
                     );
