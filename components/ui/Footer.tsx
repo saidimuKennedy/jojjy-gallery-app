@@ -25,6 +25,12 @@ export default function Footer() {
               Instagram
             </a>
             <Link
+              href="/subscribe"
+              className="text-sm uppercase tracking-[0.18em] text-neutral-600 transition-colors hover:text-neutral-900"
+            >
+              Subscribe
+            </Link>
+            <Link
               href="/contact"
               className="text-sm uppercase tracking-[0.18em] text-neutral-600 transition-colors hover:text-neutral-900"
             >

@@ -1,6 +1,7 @@
 import { CartProvider } from "@/context/CartContext";
 import "@/styles/globals.css";
 import Layout from "@/components/Layout/Layout";
+import AudienceCapture from "@/components/ui/AudienceCapture";
 import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "react-hot-toast";
@@ -15,6 +16,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <Layout>
           <Component {...pageProps} />
         </Layout>
+        <AudienceCapture />
       </CartProvider>
       <Toaster
         position="top-center"

@@ -18,6 +18,7 @@ These documents are **action plans**, not feature specs. Each one describes how 
 | 8 | [SEO: robots.txt & sitemap](./08-seo-robots-sitemap.md) | Gallery | S | — |
 | 9 | [Music paid unlock checkout](./09-music-paid-unlock-checkout.md) | Gallery | M | Plans 2–3 (Paystack + fulfillment base) |
 | 10 | [The Studio experience](./10-studio-experience.md) | Gallery (+ CRM Phase B) | L | Plan 9 (commerce baseline) |
+| 11 | [Audience (newsletter) MVP](./11-audience-newsletter-mvp.md) | Gallery + CRM | S | Shared `Subscriber` schema |
 
 **Effort key:** S = half day · M = 1–2 days · L = 2–4 days
 
@@ -26,6 +27,8 @@ These documents are **action plans**, not feature specs. Each one describes how 
 Polish and business items stay tracked in [LAUNCH_CHECKLIST.md](../../LAUNCH_CHECKLIST.md) under **Polish**, **Business**, and **Version 2**.
 
 **Music module:** [Plan 09 — Music paid unlock checkout](./09-music-paid-unlock-checkout.md) closes the paid-release loop (tease → Paystack → `ReleaseUnlock`). [Plan 10 — The Studio experience](./10-studio-experience.md) adds the emotional layer: dedicated `/music/studio`, language, library split, and belonging UX on top of MVP commerce.
+
+**Audience:** [Plan 11 — Audience (newsletter) MVP](./11-audience-newsletter-mvp.md) collects guest emails via a dedicated `/subscribe` page + scroll modal CTA, plus CRM list/search/CSV. No footer form, no sending or campaigns. CRM module named **Audience**, not Newsletter.
 
 ## Repos
 

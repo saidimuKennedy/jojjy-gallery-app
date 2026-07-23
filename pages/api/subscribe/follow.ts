@@ -64,7 +64,11 @@ export default async function handler(
           }
           await prisma.subscriber.update({
             where: { id: byEmail.id },
-            data: { userId },
+            data: {
+              userId,
+              status: "ACTIVE",
+              unsubscribedAt: null,
+            },
           });
           return res.status(200).json({
             success: true,
@@ -77,6 +81,8 @@ export default async function handler(
         data: {
           userId,
           email: email || null,
+          status: "ACTIVE",
+          subscribedAt: new Date(),
         },
       });
 

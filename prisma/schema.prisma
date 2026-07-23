@@ -399,15 +399,26 @@ model Announcement {
 /// logged-in User also opts in ("follow the artist", Phase 2), `userId`
 /// links the two records.
 model Subscriber {
-  id          String   @id @default(uuid())
-  email       String?  @unique
-  phoneNumber String?  @unique
-  userId      String?  @unique
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String           @id @default(uuid())
+  email          String?          @unique
+  phoneNumber    String?          @unique
+  userId         String?          @unique
+  status         SubscriberStatus @default(ACTIVE)
+  subscribedAt   DateTime         @default(now())
+  confirmedAt    DateTime?
+  unsubscribedAt DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  user           User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([status])
+  @@index([email])
   @@map("subscribers")
+}
+
+enum SubscriberStatus {
+  ACTIVE
+  UNSUBSCRIBED
 }
 
 enum EventStatus {
