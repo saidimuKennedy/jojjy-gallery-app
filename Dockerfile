@@ -3,12 +3,24 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
+# Standalone stage to run `prisma migrate deploy` without needing `next build`
+# (which needs a migrated DB to run getStaticProps) — breaks the chicken-and-egg
+# between "build the image" and "migrate the DB the build queries".
+FROM node:24-slim AS migrator
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json package-lock.json ./
+COPY prisma ./prisma
+COPY prisma.config.js ./prisma.config.js
+CMD ["npx", "prisma", "migrate", "deploy"]
+
 FROM node:24-slim AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 # next build runs getStaticProps (shop, gallery) that query Postgres, so the
-# build needs a reachable DB. Pass via build args (see deploy/.env.example).
+# build needs a reachable, already-migrated DB. Pass via build args (see
+# deploy/.env.example) — run the `migrator` stage/service first.
 ARG DATABASE_URL
 ARG DIRECT_URL
 ARG NEXT_PUBLIC_SITE_URL

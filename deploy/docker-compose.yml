@@ -26,7 +26,7 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
-    command: npx prisma migrate deploy
+      target: migrator
     environment: &db_env
       DATABASE_URL: ${APP_DATABASE_URL:?set APP_DATABASE_URL in deploy/.env}
       DIRECT_URL: ${APP_DIRECT_URL:?set APP_DIRECT_URL in deploy/.env}
@@ -39,7 +39,7 @@ services:
     build:
       context: ../../jojjy-gallery-crm
       dockerfile: Dockerfile
-    command: npx prisma migrate deploy
+      target: migrator
     environment: *db_env
     depends_on:
       db:

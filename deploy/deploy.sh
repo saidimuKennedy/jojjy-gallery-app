@@ -63,6 +63,10 @@ until "${COMPOSE[@]}" exec -T db pg_isready -U "${POSTGRES_USER:-jojjy}" -d "${P
   sleep 2
 done
 
+echo "==> Running migrations (must happen before building app/crm — next build's"
+echo "    static export queries Postgres, so the schema must exist first)…"
+"${COMPOSE[@]}" up migrate-app migrate-crm
+
 echo "==> Building app + crm images (next build hits the DB via localhost:${POSTGRES_PORT:-5433})…"
 "${COMPOSE[@]}" build app crm
 
