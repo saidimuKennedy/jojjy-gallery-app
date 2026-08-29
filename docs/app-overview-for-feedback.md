@@ -11,7 +11,7 @@ can:
 - Browse artworks by series/category, view details, dimensions, medium, year
 - View a media blog (videos, images, audio, external links) about the
   artist's process and exhibitions
-- Buy available artworks, paid via M-Pesa
+- Buy available artworks, paid via Paystack
 - Read an About page with the artist's bio and career history
 
 Behind the scenes, the artist (as admin) manages artworks, series, and blog
@@ -33,7 +33,7 @@ reasons (see below).
    tickets, merch, and announcements, with editable staff permissions
    (e.g. door staff who can check in tickets but can't edit pricing).
 5. **Paystack** as the payment provider for the new ticket/merch checkout,
-   alongside the existing M-Pesa flow.
+   alongside the existing Paystack flow.
 
 ## What we'd like feedback on
 

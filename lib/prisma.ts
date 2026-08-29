@@ -25,7 +25,12 @@ function withRelaxedSsl(connectionString: string | undefined) {
 
   try {
     const url = new URL(connectionString);
-    url.searchParams.set("sslmode", "no-verify");
+    // Respect an explicit sslmode (e.g. sslmode=disable for the docker-compose
+    // postgres, or sslmode=require for managed hosts). Only fall back to
+    // no-verify when the caller didn't state a preference.
+    if (!url.searchParams.has("sslmode")) {
+      url.searchParams.set("sslmode", "no-verify");
+    }
     return url.toString();
   } catch {
     const cleaned = connectionString

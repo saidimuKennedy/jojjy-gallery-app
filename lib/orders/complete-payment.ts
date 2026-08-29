@@ -27,7 +27,10 @@ export async function completeOrderFromPaystackReference(
     throw new Error(`Payment not successful (${verification.status})`);
   }
 
-  const expectedAmount = Math.round(order.amount.toNumber() * 100);
+  const chargedAmount = order.paystackChargeAmount
+    ? order.paystackChargeAmount.toNumber()
+    : order.amount.toNumber();
+  const expectedAmount = Math.round(chargedAmount * 100);
   if (verification.amount !== expectedAmount) {
     throw new Error("Payment amount mismatch");
   }

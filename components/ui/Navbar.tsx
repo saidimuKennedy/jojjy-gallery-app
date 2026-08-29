@@ -3,17 +3,13 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { useCart } from "@/context/CartContext";
 import { useSession, signOut } from "next-auth/react";
 
-import CartDrawer from "./CartDrawer";
-import CartButton from "./CartButton";
 import OptimizedImage from "./OptimizedImage";
 import { SITE_LOGO_URL } from "@/lib/cloudinary";
 
 export default function Navbar() {
   const router = useRouter();
-  const { items, isCartOpen, closeCart } = useCart();
   const { data: session, status } = useSession();
 
   const user = session?.user;
@@ -36,7 +32,6 @@ export default function Navbar() {
   useEffect(() => {
     const handleRouteChange = () => {
       setIsMobileMenuOpen(false);
-      closeCart();
     };
 
     router.events.on("routeChangeComplete", handleRouteChange);
@@ -46,11 +41,9 @@ export default function Navbar() {
       router.events.off("routeChangeComplete", handleRouteChange);
       router.events.off("routeChangeError", handleRouteChange);
     };
-  }, [router.events, closeCart]);
+  }, [router.events]);
 
   const isActive = (path: string) => router.pathname === path;
-
-  const shouldShowCart = router.pathname.startsWith("/shop");
 
   const navItems = [
     { label: "Home", path: "/" },
@@ -177,11 +170,9 @@ export default function Navbar() {
                     Login
                   </Link>
                 ))}
-              {shouldShowCart && <CartButton />}
             </div>
 
             <div className="flex md:hidden items-center space-x-4">
-              {shouldShowCart && <CartButton />}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-500"
@@ -266,7 +257,6 @@ export default function Navbar() {
           )}
         </div>
       </div>
-      <CartDrawer isOpen={isCartOpen} onClose={closeCart} />
     </>
   );
 }

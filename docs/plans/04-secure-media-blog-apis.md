@@ -113,5 +113,5 @@ Document in LAUNCH_CHECKLIST: archive CRUD = CRM only.
 | Item | File | Fix |
 | ---- | ---- | --- |
 | Contact HTML injection | `pages/api/contact/send-contact-email.ts` | Escape HTML in email body |
-| STK push unauthenticated | `pages/api/mpesa/stkpush.ts` | Require session or deprecate |
+| STK push unauthenticated | `pages/api/mpesa/stkpush.ts` | Removed in Plan 14 |
 | Like/view spam | `pages/api/artworks/[id]/like.ts` | Rate limit (future plan) |

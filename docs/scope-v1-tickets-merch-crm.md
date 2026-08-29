@@ -18,8 +18,7 @@ tickets, merch, announcements, staff/permissions).
 
 - Next.js Pages Router, Prisma + Postgres, custom session/User model
   (`UserRole.ADMIN` / `USER`)
-- M-Pesa checkout already wired for artwork purchases
-  (`pages/api/payment/checkout.ts`, `pages/api/mpesa`)
+- Paystack checkout wired for all purchases (artwork, merch, tickets, music)
 - Admin CRUD already exists for artworks/series/media-blog under
   `pages/api/admin/*` — this is the pattern being extended/pulled into the
   CRM
@@ -63,7 +62,7 @@ new content types.
 
 ## Decisions (confirmed with client, 2026-07-12)
 
-1. **Payment provider** — Paystack. Covers M-Pesa + card in a single
+1. **Payment provider** — Paystack. Covers card + mobile money in a single
    integration for Kenya; no separate Stripe integration needed.
 
 2. **E-commerce for merch and tickets** — built directly into

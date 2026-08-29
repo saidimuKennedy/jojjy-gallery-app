@@ -57,7 +57,7 @@ Studio Pass price/duration: **artist-configured** MembershipPlan (ADR-016).
 
 # Payment Providers (when live)
 
-Inherit M-Pesa / Paystack. No Music-specific branching.
+Inherit Paystack. No Music-specific branching.
 
 ---
 

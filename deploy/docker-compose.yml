@@ -1,0 +1,123 @@
+name: jojjy
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-jojjy}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+      POSTGRES_DB: ${POSTGRES_DB:-jojjy}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-jojjy} -d ${POSTGRES_DB:-jojjy}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-shot migrations. The app and CRM keep separate Prisma migration
+  # histories against the same database: the app owns the full history, the
+  # CRM only adds its staff-auth tables (overlapping migration names are
+  # skipped by `prisma migrate deploy`).
+  migrate-app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: npx prisma migrate deploy
+    environment: &db_env
+      DATABASE_URL: ${APP_DATABASE_URL:?set APP_DATABASE_URL in deploy/.env}
+      DIRECT_URL: ${APP_DIRECT_URL:?set APP_DIRECT_URL in deploy/.env}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  migrate-crm:
+    build:
+      context: ../../jojjy-gallery-crm
+      dockerfile: Dockerfile
+    command: npx prisma migrate deploy
+    environment: *db_env
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      # next build runs getStaticProps that query Postgres, so the build must
+      # reach the DB via the host-published port (docker compose up -d db first).
+      network: host
+      args:
+        DATABASE_URL: ${BUILD_DATABASE_URL:?set BUILD_DATABASE_URL in deploy/.env}
+        DIRECT_URL: ${BUILD_DIRECT_URL:?set BUILD_DIRECT_URL in deploy/.env}
+        NEXT_PUBLIC_SITE_URL: ${APP_PUBLIC_URL}
+        NEXT_PUBLIC_CURRENCY: ${NEXT_PUBLIC_CURRENCY:-USD}
+        NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: ${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY:-}
+        NEXT_PUBLIC_ARTIST_WHATSAPP_NUMBER: ${NEXT_PUBLIC_ARTIST_WHATSAPP_NUMBER:-}
+    environment:
+      <<: *db_env
+      NODE_ENV: production
+      NEXTAUTH_URL: ${APP_PUBLIC_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?set NEXTAUTH_SECRET in deploy/.env}
+      NEXT_PUBLIC_SITE_URL: ${APP_PUBLIC_URL}
+      NEXT_PUBLIC_CURRENCY: ${NEXT_PUBLIC_CURRENCY:-USD}
+      NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: ${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY:-}
+      NEXT_PUBLIC_ARTIST_WHATSAPP_NUMBER: ${NEXT_PUBLIC_ARTIST_WHATSAPP_NUMBER:-}
+      PAYSTACK_SECRET_KEY: ${PAYSTACK_SECRET_KEY:?set PAYSTACK_SECRET_KEY in deploy/.env}
+      KES_PER_USD: ${KES_PER_USD:-130}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      CONTACT_FORM_RECIPIENT_EMAIL: ${CONTACT_FORM_RECIPIENT_EMAIL:-}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+      MUSIC_PLAY_SECRET: ${MUSIC_PLAY_SECRET:-}
+    depends_on:
+      migrate-app:
+        condition: service_completed_successfully
+    expose:
+      - "3000"
+
+  crm:
+    build:
+      context: ../../jojjy-gallery-crm
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      NEXTAUTH_URL: ${CRM_PUBLIC_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?set NEXTAUTH_SECRET in deploy/.env}
+      DATABASE_URL: ${APP_DATABASE_URL}
+      DIRECT_URL: ${APP_DIRECT_URL}
+    depends_on:
+      migrate-crm:
+        condition: service_completed_successfully
+    expose:
+      - "3000"
+
+  web:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?set APP_DOMAIN in deploy/.env}
+      CRM_DOMAIN: ${CRM_DOMAIN:?set CRM_DOMAIN in deploy/.env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+      - crm
+
+volumes:
+  db_data:
+  caddy_data:
+  caddy_config:

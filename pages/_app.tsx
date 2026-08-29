@@ -1,4 +1,3 @@
-import { CartProvider } from "@/context/CartContext";
 import "@/styles/globals.css";
 import Layout from "@/components/Layout/Layout";
 import AudienceCapture from "@/components/ui/AudienceCapture";
@@ -12,12 +11,10 @@ const toastFont = '"Public Sans", system-ui, sans-serif';
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <SessionProvider>
-      <CartProvider>
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
-        <AudienceCapture />
-      </CartProvider>
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
+      <AudienceCapture />
       <Toaster
         position="top-center"
         gutter={12}

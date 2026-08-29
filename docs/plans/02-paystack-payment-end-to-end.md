@@ -167,3 +167,9 @@ Create `pages/shop/confirmation.tsx`:
 
 - Plan 03 implements inventory updates inside webhook handler
 - User must create Paystack account + set webhook URL in dashboard (`https://<domain>/api/paystack/webhook`)
+
+---
+
+## Update (2026-08) — legacy M-Pesa removed
+
+The legacy artwork-cart M-Pesa STK push path (`pages/api/payment/checkout.ts`, `pages/api/mpesa/stkpush.ts`, `Transaction` model, `PaymentModal`/`CartDrawer`, `MPESA` enum value) was removed in [Plan 14 — Remove legacy M-Pesa](./14-remove-legacy-mpesa.md). Paystack on the `Order` path is now the only payment rail. The `MPESA` branch that previously fell through to a non-functional "complete payment to confirm" stub in `orders/checkout.ts` is gone — provider is always `PAYSTACK`.

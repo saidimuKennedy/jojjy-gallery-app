@@ -36,7 +36,6 @@ const ENV_MANIFEST = {
     required: "production",
     usedBy: [
       "pages/api/auth/[...nextauth].ts",
-      "pages/api/payment/checkout.ts (M-Pesa callback base)",
     ],
   },
   NEXT_PUBLIC_CURRENCY: {
@@ -74,36 +73,6 @@ const ENV_MANIFEST = {
     required: "feature",
     feature: "Optional dedicated play-token secret (falls back to NEXTAUTH_SECRET)",
     usedBy: ["lib/music/playback.ts"],
-  },
-  MPESA_CONSUMER_KEY: {
-    category: "Payments",
-    required: "feature",
-    feature: "Artwork cart M-Pesa checkout",
-    usedBy: ["pages/api/mpesa/stkpush.ts"],
-  },
-  MPESA_CONSUMER_SECRET: {
-    category: "Payments",
-    required: "feature",
-    feature: "Artwork cart M-Pesa checkout",
-    usedBy: ["pages/api/mpesa/stkpush.ts"],
-  },
-  MPESA_SHORTCODE: {
-    category: "Payments",
-    required: "feature",
-    feature: "Artwork cart M-Pesa checkout",
-    usedBy: ["pages/api/mpesa/stkpush.ts"],
-  },
-  MPESA_PASSKEY: {
-    category: "Payments",
-    required: "feature",
-    feature: "Artwork cart M-Pesa checkout",
-    usedBy: ["pages/api/mpesa/stkpush.ts"],
-  },
-  MPESA_CALLBACK_URL: {
-    category: "Payments",
-    required: "feature",
-    feature: "Legacy artwork cart M-Pesa checkout (deprecated)",
-    usedBy: ["pages/api/mpesa/stkpush.ts"],
   },
   PAYSTACK_SECRET_KEY: {
     category: "Payments",

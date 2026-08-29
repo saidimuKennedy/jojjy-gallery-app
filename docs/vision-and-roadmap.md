@@ -148,7 +148,7 @@ database**.
   - `pages/shop/index.tsx` + `[slug].tsx` with delivery method selector.
   - `POST /api/orders/checkout` — auth; creates PENDING `Order` +
     `OrderItem` (PRODUCT or TICKET, XOR ids); payment stubbed (Paystack
-    wiring next). Legacy artwork `Transaction`/M-Pesa checkout untouched.
+    wiring next). Legacy artwork `Transaction`/M-Pesa checkout removed (Plan 14).
   - Nav: "Studio Shop" → `/shop`.
   **Open gap (unchanged):** legacy artwork `Transaction` still has no
   delivery fields — original artwork shipping (framed vs rolled) needs a

@@ -32,7 +32,7 @@ Today checkout **validates** stock but never **commits** changes.
 
 `pages/api/orders/checkout.ts` creates PENDING order only.
 
-Legacy M-Pesa path saves `Transaction` as pending but has no callback to finalize.
+Legacy M-Pesa path (removed in Plan 14) previously saved `Transaction` as pending but had no callback to finalize.
 
 ---
 

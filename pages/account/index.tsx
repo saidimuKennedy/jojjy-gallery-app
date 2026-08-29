@@ -8,7 +8,6 @@ import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
 import { Artwork } from "@/types/api";
-import { CATALOG_CURRENCY } from "@/lib/currency";
 
 interface WishlistEntry {
   id: string;
@@ -21,9 +20,9 @@ interface TransactionRow {
   id: string;
   status: string;
   amount: number;
-  phoneNumber: string;
+  currency: string;
   timestamp: string;
-  artworkIds: string | null;
+  itemTypes: string[];
 }
 
 const jsonFetcher = async (url: string) => {
@@ -127,8 +126,6 @@ export default function AccountPage() {
     }
   };
 
-  const currency = CATALOG_CURRENCY;
-
   return (
     <div className="min-h-screen bg-neutral-50">
       <Head>
@@ -226,7 +223,7 @@ export default function AccountPage() {
           </p>
           {!purchases || purchases.length === 0 ? (
             <p className="text-sm font-light text-neutral-500">
-              No artwork purchases yet.
+              No purchases yet.
             </p>
           ) : (
             <ul className="space-y-4">
@@ -237,16 +234,16 @@ export default function AccountPage() {
                 >
                   <div>
                     <p className="text-neutral-900">
-                      {currency} {tx.amount.toLocaleString()}
+                      {tx.currency} {tx.amount.toLocaleString()}
                     </p>
                     <p className="text-xs text-neutral-400 mt-1">
                       {new Date(tx.timestamp).toLocaleDateString()} ·{" "}
                       {tx.status}
                     </p>
                   </div>
-                  {tx.artworkIds && (
+                  {tx.itemTypes.length > 0 && (
                     <p className="text-xs text-neutral-400">
-                      Works: {tx.artworkIds}
+                      {tx.itemTypes.join(", ")}
                     </p>
                   )}
                 </li>

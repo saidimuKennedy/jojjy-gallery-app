@@ -16,7 +16,7 @@ import {
   isPaystackConfigured,
   paystackCallbackUrl,
 } from "@/lib/paystack";
-import { CATALOG_CURRENCY, MUSIC_PAYMENT_CURRENCY, musicPaymentAmount, normalizeToUsd } from "@/lib/currency";
+import { CATALOG_CURRENCY, MUSIC_PAYMENT_CURRENCY, musicPaymentAmount, normalizeToUsd, usdToKes } from "@/lib/currency";
 
 const DELIVERY_METHODS = new Set(Object.values(DeliveryMethod));
 const PACKAGING_TYPES = new Set(Object.values(PackagingType));
@@ -74,7 +74,6 @@ export default async function handler(
     packaging,
     deliveryFee,
     phoneNumber,
-    paymentProvider,
     returnPath: rawReturnPath,
   } = req.body as {
     items?: CheckoutItem[];
@@ -83,7 +82,6 @@ export default async function handler(
     packaging?: string;
     deliveryFee?: number;
     phoneNumber?: string;
-    paymentProvider?: string;
     returnPath?: string;
   };
 
@@ -139,8 +137,7 @@ export default async function handler(
     });
   }
 
-  const provider: PaymentProvider =
-    paymentProvider === "MPESA" ? "MPESA" : "PAYSTACK";
+  const provider: PaymentProvider = "PAYSTACK";
 
   try {
     await releaseExpiredReservations();
@@ -401,10 +398,19 @@ export default async function handler(
       }
 
       const reference = buildPaystackReference(order.id);
+      // This Paystack account only settles in KES; the catalogue (and the
+      // order's own amount/currency, shown in the UI) stays in USD, so
+      // convert only the amount actually sent to Paystack.
+      const chargeCurrency = MUSIC_PAYMENT_CURRENCY; // "KES"
+      const chargeAmount =
+        order.currency === chargeCurrency
+          ? order.amount.toNumber()
+          : usdToKes(order.amount.toNumber());
+
       const paystack = await initializeTransaction({
         email: userEmail,
-        amount: order.amount.toNumber(),
-        currency: order.currency,
+        amount: chargeAmount,
+        currency: chargeCurrency,
         reference,
         callbackUrl: paystackCallbackUrl(reference, returnPath),
         metadata: { orderId: order.id },
@@ -412,7 +418,11 @@ export default async function handler(
 
       await prisma.order.update({
         where: { id: order.id },
-        data: { paystackRef: reference },
+        data: {
+          paystackRef: reference,
+          paystackChargeAmount: chargeAmount,
+          paystackChargeCurrency: chargeCurrency,
+        },
       });
 
       return res.status(201).json({

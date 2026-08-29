@@ -52,7 +52,7 @@ CrmUser + music:* permissions  (staff publish + manual grants)
 | Catalogue IDs | Integer autoincrement (`Release`, `Track`, `MembershipPlan`, …) |
 | Fan / order IDs | UUID strings (`User`, `Order`, `Membership`, …) |
 | Money | Decimal(10, 2), currency default `KES` |
-| Payment provider | Existing `PaymentProvider` enum (`MPESA`, `PAYSTACK`) |
+| Payment provider | `PaymentProvider` enum (`PAYSTACK`) |
 | Soft end-of-life | Archive / status — no hard delete after sale |
 
 ---

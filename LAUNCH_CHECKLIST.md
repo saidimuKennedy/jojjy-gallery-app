@@ -22,7 +22,7 @@ This is the single source of truth for what stands between **today's codebase** 
 | Unauthenticated write APIs (gallery) | ✅ | `POST/PUT/DELETE` removed from `pages/api/media-blog/*` — read-only public API |
 | Migrations on production DB | ✅ | `prisma migrate status` — all 14 migrations applied (2026-07-21) |
 | Image naming (Cloudinary) | ✅ | CRM upload uses slugified `artworkTitle` / filename as Cloudinary `public_id` |
-| Deployment env | 🟡 | `.env.example` + `scripts/audit-env.mjs` exist. M-Pesa hardcoded to sandbox. `robots.txt` + `/sitemap.xml` added. Set `NEXT_PUBLIC_SITE_URL` on Vercel. |
+| Deployment env | 🟡 | `.env.example` + `scripts/audit-env.mjs` exist. `robots.txt` + `/sitemap.xml` added. Set `NEXT_PUBLIC_SITE_URL` on Vercel. |
 
 ---
 
@@ -50,7 +50,7 @@ This is the single source of truth for what stands between **today's codebase** 
 | Events CRUD | ✅ | Create/edit, publish/unpublish (`DRAFT` → `PUBLISHED`). |
 | Ticket types | 🟡 | Create/edit/delete + sales window in CRM UI. |
 | Ticket check-in | ❌ | Schema has `checkedInAt`; no API or UI. |
-| Merch / products | 🟡 | CRM merch page exists; gallery shop sells artworks only, not products. |
+| Merch / products | ✅ | CRM merch page + public shop (`/shop` → `/shop/product/[slug]`) with variant picker & checkout. |
 | Announcements (CRUD) | ✅ | Create/edit; publish/unpublish sets `publishedAt` correctly (Plan 12). |
 | Announcement delivery (email) | ❌ | `emailSentAt` tracked; Resend client exists; blasts not wired. |
 | Announcement delivery (WhatsApp) | ❌ | `whatsappSentAt` tracked; Jiaminie not integrated. |
@@ -89,9 +89,9 @@ This is the single source of truth for what stands between **today's codebase** 
 | Artwork → checkout → payment → confirmation | 🟡 | Paystack redirect → confirmation page → verify/webhook |
 | Order record | ✅ | `Order` + `OrderItem`; Paystack ref stored |
 | Inventory update | ✅ | `lib/orders/fulfill.ts` on PAID |
-| Merch variants (size/color/stock) | 🟡 | Schema + read API (`pages/api/products/*`). **No public merch UI.** Checkout backend supports `productVariantId`. |
+| Merch variants (size/color/stock) | ✅ | Schema + read API + public merch UI (variant/quantity/delivery) + checkout via `productVariantId`. Seed: `npm run prisma:seed-products`. |
 | Event ticket purchase (public) | 🟡 | Buy ticket on event page → Paystack (RSVP remains for free events) |
-| M-Pesa STK push | 🟡 | Legacy/deprecated; sandbox only |
+| Legacy M-Pesa STK push | ✅ | Removed (Plan 14) — Paystack is the only payment rail |
 | Paystack | 🟡 | Implemented — set `PAYSTACK_SECRET_KEY` + webhook URL |
 
 ---
@@ -130,7 +130,7 @@ This is the single source of truth for what stands between **today's codebase** 
 | ------- | ------ | ----- |
 | Admin route protection (CRM) | 🟡 | Middleware auth on `/dashboard/*`; no per-permission middleware. |
 | Admin route protection (gallery) | ❌ | Open media-blog write APIs. |
-| Rate limiting | ❌ | None on auth, contact, checkout, STK push, like/view. |
+| Rate limiting | ❌ | None on auth, contact, checkout, like/view. |
 | CSRF | ❌ | No tokens; session cookies only for browser flows. |
 | Input validation | 🟡 | Good on register/checkout; weak on contact form (HTML injection in email body). |
 | Cloudinary signed URLs (music) | ✅ | `lib/music/playback.ts` for authenticated audio. |
@@ -171,7 +171,7 @@ This is the single source of truth for what stands between **today's codebase** 
 ### 🚀 Release Blockers (do first)
 
 1. Fix image naming in CRM uploads (descriptive Cloudinary `public_id`)
-2. Wire Paystack (or fix M-Pesa + callback) end-to-end
+2. Wire Paystack end-to-end (legacy M-Pesa removed in Plan 14)
 3. Inventory + order fulfillment on payment success
 4. Protect or remove gallery media-blog write APIs
 5. CRM staff CRUD + enforce `staff:*` / `tickets:*` (or remove dead keys)
