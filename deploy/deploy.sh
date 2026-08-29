@@ -65,7 +65,12 @@ done
 
 echo "==> Running migrations (must happen before building app/crm — next build's"
 echo "    static export queries Postgres, so the schema must exist first)…"
-"${COMPOSE[@]}" up migrate-app migrate-crm
+# Sequentially: the CRM's migration history is layered on top of the app's
+# shared base schema (they even share some migration names), so running them
+# concurrently races both against Postgres's migration-lock table. `run --rm`
+# (not `up`) also correctly propagates a failing migration's exit code.
+"${COMPOSE[@]}" run --rm migrate-app
+"${COMPOSE[@]}" run --rm migrate-crm
 
 echo "==> Building app + crm images (next build hits the DB via localhost:${POSTGRES_PORT:-5433})…"
 "${COMPOSE[@]}" build app crm
