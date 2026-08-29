@@ -4,7 +4,7 @@
 **Repo:** `jojjy-gallery-app` + `jojjy-gallery-crm`  
 **Effort:** S (½–1 day with scroll modal)  
 **Blocks launch:** No — high ROI polish; starts collecting reach before music / events / announcements mature  
-**Depends on:** Shared Prisma schema (already in place). No payment or email-provider work.
+**Depends on:** Shared Prisma schema (already in place). Outbound mail via [Resend](./../email-resend.md) when sending ships.
 
 **Product input:** Build the shell only. Do not build Mailchimp on day one.
 
@@ -47,7 +47,7 @@ Every guest email captured today is someone we can reach when music, events, or 
 | **Guest subscribe API** | ❌ None | Need public `POST` with validation + duplicate handling |
 | **CRM** | Announcements CRUD only; no subscriber list | New **Audience** nav + page |
 | **Export / search** | ❌ | List + search + CSV |
-| **Sending** | SendGrid dep unused for blasts; `Announcement.emailSentAt` unused | Out of scope this sprint |
+| **Sending** | Resend shared client ready; announcement blasts not wired | Out of scope this sprint (`Announcement.emailSentAt` unused) |
 
 ---
 
@@ -332,7 +332,7 @@ Optional one-liner on CRM Overview (`pages/dashboard/index.tsx`): “Audience �
 
 ## Explicitly out of scope (this sprint)
 
-- Sending email (SendGrid blasts)
+- Sending email (Resend blasts / campaigns)
 - Templates, campaigns, scheduling
 - Audience segments / tags / lists
 - Double opt-in / confirmation mail

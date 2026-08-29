@@ -37,6 +37,8 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     "/portfolio",
     "/gallery",
     "/events",
+    "/updates",
+    "/subscribe",
     "/shop",
     "/about",
     "/contact",

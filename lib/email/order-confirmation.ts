@@ -1,13 +1,5 @@
-import nodemailer from "nodemailer";
 import prisma from "@/lib/prisma";
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+import { escapeHtml, sendEmail } from "@/lib/email/client";
 
 function formatMoney(amount: number, currency: string): string {
   return `${currency} ${amount.toLocaleString(undefined, {
@@ -19,7 +11,7 @@ function formatMoney(amount: number, currency: string): string {
 export async function sendOrderConfirmationEmail(
   orderId: string
 ): Promise<void> {
-  if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER) {
+  if (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM) {
     console.warn("Email not configured — skipping order confirmation");
     return;
   }
@@ -85,18 +77,7 @@ export async function sendOrderConfirmationEmail(
     <p>We will be in touch if anything else is needed for delivery or entry.</p>
   `;
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT || "587", 10),
-    secure: process.env.EMAIL_SECURE === "true",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
-
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
+  const result = await sendEmail({
     to: order.user.email,
     subject: `Order confirmed — Jojjy Gallery (${order.id.slice(0, 8)})`,
     html,
@@ -110,4 +91,8 @@ export async function sendOrderConfirmationEmail(
       .filter(Boolean)
       .join("\n"),
   });
+
+  if (!result.ok && !result.skipped) {
+    throw new Error(result.error || "Failed to send order confirmation");
+  }
 }

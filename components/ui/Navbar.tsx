@@ -59,6 +59,7 @@ export default function Navbar() {
     { label: "Music", path: "/music" },
     { label: "Studio", path: "/music/studio" },
     { label: "Events", path: "/events" },
+    { label: "Updates", path: "/updates" },
     { label: "Studio Shop", path: "/shop" },
     { label: "About", path: "/about" },
     { label: "Contact", path: "/contact" },
@@ -86,6 +87,9 @@ export default function Navbar() {
       return (
         router.pathname === "/events" || router.pathname.startsWith("/events/")
       );
+    }
+    if (path === "/updates") {
+      return router.pathname === "/updates";
     }
     if (path === "/shop") {
       return (

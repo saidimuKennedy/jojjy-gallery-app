@@ -1,53 +1,72 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import nodemailer from 'nodemailer';
+import type { NextApiRequest, NextApiResponse } from "next";
+import { escapeHtml, sendEmail } from "@/lib/email/client";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method Not Allowed" });
   }
 
-  const { name, email, subject, message } = req.body;
+  const { name, email, subject, message } = req.body ?? {};
 
   if (!name || !email || !subject || !message) {
-    return res.status(400).json({ message: 'All fields are required.' });
+    return res.status(400).json({ message: "All fields are required." });
   }
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT || '587'),
-    secure: process.env.EMAIL_SECURE === 'true',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
+  const recipient = process.env.CONTACT_FORM_RECIPIENT_EMAIL;
+  if (!recipient) {
+    console.error("CONTACT_FORM_RECIPIENT_EMAIL is not set");
+    return res.status(500).json({
+      message: "Failed to send message. Please try again later.",
+    });
+  }
+
+  const safeName = escapeHtml(String(name));
+  const safeEmail = escapeHtml(String(email));
+  const safeSubject = escapeHtml(String(subject));
+  const safeMessage = escapeHtml(String(message));
 
   try {
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: process.env.CONTACT_FORM_RECIPIENT_EMAIL,
-      replyTo: email,
-      subject: `New Contact Message from ${name}: ${subject}`,
+    const result = await sendEmail({
+      to: recipient,
+      replyTo: String(email),
+      subject: `New Contact Message from ${String(name)}: ${String(subject)}`,
       html: `
         <p>You have received a new message from your contact form.</p>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>Name:</strong> ${safeName}</p>
+        <p><strong>Email:</strong> ${safeEmail}</p>
+        <p><strong>Subject:</strong> ${safeSubject}</p>
         <p><strong>Message:</strong></p>
-        <p style="white-space: pre-wrap;">${message}</p>
+        <p style="white-space: pre-wrap;">${safeMessage}</p>
         <hr/>
         <p>This message was sent from your website's contact form.</p>
       `,
       text: `Name: ${name}\nEmail: ${email}\nSubject: ${subject}\nMessage: ${message}`,
-    };
+    });
 
+    if (result.skipped) {
+      return res.status(500).json({
+        message: "Email is not configured. Please try again later.",
+      });
+    }
 
-    await transporter.sendMail(mailOptions);
+    if (!result.ok) {
+      return res.status(500).json({
+        message: "Failed to send message. Please try again later.",
+        error: result.error,
+      });
+    }
 
-    console.log('Contact email sent successfully!');
-    res.status(200).json({ message: 'Message sent successfully!' });
-  } catch (error: any) {
-    console.error('Error sending contact email:', error);
-    res.status(500).json({ message: 'Failed to send message. Please try again later.', error: error.message });
+    return res.status(200).json({ message: "Message sent successfully!" });
+  } catch (error: unknown) {
+    console.error("Error sending contact email:", error);
+    const messageText =
+      error instanceof Error ? error.message : "Unknown error";
+    return res.status(500).json({
+      message: "Failed to send message. Please try again later.",
+      error: messageText,
+    });
   }
 }

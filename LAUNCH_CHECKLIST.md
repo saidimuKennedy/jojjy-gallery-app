@@ -15,7 +15,7 @@ This is the single source of truth for what stands between **today's codebase** 
 | ------- | ------ | ----- |
 | Payment completion (artwork) | 🟡 | Paystack wired: checkout → redirect → webhook/verify → fulfillment. Set `PAYSTACK_SECRET_KEY` + webhook URL in Paystack dashboard. |
 | Inventory on purchase | ✅ | `lib/orders/fulfill.ts` — artwork SOLD, tickets issued, variant stock decremented on PAID |
-| Order confirmation / notifications | 🟡 | Confirmation page + SMTP email via existing `EMAIL_*` vars (optional) |
+| Order confirmation / notifications | 🟡 | Confirmation page + Resend email via `RESEND_API_KEY` / `EMAIL_FROM` (optional) |
 | CRM staff management | 🟡 | Staff CRUD APIs + UI; `staff:*` enforced. Role changes require re-login (JWT). |
 | Ticket operations (CRM) | 🟡 | Edit + sales window; public buy → Paystack checkout |
 | Permission cleanup | ✅ | `tickets:*` on ticket APIs; `staff:*` on staff routes/page; nav gated by permission |
@@ -51,8 +51,8 @@ This is the single source of truth for what stands between **today's codebase** 
 | Ticket types | 🟡 | Create/edit/delete + sales window in CRM UI. |
 | Ticket check-in | ❌ | Schema has `checkedInAt`; no API or UI. |
 | Merch / products | 🟡 | CRM merch page exists; gallery shop sells artworks only, not products. |
-| Announcements (CRUD) | 🟡 | Save/publish to DB. Publish bug: `[id].ts` may clear `publishedAt`. |
-| Announcement delivery (email) | ❌ | `emailSentAt` tracked; SendGrid not wired for blasts. |
+| Announcements (CRUD) | ✅ | Create/edit; publish/unpublish sets `publishedAt` correctly (Plan 12). |
+| Announcement delivery (email) | ❌ | `emailSentAt` tracked; Resend client exists; blasts not wired. |
 | Announcement delivery (WhatsApp) | ❌ | `whatsappSentAt` tracked; Jiaminie not integrated. |
 | Announcement delivery (notifications) | ❌ | No in-app notification system. |
 | Staff: create | ✅ | CRM staff page + `POST /api/staff` |
@@ -76,7 +76,7 @@ This is the single source of truth for what stands between **today's codebase** 
 | Event detail | ✅ | RSVP + paid ticket buy via Paystack (when configured). |
 | Portfolio / series | ✅ | Exhibition pages with behind-the-scenes media. |
 | About | 🟡 | Bio, stats, follow CTA. Older styling vs newer pages. |
-| Contact | 🟡 | Form + SMTP email. No rate limit/CAPTCHA. |
+| Contact | 🟡 | Form + Resend email. No rate limit/CAPTCHA. |
 | Studio Shop | 🟡 | Paystack checkout wired; cart drawer still orphaned. |
 | Music | 🔵 | Public pages exist; defer to v2. |
 
@@ -101,12 +101,12 @@ This is the single source of truth for what stands between **today's codebase** 
 | Feature | Status | Notes |
 | ------- | ------ | ----- |
 | Wishlist | ✅ | API + toggle on artwork page + account list. |
-| Subscribers | 🟡 | Logged-in "Follow the artist" on About/Account. No guest email subscribe UI. CRM doesn't use list for announcements. |
+| Subscribers | ✅ | Guest `/subscribe` + scroll modal; CRM Audience list/export. Follow-the-artist on About/Account. Blasts later. |
 | Press mentions | 🟡 | Rendered on completed events. **No CRM management UI.** |
 | Series media | 🟡 | Public UI on portfolio pages. **No CRM upload UI.** |
 | Event gallery | ✅ | "Atmosphere" section on event detail. CRM: paste URL only. |
 | Artwork reservations | 🟡 | API + `lib/reservations.ts` exist. **No public UI** on artwork/shop pages. |
-| Public announcement page | ❌ | CRM publishes to DB; no public `/news` or feed. |
+| Public announcement page | ✅ | `/updates` — published only; nav + footer + sitemap (Plan 13). |
 
 ---
 

@@ -45,7 +45,7 @@ Legacy M-Pesa path saves `Transaction` as pending but has no callback to finaliz
 - Artwork: `status = SOLD`, `isAvailable = false`
 - Ticket: increment `quantitySold`, create `Ticket` rows with unique `code`
 - Product: decrement `ProductVariant.stock`
-- SendGrid order confirmation email
+- Resend order confirmation email
 - Handle RESERVED artworks (buyer who holds reservation)
 
 ### Out of scope
@@ -113,9 +113,9 @@ Store on `Ticket.code` (unique). Include in confirmation email.
 
 Create `lib/email/order-confirmation.ts`:
 
-- Use existing `@sendgrid/mail` pattern from `pages/api/contact/send-contact-email.ts`
+- Use shared Resend client (`lib/email/client.ts`) — same path as contact form
 - Template: order id, items, total, delivery method, ticket codes (if any)
-- Env: `SENDGRID_API_KEY`, `SENDGRID_FROM_EMAIL`
+- Env: `RESEND_API_KEY`, `EMAIL_FROM`
 
 Send to `order.user.email`.
 

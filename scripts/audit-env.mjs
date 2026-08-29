@@ -127,35 +127,17 @@ const ENV_MANIFEST = {
     feature: "Canonical URL for sitemap (falls back to NEXTAUTH_URL)",
     usedBy: ["pages/sitemap.xml.ts", "lib/site-url.ts"],
   },
-  EMAIL_HOST: {
+  RESEND_API_KEY: {
     category: "Email",
     required: "feature",
-    feature: "Contact form",
-    usedBy: ["pages/api/contact/send-contact-email.ts"],
+    feature: "Resend API (contact form + order confirmations)",
+    usedBy: ["lib/email/client.ts"],
   },
-  EMAIL_PORT: {
+  EMAIL_FROM: {
     category: "Email",
     required: "feature",
-    feature: "Contact form (defaults to 587)",
-    usedBy: ["pages/api/contact/send-contact-email.ts"],
-  },
-  EMAIL_SECURE: {
-    category: "Email",
-    required: "feature",
-    feature: "Contact form TLS (true/false)",
-    usedBy: ["pages/api/contact/send-contact-email.ts"],
-  },
-  EMAIL_USER: {
-    category: "Email",
-    required: "feature",
-    feature: "Contact form SMTP user",
-    usedBy: ["pages/api/contact/send-contact-email.ts"],
-  },
-  EMAIL_PASSWORD: {
-    category: "Email",
-    required: "feature",
-    feature: "Contact form SMTP password",
-    usedBy: ["pages/api/contact/send-contact-email.ts"],
+    feature: "Verified From address for Resend",
+    usedBy: ["lib/email/client.ts"],
   },
   CONTACT_FORM_RECIPIENT_EMAIL: {
     category: "Email",

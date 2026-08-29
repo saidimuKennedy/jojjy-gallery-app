@@ -23,7 +23,8 @@ tickets, merch, announcements, staff/permissions).
 - Admin CRUD already exists for artworks/series/media-blog under
   `pages/api/admin/*` — this is the pattern being extended/pulled into the
   CRM
-- SendGrid already a dependency (unused for bulk/announcement email today)
+- Resend is the email provider (contact, order confirmation; announcement
+  blasts still to wire)
 
 ## Scope v1
 
@@ -40,7 +41,7 @@ tickets, merch, announcements, staff/permissions).
 
 ### 3. Fan notifications
 - Public on-site news/updates page (no external dependency)
-- Email announcement blasts via SendGrid
+- Email announcement blasts via Resend
 - WhatsApp — sent via **Jiaminie**, used strictly as a messaging channel
   (see Decisions below)
 
@@ -149,4 +150,4 @@ render inline on public `pages/about.tsx` (client role check). That UI and
 6. Build a thin integration from the CRM to Jiaminie's WhatsApp send API
    for fan notifications; configure the client's WhatsApp Business number
    in Jiaminie.
-7. Build the on-site news/updates page and SendGrid announcement flow.
+7. Build the on-site news/updates page and Resend announcement flow.
