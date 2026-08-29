@@ -14,12 +14,16 @@ server instead of the sandbox.
    ~/srv/jojjy-gallery-crm   # sibling — compose build context expects this
    ```
 
-2. **DNS**: point `A` records at the server for both domains, e.g.
-   `shop.example.com` and `crm.example.com`. Keep the server's ports 80/443
-   open (Caddy binds them and issues Let's Encrypt certs).
+2. **Domains — no DNS needed (nip.io):** `deploy.sh` auto-derives
+   `shop.<server-ip>.nip.io` and `crm.<server-ip>.nip.io` from the server's
+   public IP, so no domain or DNS records are required. To use real domains
+   instead, set `APP_DOMAIN`/`CRM_DOMAIN` (and the `*_PUBLIC_URL`s) in
+   `deploy/.env` and point `A` records at the server. Either way, keep ports
+   80/443 open (Caddy binds them and issues Let's Encrypt certs).
 
 3. **Configure** `deploy/.env` (copy from `deploy/.env.example`):
-   - `APP_DOMAIN` / `CRM_DOMAIN` / `APP_PUBLIC_URL` / `CRM_PUBLIC_URL`
+   - Domains are optional — leave `APP_DOMAIN`/`CRM_DOMAIN` blank for
+     auto-generated `*.nip.io` names, or set real ones.
    - `POSTGRES_PASSWORD`, `NEXTAUTH_SECRET` (`openssl rand -base64 32`)
    - `PAYSTACK_SECRET_KEY`, `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`
    - `APP_DATABASE_URL` / `APP_DIRECT_URL` (host `db`, inside the network)
@@ -71,7 +75,11 @@ unused port if the local dev Postgres already uses 5433).
 
 - `next build` requires a reachable DB (ISR pages). On first deploy the compose
   `db` service is started first, so `./deploy.sh` ordering is mandatory.
-- Caddy needs ports 80 (ACME HTTP-01 challenge) and 443 open, plus valid DNS.
+- Caddy needs ports 80 (ACME HTTP-01 challenge) and 443 open. With nip.io the
+  server's IP is the domain, so no DNS work is needed — but the IP must be
+  reachable from the internet for Let's Encrypt to validate it.
+- The nip.io hostname is tied to the server's public IP: if the IP changes,
+  re-run `./deploy.sh` (new hostname, new cert).
 - Secrets live in `deploy/.env` — do not commit it.
 - `NEXT_PUBLIC_*` values are inlined at build time; changing them requires a
   rebuild (`./deploy.sh`).
