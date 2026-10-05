@@ -1,117 +1,272 @@
 import Head from "next/head";
+import type { GetStaticProps } from "next";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
-import OptimizedImage from "@/components/ui/OptimizedImage";
-import { SITE_LOGO_URL } from "@/lib/cloudinary";
-import StatCounter from "@/components/Animations/StatCounter";
-import React from "react";
-import Link from "next/link"; 
+import Hero from "@/components/home/Hero";
+import WorldOfJenga from "@/components/home/WorldOfJenga";
+import ArtMusic from "@/components/home/ArtMusic";
+import TwoLanguages from "@/components/home/TwoLanguages";
+import NowSection from "@/components/home/NowSection";
+import TakeSomething from "@/components/home/TakeSomething";
+import FromTheStudio from "@/components/home/FromTheStudio";
+import AboutJenga from "@/components/home/AboutJenga";
+import KeepLooking from "@/components/home/KeepLooking";
+import { getArtworks } from "@/lib/data/artworks";
+import { getPublishedEvents } from "@/lib/data/events";
+import { getMediaBlogEntries } from "@/lib/data/media-blog";
+import { serializeReleasePublic } from "@/lib/music/entitlements";
+import prisma from "@/lib/prisma";
+import type { ArtworkWithRelations } from "@/types/api";
+import type {
+  HomeArtwork,
+  HomeEvent,
+  HomeProduct,
+  HomeProps,
+  HomeRelease,
+  HomeStudioItem,
+} from "@/components/home/types";
 
-export default function Home() {
+/** Artist portrait committed in the repo — used when a DB slot has no image. */
+const PORTRAIT_IMAGE = "/images/joj-artist.png";
+
+function mapArtwork(artwork: ArtworkWithRelations): HomeArtwork {
+  return {
+    id: artwork.id,
+    title: artwork.title,
+    imageUrl: artwork.imageUrl,
+    year: artwork.year,
+    medium: artwork.medium,
+    price: artwork.price,
+    status: String(artwork.status),
+  };
+}
+
+/** Never let one content source break the whole homepage build. */
+async function safe<T>(
+  label: string,
+  fn: () => Promise<T>,
+  fallback: T
+): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    console.error(`[home] ${label} failed`, error);
+    return fallback;
+  }
+}
+
+export default function Home({
+  artworks,
+  availableArtworks,
+  releases,
+  events,
+  products,
+  studioItems,
+}: HomeProps) {
+  const now = Date.now();
+  const upcomingEvent = [...events]
+    .filter((event) => new Date(event.startsAt).getTime() >= now)
+    .sort(
+      (a, b) =>
+        new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
+    )[0];
+
+  const artImage = artworks[0]?.imageUrl ?? availableArtworks[0]?.imageUrl;
+  // Music falls back to the artist portrait until release/performance media exists.
+  const musicImage =
+    releases[0]?.coverImage ?? events[0]?.imageUrl ?? PORTRAIT_IMAGE;
+  const twoLanguagesArt =
+    artworks[1]?.imageUrl ?? artworks[0]?.imageUrl ?? availableArtworks[0]?.imageUrl;
+  const twoLanguagesMusic =
+    releases[1]?.coverImage ??
+    releases[0]?.coverImage ??
+    events[0]?.imageUrl ??
+    PORTRAIT_IMAGE;
+
   return (
-    <>
+    <div className="jenga-home relative overflow-x-clip">
       <Head>
-        <title>Njenga Ngugi - Contemporary African Art</title>
+        <title>JENGA — Visual Artist. Musician.</title>
         <meta
           name="description"
-          content="Discover amazing artworks by Njenga Ngugi. Explore his unique series of contemporary African art in the online gallery."
+          content="JENGA is a multidisciplinary Kenyan artist working across visual art and music. Exploring the seen and the unseen."
         />
+        {/* No-JS fallback: reveal all motion-enhanced content immediately and
+            drop the opening curtain/atmosphere scrims. */}
+        <noscript>
+          <style>{`.jenga-home [data-motion]{opacity:1 !important;transform:none !important;}.jenga-home [data-scrim]{opacity:0 !important;}`}</style>
+        </noscript>
       </Head>
 
-      <main className="min-h-screen bg-white flex flex-col">
-        {/* Navbar */}
-        <Navbar />
+      <Navbar variant="transparent" />
 
-        {/* Hero Section */}
-        <div className="relative bg-gradient-to-b from-gray-50 to-white overflow-hidden flex-grow">
-          {/* Video Background */}
-          <div className="absolute inset-0 overflow-hidden">
-            <video
-              className="absolute inset-0 w-full h-full object-cover"
-              autoPlay
-              muted
-              loop
-              playsInline
-            >
-              <source
-                src="https://res.cloudinary.com/dq3wkbgts/video/upload/v1735653355/samples/dance-2.mp4"
-                type="video/mp4"
-              />
-              <source src="/videos/hero-background.webm" type="video/webm" />
-              {/* Fallback for browsers that don't support video */}
-            </video>
-            {/* Dark overlay for better text readability */}
-            <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-          </div>
+      <main>
+        <Hero />
 
-          <div className="max-w-7xl mx-auto">
-            <div className="relative z-10 py-24 sm:py-32 lg:py-40 px-4 sm:px-6 lg:px-8">
-              <div className="text-center max-w-4xl mx-auto">
-                <div className="flex justify-center mb-4">
-                  <div className="w-36 h-24 sm:w-44 sm:h-28 md:w-52 md:h-32 relative">
-                    <OptimizedImage
-                      src={SITE_LOGO_URL}
-                      alt="Njenga Ngugi Logo"
-                      fill
-                      preset="thumb"
-                      priority
-                      className="object-contain transition-transform duration-300 hover:scale-105"
-                    />
-                  </div>
-                </div>
+        <WorldOfJenga image={artImage} imageAlt="Artwork by JENGA" />
 
-                <h1 className="mt-6 font-display text-5xl font-light tracking-tight text-white sm:text-6xl md:text-7xl">
-                  Njenga Ngugi
-                </h1>
+        <ArtMusic
+          artImage={artworks[0]?.imageUrl}
+          artAlt={artworks[0]?.title}
+          musicImage={musicImage}
+          musicAlt={releases[0]?.title}
+        />
 
-                <p className="mt-8 text-sm font-light leading-relaxed text-white/80 max-w-xl mx-auto md:text-[0.9375rem] md:leading-[1.7]">
-                  Exploring the intersection of traditional African artistry and
-                  contemporary expression—a bridge between generations and
-                  continents.
-                </p>
+        <TwoLanguages
+          artImage={twoLanguagesArt}
+          artAlt={artworks[0]?.title}
+          musicImage={twoLanguagesMusic}
+          musicAlt={releases[0]?.title}
+        />
 
-                <div className="mt-12 flex flex-col sm:flex-row justify-center gap-4">
-                  {/* Link to the main gallery page */}
-                  <Link
-                    href="/gallery"
-                    className="inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800 transition-colors duration-200 shadow-lg backdrop-blur-sm"
-                  >
-                    Enter Archive
-                  </Link>
+        <NowSection
+          artworks={artworks}
+          availableArtworks={availableArtworks}
+          release={releases[0]}
+          upcomingEvent={upcomingEvent}
+        />
 
-                  {/* Link to the About page */}
-                  <Link
-                    href="/about"
-                    className="inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-md text-gray-900 bg-white bg-opacity-90 hover:bg-opacity-100 transition-all duration-200 backdrop-blur-sm"
-                  >
-                    About the Artist
-                  </Link>
-                </div>
+        <TakeSomething
+          availableArtworks={availableArtworks}
+          artworks={artworks}
+          products={products}
+          release={releases[0]}
+          event={events[0]}
+          portrait={PORTRAIT_IMAGE}
+        />
 
-                <div className="mt-16 flex justify-center space-x-6 text-sm text-gray-200">
-                  <div className="flex flex-col items-center">
-                    <StatCounter end={15} label="Years of experience" light />
-                  </div>
+        <FromTheStudio items={studioItems} />
 
-                  <div className="w-px h-12 bg-white/30"></div>
+        <AboutJenga />
 
-                  <div className="flex flex-col items-center">
-                    <StatCounter end={15} label="Major exhibitions" light />
-                  </div>
-
-                  <div className="w-px h-12 bg-white/30"></div>
-
-                  <div className="flex flex-col items-center">
-                    <StatCounter end={20} label="Artworks" light />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <KeepLooking />
       </main>
 
       <Footer />
-    </>
+    </div>
   );
 }
+
+export const getStaticProps: GetStaticProps<HomeProps> = async () => {
+  const galleryResult = await safe(
+    "artworks:gallery",
+    () => getArtworks({ inGallery: true, limit: 8, minimal: true }),
+    { artworks: [] as ArtworkWithRelations[], total: 0 }
+  );
+  const availableResult = await safe(
+    "artworks:available",
+    () =>
+      getArtworks({
+        status: "AVAILABLE",
+        isAvailable: true,
+        limit: 8,
+        minimal: true,
+      }),
+    { artworks: [] as ArtworkWithRelations[], total: 0 }
+  );
+
+  const rawEvents = await safe("events", () => getPublishedEvents(), []);
+  const events: HomeEvent[] = rawEvents.map((event) => ({
+    id: event.id,
+    title: event.title,
+    slug: event.slug,
+    // Normalise blank strings to null so `?? fallback` works downstream.
+    imageUrl: event.imageUrl?.trim() || null,
+    venue: event.venue,
+    startsAt: event.startsAt,
+    status: String(event.status),
+  }));
+
+  const rawReleases = await safe(
+    "music:releases",
+    () =>
+      prisma.release.findMany({
+        where: { publishStatus: "PUBLISHED" },
+        include: {
+          accessPolicy: true,
+          tracks: { orderBy: { trackNumber: "asc" } },
+        },
+        orderBy: [{ releaseDate: "desc" }, { createdAt: "desc" }],
+        take: 6,
+      }),
+    []
+  );
+  const releases: HomeRelease[] = rawReleases
+    .map(serializeReleasePublic)
+    .map((release) => ({
+      id: release.id,
+      slug: release.slug,
+      title: release.title,
+      coverImage: release.coverImage?.trim() || null,
+      releaseType: release.releaseType,
+      artistName: release.artistName,
+      releaseDate: release.releaseDate,
+      accessMode: release.accessMode,
+      price: release.price,
+      currency: release.currency,
+    }));
+
+  const rawProducts = await safe(
+    "shop:products",
+    () =>
+      prisma.product.findMany({
+        where: { isAvailable: true },
+        orderBy: { createdAt: "desc" },
+        take: 6,
+        include: {
+          variants: {
+            where: { stock: { gt: 0 } },
+            orderBy: { price: "asc" },
+          },
+        },
+      }),
+    []
+  );
+  const products: HomeProduct[] = rawProducts.map((product) => ({
+    id: product.id,
+    name: product.name,
+    slug: product.slug,
+    imageUrl: product.imageUrl?.trim() || null,
+    category: product.category,
+    price: product.variants[0] ? Number(product.variants[0].price) : null,
+  }));
+
+  const mediaBlog = await safe(
+    "studio:media-blog",
+    () => getMediaBlogEntries({ limit: 8, minimal: true }),
+    { entries: [], total: 0 }
+  );
+  const editorialItems: HomeStudioItem[] = mediaBlog.entries
+    .filter((entry) => Boolean(entry.thumbnailUrl))
+    .map((entry) => ({
+      id: entry.id,
+      title: entry.title,
+      imageUrl: entry.thumbnailUrl,
+    }));
+
+  // No archive/editorial media yet: still show the strip using real imagery
+  // (the repo portrait + artworks from the DB) rather than hiding the section.
+  const studioItems: HomeStudioItem[] =
+    editorialItems.length > 0
+      ? editorialItems
+      : [
+          { id: -1, title: "JENGA", imageUrl: PORTRAIT_IMAGE },
+          ...galleryResult.artworks.slice(0, 4).map((artwork) => ({
+            id: artwork.id,
+            title: artwork.title,
+            imageUrl: artwork.imageUrl,
+          })),
+        ];
+
+  return {
+    props: {
+      artworks: galleryResult.artworks.map(mapArtwork),
+      availableArtworks: availableResult.artworks.map(mapArtwork),
+      releases,
+      events,
+      products,
+      studioItems,
+    },
+    revalidate: 120,
+  };
+};

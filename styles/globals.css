@@ -486,3 +486,170 @@ body {
   animation: fadeInUp 1s ease-out 0.5s forwards;
   opacity: 0;
 }
+
+/* ===========================================================================
+   JENGA homepage theme (Phase 1)
+   Scoped to `.jenga-home` so every other route is unaffected.
+   =========================================================================== */
+.jenga-home {
+  /* Monochrome: pitch-black ground, off-white accent. No gold. */
+  --jenga-accent: #f1ede3;
+  --jenga-cream: #f1ede3;
+  --jenga-body: #b3ada2;
+  --jenga-ink: #000000;
+  --jenga-surface: #000000;
+  --jenga-hairline: rgba(255, 255, 255, 0.1);
+  background-color: var(--jenga-ink);
+  color: var(--jenga-body);
+  font-family: "Public Sans", system-ui, sans-serif;
+}
+
+.jenga-cream {
+  color: var(--jenga-cream);
+}
+
+.jenga-accent {
+  color: var(--jenga-accent);
+}
+
+.jenga-body-text {
+  color: var(--jenga-body);
+}
+
+.jenga-rule {
+  background-color: var(--jenga-accent);
+}
+
+.jenga-eyebrow {
+  font-family: "Public Sans", system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--jenga-accent);
+}
+
+.jenga-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: "Public Sans", system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--jenga-cream);
+  transition: color 0.35s ease;
+}
+
+.jenga-link:hover {
+  color: var(--jenga-accent);
+}
+
+.jenga-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--jenga-accent);
+  padding: 0.85rem 1.75rem;
+  font-family: "Public Sans", system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--jenga-accent);
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+.jenga-btn:hover {
+  background-color: var(--jenga-accent);
+  color: var(--jenga-ink);
+}
+
+/* The global Footer stays intact; on the homepage it matches the dark ending. */
+.jenga-home footer {
+  background-color: var(--jenga-ink);
+  border-color: var(--jenga-hairline);
+}
+
+.jenga-home footer p {
+  color: #9a958c;
+}
+
+.jenga-home footer p.font-display {
+  color: var(--jenga-cream);
+}
+
+.jenga-home footer a {
+  color: var(--jenga-body);
+}
+
+.jenga-home footer a:hover {
+  color: var(--jenga-cream);
+}
+
+/* Restrained link microinteraction: underline draws in on hover/focus. */
+.jenga-link > span:first-child {
+  position: relative;
+}
+
+.jenga-link > span:first-child::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.35rem;
+  height: 1px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.jenga-link:hover > span:first-child::after,
+.jenga-link:focus-visible > span:first-child::after {
+  transform: scaleX(1);
+}
+
+.jenga-link:focus-visible,
+.jenga-btn:focus-visible {
+  outline: 1px solid var(--jenga-accent);
+  outline-offset: 4px;
+}
+
+/* Motion is progressive enhancement: force every animated homepage element to
+   its final state for reduced-motion visitors (before and after hydration).
+   `data-reveal` ends visible; `data-scrim` (opening curtain / atmosphere
+   overlay) ends hidden; `data-motion` neutralises parallax transforms. */
+@media (prefers-reduced-motion: reduce) {
+  .jenga-home [data-motion] {
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .jenga-home [data-reveal] {
+    opacity: 1 !important;
+  }
+
+  .jenga-home [data-scrim] {
+    opacity: 0 !important;
+  }
+
+  /* Reduced-motion visitors get the simple static composition, not a pin. */
+  .jenga-home .jenga-pin-track {
+    height: auto !important;
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+
+  .jenga-home .jenga-pin {
+    position: static !important;
+    display: block !important;
+    height: auto !important;
+  }
+
+  .jenga-link > span:first-child::after {
+    transition: none !important;
+  }
+}

@@ -8,9 +8,15 @@ import { useSession, signOut } from "next-auth/react";
 import OptimizedImage from "./OptimizedImage";
 import { SITE_LOGO_URL } from "@/lib/cloudinary";
 
-export default function Navbar() {
+interface NavbarProps {
+  /** "transparent" renders the nav over a dark hero. Routing is unchanged. */
+  variant?: "default" | "transparent";
+}
+
+export default function Navbar({ variant = "default" }: NavbarProps = {}) {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const isTransparent = variant === "transparent";
 
   const user = session?.user;
   const isLoadingAuth = status === "loading";
@@ -98,6 +104,17 @@ export default function Navbar() {
     return isActive(path);
   };
 
+  const navLinkClass = (path: string) =>
+    `text-sm tracking-wide transition-colors duration-200 ${
+      isNavActive(path)
+        ? isTransparent
+          ? "text-white"
+          : "text-gray-900"
+        : isTransparent
+          ? "text-white/70 hover:text-white"
+          : "text-gray-500 hover:text-gray-900"
+    }`;
+
   const handleLogout = async () => {
     await signOut({ callbackUrl: "/login" });
     setIsMobileMenuOpen(false);
@@ -105,21 +122,33 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="bg-white border-b border-gray-100">
+      <nav
+        className={
+          isTransparent
+            ? "absolute inset-x-0 top-0 z-50 bg-transparent"
+            : "bg-white border-b border-gray-100"
+        }
+      >
         <div className="w-full">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
             <Link href="/" className="flex items-center">
-              <div className="h-14 w-28 flex items-center justify-center sm:h-16 sm:w-32">
-                <OptimizedImage
-                  src={SITE_LOGO_URL}
-                  alt="Njenga Ngugi Logo"
-                  width={128}
-                  height={64}
-                  preset="thumb"
-                  priority
-                  className="w-full h-full object-contain"
-                />
-              </div>
+              {isTransparent ? (
+                <span className="font-display text-2xl font-light tracking-[0.3em] text-white sm:text-3xl">
+                  JENGA
+                </span>
+              ) : (
+                <div className="h-14 w-28 flex items-center justify-center sm:h-16 sm:w-32">
+                  <OptimizedImage
+                    src={SITE_LOGO_URL}
+                    alt="Njenga Ngugi Logo"
+                    width={128}
+                    height={64}
+                    preset="thumb"
+                    priority
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              )}
             </Link>
 
             <div className="hidden md:flex md:items-center md:space-x-8 flex-1 justify-center">
@@ -127,11 +156,7 @@ export default function Navbar() {
                 <Link
                   key={item.path}
                   href={item.path}
-                  className={`text-sm tracking-wide ${
-                    isNavActive(item.path)
-                      ? "text-gray-900"
-                      : "text-gray-500 hover:text-gray-900"
-                  } transition-colors duration-200`}
+                  className={navLinkClass(item.path)}
                 >
                   {item.label}
                 </Link>
@@ -144,20 +169,32 @@ export default function Navbar() {
                   <>
                     <Link
                       href="/account"
-                      className={`text-sm tracking-wide ${
+                      className={`text-sm tracking-wide transition-colors duration-200 ${
                         isActive("/account")
-                          ? "text-gray-900"
-                          : "text-gray-500 hover:text-gray-900"
-                      } transition-colors duration-200`}
+                          ? isTransparent
+                            ? "text-white"
+                            : "text-gray-900"
+                          : isTransparent
+                            ? "text-white/70 hover:text-white"
+                            : "text-gray-500 hover:text-gray-900"
+                      }`}
                     >
                       Account
                     </Link>
-                    <span className="text-sm font-medium text-gray-700">
+                    <span
+                      className={`text-sm font-medium ${
+                        isTransparent ? "text-white/80" : "text-gray-700"
+                      }`}
+                    >
                       Welcome, {user.username || user.email}
                     </span>
                     <button
                       onClick={handleLogout}
-                      className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors duration-200"
+                      className={`text-sm font-medium transition-colors duration-200 ${
+                        isTransparent
+                          ? "text-white/70 hover:text-white"
+                          : "text-gray-500 hover:text-gray-900"
+                      }`}
                     >
                       Logout
                     </button>
@@ -165,7 +202,11 @@ export default function Navbar() {
                 ) : (
                   <Link
                     href="/login"
-                    className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors duration-200"
+                    className={`text-sm font-medium transition-colors duration-200 ${
+                      isTransparent
+                        ? "text-white/70 hover:text-white"
+                        : "text-gray-500 hover:text-gray-900"
+                    }`}
                   >
                     Login
                   </Link>
@@ -175,7 +216,11 @@ export default function Navbar() {
             <div className="flex md:hidden items-center space-x-4">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-500"
+                className={`p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-500 ${
+                  isTransparent
+                    ? "text-white/80 hover:text-white hover:bg-white/10"
+                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                }`}
                 aria-label="Toggle mobile menu"
               >
                 {isMobileMenuOpen ? (

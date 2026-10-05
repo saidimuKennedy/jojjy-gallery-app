@@ -7,9 +7,15 @@ import {
 
 type NewsletterSignupProps = {
   className?: string;
+  /** "dark" is used by the JENGA homepage closing section. */
+  variant?: "default" | "dark";
 };
 
-export default function NewsletterSignup({ className = "" }: NewsletterSignupProps) {
+export default function NewsletterSignup({
+  className = "",
+  variant = "default",
+}: NewsletterSignupProps) {
+  const isDark = variant === "dark";
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
     "idle"
@@ -52,10 +58,18 @@ export default function NewsletterSignup({ className = "" }: NewsletterSignupPro
   if (status === "success") {
     return (
       <div className={className} role="status">
-        <p className="font-display text-3xl font-light tracking-tight text-neutral-900 md:text-4xl">
+        <p
+          className={`font-display text-3xl font-light tracking-tight md:text-4xl ${
+            isDark ? "text-white" : "text-neutral-900"
+          }`}
+        >
           Thanks for joining.
         </p>
-        <p className="mt-6 max-w-md text-sm font-light leading-relaxed text-neutral-600 md:text-base">
+        <p
+          className={`mt-6 max-w-md text-sm font-light leading-relaxed md:text-base ${
+            isDark ? "text-neutral-300" : "text-neutral-600"
+          }`}
+        >
           You&apos;ll be the first to hear about new artworks, studio releases,
           and upcoming exhibitions.
         </p>
@@ -68,7 +82,9 @@ export default function NewsletterSignup({ className = "" }: NewsletterSignupPro
       <div>
         <label
           htmlFor="audience-email"
-          className="block text-xs font-medium uppercase tracking-[0.18em] text-neutral-500"
+          className={`block text-xs font-medium uppercase tracking-[0.18em] ${
+            isDark ? "text-neutral-400" : "text-neutral-500"
+          }`}
         >
           Email Address
         </label>
@@ -81,13 +97,20 @@ export default function NewsletterSignup({ className = "" }: NewsletterSignupPro
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={status === "loading"}
-          className="mt-3 w-full border-0 border-b border-neutral-300 bg-transparent py-3 text-base text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-neutral-900 disabled:opacity-60"
+          className={
+            isDark
+              ? "mt-3 w-full border-0 border-b border-neutral-600 bg-transparent py-3 text-base text-white outline-none transition-colors placeholder:text-neutral-500 focus:border-[color:var(--jenga-accent)] disabled:opacity-60"
+              : "mt-3 w-full border-0 border-b border-neutral-300 bg-transparent py-3 text-base text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-neutral-900 disabled:opacity-60"
+          }
           placeholder="you@email.com"
         />
       </div>
 
       {errorMessage && (
-        <p className="text-sm text-red-700" role="alert">
+        <p
+          className={`text-sm ${isDark ? "text-red-400" : "text-red-700"}`}
+          role="alert"
+        >
           {errorMessage}
         </p>
       )}
@@ -96,9 +119,13 @@ export default function NewsletterSignup({ className = "" }: NewsletterSignupPro
         <button
           type="submit"
           disabled={status === "loading"}
-          className="border border-neutral-900 bg-neutral-900 px-8 py-3 font-display text-xs uppercase tracking-[0.22em] text-white transition-colors hover:bg-white hover:text-neutral-900 disabled:opacity-50"
+          className={
+            isDark
+              ? "jenga-btn disabled:opacity-50"
+              : "border border-neutral-900 bg-neutral-900 px-8 py-3 font-display text-xs uppercase tracking-[0.22em] text-white transition-colors hover:bg-white hover:text-neutral-900 disabled:opacity-50"
+          }
         >
-          {status === "loading" ? "Subscribing…" : "Subscribe"}
+          {status === "loading" ? "Subscribing…" : isDark ? "Join" : "Subscribe"}
         </button>
       </div>
 
