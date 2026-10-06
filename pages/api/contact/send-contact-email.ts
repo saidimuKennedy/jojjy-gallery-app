@@ -55,18 +55,14 @@ export default async function handler(
     if (!result.ok) {
       return res.status(500).json({
         message: "Failed to send message. Please try again later.",
-        error: result.error,
       });
     }
 
     return res.status(200).json({ message: "Message sent successfully!" });
   } catch (error: unknown) {
     console.error("Error sending contact email:", error);
-    const messageText =
-      error instanceof Error ? error.message : "Unknown error";
     return res.status(500).json({
       message: "Failed to send message. Please try again later.",
-      error: messageText,
     });
   }
 }

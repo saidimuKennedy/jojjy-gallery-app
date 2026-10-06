@@ -75,7 +75,7 @@ const ArtworkDetails = ({ artwork }: ArtworkDetailsProps) => {
           href={canBuy ? `/shop/${artwork.id}` : "/shop"}
           className="inline-block border border-neutral-900 bg-neutral-900 px-5 py-3 font-display text-xs uppercase tracking-[0.24em] text-white transition-colors hover:bg-white hover:text-neutral-900"
         >
-          {canBuy ? "Acquire in Studio Shop →" : "Browse Studio Shop →"}
+          {canBuy ? "Acquire in the Shop →" : "Browse the Shop →"}
         </Link>
       </div>
     </div>

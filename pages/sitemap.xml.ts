@@ -1,5 +1,6 @@
 import type { GetServerSideProps } from "next";
 import prisma from "@/lib/prisma";
+import { getPublishedEvents } from "@/lib/data/events";
 
 function escapeXml(value: string): string {
   return value
@@ -45,17 +46,22 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     "/music",
   ];
 
-  const [artworks, events, series, entries] = await Promise.all([
+  const [artworks, publishedEvents, series, entries] = await Promise.all([
     prisma.artwork.findMany({
       where: { inGallery: true },
       select: { id: true },
     }),
-    prisma.event.findMany({
-      where: { status: { in: ["PUBLISHED", "COMPLETED"] } },
-      select: { slug: true },
-    }),
+    // Canonical event-publication logic: promotes due scheduled DRAFTs and
+    // exposes exactly PUBLISHED + COMPLETED, so the sitemap can never lag
+    // behind (or leak ahead of) the visitor-facing event surfaces.
+    getPublishedEvents().then((events) =>
+      events.map((e) => ({ slug: e.slug }))
+    ),
     prisma.series.findMany({ select: { slug: true } }),
-    prisma.mediaBlogEntry.findMany({ select: { id: true } }),
+    prisma.mediaBlogEntry.findMany({
+      where: { publishedAt: { lte: new Date() } },
+      select: { id: true },
+    }),
   ]);
 
   const urls = [
@@ -64,7 +70,7 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     ...artworks
       .filter((a) => a.id)
       .map((a) => `${base}/shop/${a.id}`),
-    ...events.map((e) => `${base}/events/${e.slug}`),
+    ...publishedEvents.map((e) => `${base}/events/${e.slug}`),
     ...series.map((s) => `${base}/portfolio/${s.slug}`),
     ...entries.map((e) => `${base}/gallery/${e.id}`),
   ];

@@ -37,6 +37,20 @@ export default async function handler(
     };
 
     if (event.event === "charge.success" && event.data?.reference) {
+      // Unknown references (no matching order) are acknowledged without
+      // retry: re-delivery could never succeed. Genuine fulfillment failures
+      // below still return 500 so Paystack retries.
+      const existing = await prisma.order.findUnique({
+        where: { paystackRef: event.data.reference },
+        select: { id: true },
+      });
+      if (!existing) {
+        console.error(
+          "Paystack webhook for unknown reference:",
+          event.data.reference
+        );
+        return res.status(200).json({ success: true });
+      }
       try {
         await completeOrderFromPaystackReference(event.data.reference);
       } catch (err) {

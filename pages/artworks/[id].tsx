@@ -303,19 +303,19 @@ export default function ArtworkDetailPage() {
                   href={`/shop/${artwork.id}`}
                   className="flex w-full items-center justify-center border border-neutral-900 bg-neutral-900 py-5 text-center font-display text-xs font-normal uppercase tracking-[0.28em] text-white transition-colors duration-500 hover:bg-white hover:text-neutral-900"
                 >
-                  Acquire in Studio Shop →
+                  Acquire in the Shop →
                 </Link>
               ) : (
                 <Link
                   href="/shop"
                   className="flex w-full items-center justify-center border border-neutral-900 bg-white py-5 text-center font-display text-xs font-normal uppercase tracking-[0.28em] text-neutral-900 transition-colors duration-500 hover:bg-neutral-900 hover:text-white"
                 >
-                  Browse Studio Shop →
+                  Browse the Shop →
                 </Link>
               )}
 
               <p className="font-archive-body text-sm font-light text-neutral-500">
-                This page is the catalogue. Purchase happens in the Studio Shop.
+                This page is the catalogue. Purchase happens in the Shop.
               </p>
 
               {whatsappLink && (

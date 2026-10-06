@@ -36,10 +36,18 @@ export default function Navbar({ variant = "default" }: NavbarProps = {}) {
   }, [isMobileMenuOpen]);
 
   useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsMobileMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => {
     const handleRouteChange = () => {
       setIsMobileMenuOpen(false);
     };
-
     router.events.on("routeChangeComplete", handleRouteChange);
     router.events.on("routeChangeError", handleRouteChange);
 
@@ -51,15 +59,15 @@ export default function Navbar({ variant = "default" }: NavbarProps = {}) {
 
   const isActive = (path: string) => router.pathname === path;
 
+  // V1 primary navigation: Art (portfolio/artworks/series), Music, Events,
+  // Studio (editorial journal), Shop, About, Contact. Home is reached via
+  // the brand/logo. Music Studio membership and Updates stay contextual.
   const navItems = [
-    { label: "Home", path: "/" },
-    { label: "Archive", path: "/gallery" },
-    { label: "Portfolio", path: "/portfolio" },
+    { label: "Art", path: "/portfolio" },
     { label: "Music", path: "/music" },
-    { label: "Studio", path: "/music/studio" },
     { label: "Events", path: "/events" },
-    { label: "Updates", path: "/updates" },
-    { label: "Studio Shop", path: "/shop" },
+    { label: "Studio", path: "/gallery" },
+    { label: "Shop", path: "/shop" },
     { label: "About", path: "/about" },
     { label: "Contact", path: "/contact" },
   ];
@@ -79,16 +87,10 @@ export default function Navbar({ variant = "default" }: NavbarProps = {}) {
           router.pathname !== "/music/library")
       );
     }
-    if (path === "/music/studio") {
-      return router.pathname === "/music/studio";
-    }
     if (path === "/events") {
       return (
         router.pathname === "/events" || router.pathname.startsWith("/events/")
       );
-    }
-    if (path === "/updates") {
-      return router.pathname === "/updates";
     }
     if (path === "/shop") {
       return (
@@ -221,7 +223,9 @@ export default function Navbar({ variant = "default" }: NavbarProps = {}) {
                     ? "text-white/80 hover:text-white hover:bg-white/10"
                     : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
                 }`}
-                aria-label="Toggle mobile menu"
+                aria-label={isMobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="mobile-menu"
               >
                 {isMobileMenuOpen ? (
                   <X className="h-6 w-6" />
@@ -234,6 +238,11 @@ export default function Navbar({ variant = "default" }: NavbarProps = {}) {
         </div>
       </nav>
       <div
+        id="mobile-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Site menu"
+        hidden={!isMobileMenuOpen}
         className={`fixed inset-0 bg-white z-[999] md:hidden transform transition-transform duration-300 ease-in-out ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         } flex flex-col`}

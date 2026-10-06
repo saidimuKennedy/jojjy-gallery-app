@@ -83,7 +83,10 @@ export default async function handler(
       const pageNum = parseInt(page as string);
       const limitNum = parseInt(limit as string);
 
-      const where: Record<string, unknown> = {};
+      const where: Record<string, unknown> = {
+        // Public list never exposes DRAFT (publishedAt null) entries.
+        publishedAt: { lte: new Date() },
+      };
       if (type) {
         if (
           Object.values(MediaBlogEntryType).includes(

@@ -88,7 +88,7 @@ export default function FromTheStudio({
 
           <Reveal y={14} duration={0.8} delay={0.1}>
             <div className="flex flex-wrap items-center gap-x-10 gap-y-4">
-              <ArrowLink href="/music/studio">Step inside</ArrowLink>
+              <ArrowLink href="/gallery">Step inside</ArrowLink>
               <ArrowLink href="/gallery">View more</ArrowLink>
             </div>
           </Reveal>

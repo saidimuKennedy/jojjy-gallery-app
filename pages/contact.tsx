@@ -169,7 +169,7 @@ export default function ContactPage() {
               </div>
 
               {errorMessage && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4">
+                <div role="alert" className="bg-red-50 border-l-4 border-red-500 p-4">
                   <p className="text-red-800 text-sm font-medium">
                     {errorMessage}
                   </p>
@@ -177,7 +177,7 @@ export default function ContactPage() {
               )}
 
               {status === "success" && (
-                <div className="bg-green-50 border-l-4 border-green-500 p-4">
+                <div role="status" className="bg-green-50 border-l-4 border-green-500 p-4">
                   <p className="text-green-800 text-sm font-medium">
                     Thank you for your message! We will get back to you soon.
                   </p>

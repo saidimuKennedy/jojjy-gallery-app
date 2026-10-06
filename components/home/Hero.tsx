@@ -8,19 +8,12 @@ import { EASE } from "@/components/home/motion";
  * ---------------------------------------------------------------------------
  * The final JENGA opening video has NOT been supplied yet.
  *
- * The constants below are the single source of truth for the hero media so the
- * final Cloudinary video/Poster can be dropped in without touching the hero
- * markup or design:
- *   1. upload the final video to Cloudinary,
- *   2. set HERO_VIDEO_MP4 (and optionally HERO_VIDEO_WEBM / HERO_POSTER),
- *   3. tune HERO_REVEAL below if the footage needs different pacing.
- *
- * The current value is an existing generic Cloudinary sample used purely as a
- * development placeholder. It is not JENGA footage and the layout/animation is
- * deliberately not tuned around its characteristics.
+ * The final JENGA opening video has NOT been supplied yet, so no video URL
+ * is set: the hero rests on the artist portrait until the final Cloudinary
+ * video/poster is dropped in (set HERO_VIDEO_MP4, optionally HERO_VIDEO_WEBM
+ * / HERO_POSTER). Never point this at generic sample footage in production.
  * ------------------------------------------------------------------------- */
-export const HERO_VIDEO_MP4 =
-  "https://res.cloudinary.com/dq3wkbgts/video/upload/v1735653355/samples/dance-2.mp4";
+export const HERO_VIDEO_MP4 = "";
 export const HERO_VIDEO_WEBM = "";
 // Poster = the artist portrait already in the repo; swap alongside the final video.
 export const HERO_POSTER = "/images/joj-artist.png";

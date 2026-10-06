@@ -35,6 +35,13 @@ export async function completeOrderFromPaystackReference(
     throw new Error("Payment amount mismatch");
   }
 
+  const expectedCurrency = (
+    order.paystackChargeCurrency ?? order.currency
+  ).toUpperCase();
+  if (verification.currency.toUpperCase() !== expectedCurrency) {
+    throw new Error("Payment currency mismatch");
+  }
+
   try {
     await fulfillOrder(order.id);
   } catch (err) {

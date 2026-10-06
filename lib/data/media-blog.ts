@@ -21,8 +21,13 @@ export async function getMediaBlogEntries(
   const skip = (page - 1) * limit;
   const minimal = options.minimal ?? false;
 
+  // Only published entries are public: publishedAt set and reached.
+  // DRAFT (null) entries never appear here.
+  const published = { publishedAt: { lte: new Date() } };
+
   const [entries, total] = await Promise.all([
     prisma.mediaBlogEntry.findMany({
+      where: published,
       orderBy: { createdAt: "desc" },
       skip,
       take: limit,
@@ -30,7 +35,7 @@ export async function getMediaBlogEntries(
         ? undefined
         : { mediaFiles: { orderBy: { order: "asc" } } },
     }),
-    prisma.mediaBlogEntry.count(),
+    prisma.mediaBlogEntry.count({ where: published }),
   ]);
 
   return {
@@ -52,6 +57,9 @@ export async function getMediaBlogEntryById(
     include: { mediaFiles: { orderBy: { order: "asc" } } },
   });
 
-  if (!entry) return null;
+  // Draft or scheduled-future entries are not publicly visible.
+  if (!entry || !entry.publishedAt || entry.publishedAt > new Date()) {
+    return null;
+  }
   return convertPrismaMediaBlogEntryWithRelationsToAPI(entry);
 }

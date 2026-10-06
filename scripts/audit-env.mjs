@@ -50,6 +50,12 @@ const ENV_MANIFEST = {
     feature: "WhatsApp inquiry button on artwork pages",
     usedBy: ["pages/artworks/[id].tsx"],
   },
+  NEXT_PUBLIC_ARTIST_INSTAGRAM_URL: {
+    category: "Display",
+    required: "feature",
+    feature: "Footer Instagram link (hidden when unset)",
+    usedBy: ["components/ui/Footer.tsx"],
+  },
   CLOUDINARY_CLOUD_NAME: {
     category: "Media",
     required: "feature",

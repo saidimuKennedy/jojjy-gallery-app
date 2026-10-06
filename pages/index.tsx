@@ -131,7 +131,7 @@ export default function Home({
           artworks={artworks}
           products={products}
           release={releases[0]}
-          event={events[0]}
+          event={upcomingEvent}
           portrait={PORTRAIT_IMAGE}
         />
 
@@ -244,19 +244,10 @@ export const getStaticProps: GetStaticProps<HomeProps> = async () => {
       imageUrl: entry.thumbnailUrl,
     }));
 
-  // No archive/editorial media yet: still show the strip using real imagery
-  // (the repo portrait + artworks from the DB) rather than hiding the section.
-  const studioItems: HomeStudioItem[] =
-    editorialItems.length > 0
-      ? editorialItems
-      : [
-          { id: -1, title: "JENGA", imageUrl: PORTRAIT_IMAGE },
-          ...galleryResult.artworks.slice(0, 4).map((artwork) => ({
-            id: artwork.id,
-            title: artwork.title,
-            imageUrl: artwork.imageUrl,
-          })),
-        ];
+  // No editorial entries: hide the strip rather than implying
+  // "From the Studio" with unrelated fallback artwork/portrait.
+  // (FromTheStudio renders nothing when the list is empty.)
+  const studioItems: HomeStudioItem[] = editorialItems;
 
   return {
     props: {

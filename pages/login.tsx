@@ -13,12 +13,18 @@ export default function LoginPage() {
   const { status } = useSession();
   const router = useRouter();
 
+  // Only same-origin paths are valid post-login destinations.
+  const rawCallback =
+    typeof router.query.callbackUrl === "string"
+      ? router.query.callbackUrl
+      : "/";
+  const callbackUrl =
+    rawCallback.startsWith("/") && !rawCallback.startsWith("//")
+      ? rawCallback
+      : "/";
+
   useEffect(() => {
     if (status === "authenticated") {
-      const callbackUrl =
-        typeof router.query.callbackUrl === "string"
-          ? router.query.callbackUrl
-          : "/";
       router.push(callbackUrl);
     }
   }, [status, router]);
@@ -39,11 +45,6 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
-
-    const callbackUrl =
-      typeof router.query.callbackUrl === "string"
-        ? router.query.callbackUrl
-        : "/";
 
     const result = await signIn("credentials", {
       redirect: false,
@@ -147,7 +148,7 @@ export default function LoginPage() {
               </div>
 
               {error && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4">
+                <div role="alert" className="bg-red-50 border-l-4 border-red-500 p-4">
                   <p className="text-red-800 text-sm font-medium">{error}</p>
                 </div>
               )}

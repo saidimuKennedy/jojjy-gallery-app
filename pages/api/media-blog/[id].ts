@@ -30,7 +30,11 @@ export default async function handler(
         include: { mediaFiles: { orderBy: { order: "asc" } } },
       });
 
-      if (!entry) {
+      if (
+        !entry ||
+        !entry.publishedAt ||
+        entry.publishedAt > new Date()
+      ) {
         return res
           .status(404)
           .json({ success: false, message: "Media Blog Entry not found" });

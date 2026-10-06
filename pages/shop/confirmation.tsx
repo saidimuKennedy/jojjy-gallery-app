@@ -12,14 +12,20 @@ type OrderTicket = {
   ticketType: { name: string };
 };
 
+const DELIVERY_LABELS: Record<string, string> = {
+  LOCAL_PICKUP: "Local pickup",
+  NAIROBI_DELIVERY: "Nairobi delivery",
+  KENYA_SHIPPING: "Kenya shipping",
+  INTERNATIONAL_SHIPPING: "International shipping",
+};
+
 type OrderData = {
   id: string;
   status: string;
   amount: number;
   currency: string;
   paystackRef: string | null;
-  deliveryMethod: string | null;
-  items: Array<{
+  deliveryMethod: string | null;  items: Array<{
     itemType: string;
     quantity: number;
     unitPrice: number;
@@ -132,6 +138,13 @@ export default function ShopConfirmationPage() {
                 minimumFractionDigits: 2,
               })}
             </p>
+
+            {order.deliveryMethod && (
+              <p className="text-sm font-light text-neutral-600 mb-10 -mt-6">
+                Fulfilment:{" "}
+                {DELIVERY_LABELS[order.deliveryMethod] ?? order.deliveryMethod}
+              </p>
+            )}
 
             <ul className="space-y-4 border-t border-neutral-200 pt-8 mb-8">
               {order.items.map((item) => {

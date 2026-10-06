@@ -137,7 +137,7 @@ export default function ShopArtworkPage() {
   return (
     <div className="min-h-screen bg-neutral-50">
       <Head>
-        <title>{artwork.title} — Studio Shop</title>
+        <title>{artwork.title} — Shop</title>
         <meta
           name="description"
           content={artwork.description || artwork.title}
@@ -150,7 +150,7 @@ export default function ShopArtworkPage() {
           href="/shop"
           className="mb-10 inline-block font-display text-xs uppercase tracking-[0.28em] text-neutral-400 hover:text-neutral-800"
         >
-          ← Studio Shop
+          ← Shop
         </Link>
 
         <motion.div
@@ -200,10 +200,11 @@ export default function ShopArtworkPage() {
             ) : (
               <div className="space-y-6">
                 <div>
-                  <label className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
+                  <label htmlFor="art-packaging" className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
                     Packaging
                   </label>
                   <select
+                    id="art-packaging"
                     value={packaging}
                     onChange={(e) =>
                       setPackaging(
@@ -221,10 +222,11 @@ export default function ShopArtworkPage() {
                 </div>
 
                 <div>
-                  <label className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
+                  <label htmlFor="art-delivery" className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
                     Delivery
                   </label>
                   <select
+                    id="art-delivery"
                     value={deliveryMethod}
                     onChange={(e) =>
                       setDeliveryMethod(
@@ -243,10 +245,11 @@ export default function ShopArtworkPage() {
 
                 {needsAddress && (
                   <div>
-                    <label className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
+                    <label htmlFor="art-address" className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
                       Delivery address
                     </label>
                     <textarea
+                      id="art-address"
                       value={deliveryAddress}
                       onChange={(e) => setDeliveryAddress(e.target.value)}
                       rows={3}

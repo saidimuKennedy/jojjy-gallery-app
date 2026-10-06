@@ -158,7 +158,7 @@ export default function ShopProductPage() {
   return (
     <div className="min-h-screen bg-neutral-50">
       <Head>
-        <title>{product.name} — Studio Shop</title>
+        <title>{product.name} — Shop</title>
         <meta
           name="description"
           content={product.description || product.name}
@@ -171,7 +171,7 @@ export default function ShopProductPage() {
           href="/shop"
           className="mb-10 inline-block font-display text-xs uppercase tracking-[0.28em] text-neutral-400 hover:text-neutral-800"
         >
-          ← Studio Shop
+          ← Shop
         </Link>
 
         <motion.div
@@ -219,10 +219,11 @@ export default function ShopProductPage() {
             ) : (
               <div className="space-y-6">
                 <div>
-                  <label className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
+                  <label htmlFor="shop-variant" className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
                     Variant
                   </label>
                   <select
+                    id="shop-variant"
                     value={selectedVariant?.id ?? ""}
                     onChange={(e) =>
                       setSelectedVariantId(Number(e.target.value))
@@ -239,10 +240,11 @@ export default function ShopProductPage() {
                 </div>
 
                 <div>
-                  <label className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
+                  <label htmlFor="shop-quantity" className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
                     Quantity
                   </label>
                   <input
+                    id="shop-quantity"
                     type="number"
                     min={1}
                     max={selectedVariant?.stock ?? 1}
@@ -260,10 +262,11 @@ export default function ShopProductPage() {
                 </div>
 
                 <div>
-                  <label className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
+                  <label htmlFor="shop-delivery" className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
                     Delivery
                   </label>
                   <select
+                    id="shop-delivery"
                     value={deliveryMethod}
                     onChange={(e) =>
                       setDeliveryMethod(
@@ -282,10 +285,11 @@ export default function ShopProductPage() {
 
                 {needsAddress && (
                   <div>
-                    <label className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
+                    <label htmlFor="shop-address" className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
                       Delivery address
                     </label>
                     <textarea
+                      id="shop-address"
                       value={deliveryAddress}
                       onChange={(e) => setDeliveryAddress(e.target.value)}
                       rows={3}

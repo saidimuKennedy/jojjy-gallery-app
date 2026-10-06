@@ -82,14 +82,10 @@ function venueShort(venue: string | null): string {
 }
 
 function ticketPerks(name: string): string[] {
-  const n = name.toLowerCase();
-  if (n.includes("patron") || n.includes("vip")) {
-    return [
-      "Priority entry",
-      "Artist meet & greet",
-      "Signed exhibition card",
-    ];
-  }
+  // Neutral, non-committal inclusions only: specific fulfillment benefits
+  // (meet & greet, signed items, priority entry) must come from CRM-managed
+  // data when that tooling exists — never hardcoded here.
+  void name;
   return ["Access to the evening", "Exhibition viewing"];
 }
 
@@ -389,7 +385,7 @@ export default function EventDetailPage() {
             <div className="relative h-[55vh] min-h-[320px] max-h-[720px] w-full overflow-hidden bg-neutral-100 md:h-[70vh]">
               <OptimizedImage
                 src={event.imageUrl}
-                alt=""
+                alt={event.title}
                 fill
                 preset="hero"
                 priority

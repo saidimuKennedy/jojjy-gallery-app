@@ -226,13 +226,13 @@ export default function PortfolioPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white p-8">
         <h1 className="font-display text-2xl font-light text-neutral-900 mb-4">
-          Portfolio Empty
+          No Art on View
         </h1>
         <Link
           href="/gallery"
           className="font-display text-xs uppercase tracking-[0.28em] text-neutral-500 hover:text-neutral-900"
         >
-          View Archive
+          View Studio
         </Link>
       </div>
     );
@@ -241,7 +241,7 @@ export default function PortfolioPage() {
   return (
     <div className="relative bg-white">
       <Head>
-        <title>Njenga Ngugi — Portfolio</title>
+        <title>Art — Njenga Ngugi</title>
         <meta
           name="description"
           content="Exhibition catalogue of works by Njenga Ngugi"

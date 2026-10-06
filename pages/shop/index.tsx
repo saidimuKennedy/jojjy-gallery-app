@@ -79,7 +79,7 @@ export default function ShopIndexPage({
   return (
     <div className="min-h-screen bg-neutral-50">
       <Head>
-        <title>Studio Shop — Njenga Ngugi</title>
+        <title>Shop — Njenga Ngugi</title>
         <meta
           name="description"
           content="Acquire original works from Njenga Ngugi"
@@ -93,10 +93,10 @@ export default function ShopIndexPage({
           animate={{ opacity: 1, y: 0 }}
           className="font-display text-4xl md:text-5xl font-light text-neutral-900 text-center mb-4 tracking-tight"
         >
-          Studio Shop
+          Shop
         </motion.h1>
         <p className="text-center text-sm font-light text-neutral-500 mb-14 max-w-lg mx-auto">
-          Original works, apparel, and objects — browse and purchase here.
+          Original works, apparel, and objects currently offered for purchase.
         </p>
 
         {isLoading && (

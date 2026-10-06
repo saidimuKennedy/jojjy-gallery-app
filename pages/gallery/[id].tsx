@@ -296,7 +296,7 @@ const SingleArchiveEntryPage = ({ initialEntry }: ArchiveDetailPageProps) => {
           href="/gallery"
           className="font-display text-xs uppercase tracking-[0.32em] text-[#8a8a8a] transition-colors duration-500 hover:text-[#1a1a1a]"
         >
-          ← Archive
+          ← Studio
         </Link>
       </div>
 

@@ -10,6 +10,7 @@ import {
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { releaseExpiredReservations } from "@/lib/reservations";
+import { promoteEventStatus } from "@/lib/data/events";
 import {
   buildPaystackReference,
   initializeTransaction,
@@ -227,7 +228,18 @@ export default async function handler(
           where: { id: item.ticketTypeId },
           include: { event: true },
         });
-        if (!ticketType || ticketType.event.status !== "PUBLISHED") {
+        if (!ticketType) {
+          return res.status(404).json({
+            success: false,
+            message: `Ticket type ${item.ticketTypeId} not found`,
+          });
+        }
+        // Evaluate the canonical event lifecycle here instead of trusting the
+        // stored row: a scheduled event whose publishAt has passed may still
+        // be DRAFT until a read promotes it. Future drafts, CANCELLED and
+        // COMPLETED events all fail this check and cannot sell tickets.
+        await promoteEventStatus(ticketType.event);
+        if (ticketType.event.status !== "PUBLISHED") {
           return res.status(404).json({
             success: false,
             message: `Ticket type ${item.ticketTypeId} not found`,

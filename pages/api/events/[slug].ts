@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
+import { promoteEventStatus } from "@/lib/data/events";
 
 export default async function handler(
   req: NextApiRequest,
@@ -31,10 +32,15 @@ export default async function handler(
       },
     });
 
-    if (
-      !event ||
-      (event.status !== "PUBLISHED" && event.status !== "COMPLETED")
-    ) {
+    if (!event) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Event not found" });
+    }
+
+    await promoteEventStatus(event);
+
+    if (event.status !== "PUBLISHED" && event.status !== "COMPLETED") {
       return res
         .status(404)
         .json({ success: false, message: "Event not found" });
@@ -57,6 +63,7 @@ export default async function handler(
 
     const data = {
       ...event,
+      publishAt: event.publishAt ? event.publishAt.toISOString() : null,
       startsAt: event.startsAt.toISOString(),
       endsAt: event.endsAt ? event.endsAt.toISOString() : null,
       artistTalkAt: event.artistTalkAt

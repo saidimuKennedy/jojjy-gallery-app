@@ -1,6 +1,11 @@
 import React from "react";
 import Link from "next/link";
 
+// Optional artist profile URL. When unset, no social link is rendered rather
+// than sending visitors to a generic instagram.com.
+const ARTIST_INSTAGRAM_URL =
+  process.env.NEXT_PUBLIC_ARTIST_INSTAGRAM_URL || "";
+
 export default function Footer() {
   return (
     <footer className="border-t border-neutral-100 bg-white">
@@ -16,14 +21,16 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
-            <a
-              href="https://instagram.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm uppercase tracking-[0.18em] text-neutral-600 transition-colors hover:text-neutral-900"
-            >
-              Instagram
-            </a>
+            {ARTIST_INSTAGRAM_URL && (
+              <a
+                href={ARTIST_INSTAGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm uppercase tracking-[0.18em] text-neutral-600 transition-colors hover:text-neutral-900"
+              >
+                Instagram
+              </a>
+            )}
             <Link
               href="/updates"
               className="text-sm uppercase tracking-[0.18em] text-neutral-600 transition-colors hover:text-neutral-900"

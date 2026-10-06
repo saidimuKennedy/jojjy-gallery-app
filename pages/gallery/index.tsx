@@ -283,7 +283,7 @@ const ArchivePage = ({ initialEntries, initialTotal }: ArchivePageProps) => {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.7, ease }}
                   >
-                    Archive
+                    Studio
                   </motion.p>
                   <motion.p
                     className="mt-3 max-w-sm text-sm font-light leading-relaxed text-[#6b6b6b]"
