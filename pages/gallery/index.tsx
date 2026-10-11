@@ -235,7 +235,7 @@ const ArchivePage = ({ initialEntries, initialTotal }: ArchivePageProps) => {
       <div className="min-h-screen bg-white text-[#1a1a1a]">
         <Navbar />
         <div className="flex min-h-[70vh] items-center justify-center">
-          <p className="font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a]">
+          <p className="font-display text-xs uppercase tracking-[0.2em] text-[#6b6b6b]">
             Loading
           </p>
         </div>
@@ -268,8 +268,8 @@ const ArchivePage = ({ initialEntries, initialTotal }: ArchivePageProps) => {
       <main>
         {mediaItems.length === 0 ? (
           <div className="px-6 py-40 text-center md:px-12">
-            <p className="font-display text-xl text-[#8a8a8a]">
-              The archive is empty for now.
+            <p className="font-display text-xl text-neutral-600">
+              The Studio is empty for now.
             </p>
           </div>
         ) : (
@@ -278,7 +278,7 @@ const ArchivePage = ({ initialEntries, initialTotal }: ArchivePageProps) => {
               <section className="px-0 pt-8 md:pt-12">
                 <div className="px-6 md:px-12 lg:px-20">
                   <motion.p
-                    className="font-display text-xs uppercase tracking-[0.32em] text-[#8a8a8a]"
+                    className="font-display text-xs uppercase tracking-[0.22em] text-[#6b6b6b]"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.7, ease }}
@@ -318,7 +318,7 @@ const ArchivePage = ({ initialEntries, initialTotal }: ArchivePageProps) => {
                     </div>
 
                     <div className="mx-auto max-w-3xl px-6 pt-8 md:px-12 md:pt-10">
-                      <p className="font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a]">
+                      <p className="font-display text-xs uppercase tracking-[0.2em] text-[#6b6b6b]">
                         {openingLabel}
                         {opening.year ? ` · ${opening.year}` : ""}
                         {opening.duration ? ` · ${opening.duration}` : ""}
@@ -387,7 +387,7 @@ const ArchivePage = ({ initialEntries, initialTotal }: ArchivePageProps) => {
                         </div>
                       )}
                       <div className="mx-auto max-w-3xl px-6 pt-8 md:px-12 md:pt-10">
-                        <span className="font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a]">
+                        <span className="font-display text-xs uppercase tracking-[0.2em] text-[#6b6b6b]">
                           {label}
                           {item.year ? ` · ${item.year}` : ""}
                         </span>
@@ -430,7 +430,7 @@ const ArchivePage = ({ initialEntries, initialTotal }: ArchivePageProps) => {
                           )}
                         </div>
                         <div className="md:col-span-4 lg:col-span-3 md:pb-4">
-                          <span className="font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a]">
+                          <span className="font-display text-xs uppercase tracking-[0.2em] text-[#6b6b6b]">
                             {label}
                             {item.year ? ` · ${item.year}` : ""}
                           </span>
@@ -454,7 +454,7 @@ const ArchivePage = ({ initialEntries, initialTotal }: ArchivePageProps) => {
                       onMouseEnter={() => setHoveredId(item.id)}
                       onMouseLeave={() => setHoveredId(null)}
                     >
-                      <span className="font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a]">
+                      <span className="font-display text-xs uppercase tracking-[0.2em] text-[#6b6b6b]">
                         {label}
                         {item.year ? ` · ${item.year}` : ""}
                       </span>
@@ -494,7 +494,7 @@ const ArchivePage = ({ initialEntries, initialTotal }: ArchivePageProps) => {
 
             {hasMore && (
               <div ref={loadMoreRef} className="py-16 text-center">
-                <p className="font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a]">
+                <p className="font-display text-xs uppercase tracking-[0.2em] text-[#6b6b6b]">
                   {isValidating ? "Loading more" : ""}
                 </p>
               </div>

@@ -6,7 +6,8 @@ import {
   useTransform,
 } from "framer-motion";
 import type { MotionValue } from "framer-motion";
-import { ArrowLink, Eyebrow, MediaFrame, Shell } from "@/components/home/primitives";
+import { Eyebrow, MediaFrame, Shell } from "@/components/home/primitives";
+import TextAction from "@/components/ui/TextAction";
 import { EASE, Reveal, RevealGroup, RevealItem } from "@/components/home/motion";
 import type { HomeStudioItem } from "@/components/home/types";
 
@@ -88,8 +89,12 @@ export default function FromTheStudio({
 
           <Reveal y={14} duration={0.8} delay={0.1}>
             <div className="flex flex-wrap items-center gap-x-10 gap-y-4">
-              <ArrowLink href="/gallery">Step inside</ArrowLink>
-              <ArrowLink href="/gallery">View more</ArrowLink>
+              <TextAction href="/gallery" tone="dark">
+                Step inside
+              </TextAction>
+              <TextAction href="/gallery" tone="dark">
+                View more
+              </TextAction>
             </div>
           </Reveal>
         </div>

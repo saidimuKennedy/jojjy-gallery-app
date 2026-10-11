@@ -7,6 +7,8 @@ import { useSeries } from "@/hooks/useArtWorks";
 import { motion, Variants } from "framer-motion";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
+import BackLink from "@/components/ui/BackLink";
+import TextAction from "@/components/ui/TextAction";
 
 const pageVariants: Variants = {
   hidden: { opacity: 0 },
@@ -91,12 +93,9 @@ const PortfolioSeriesPage: React.FC = () => {
             The series &quot;{(seriesSlug || "").replace(/-/g, " ")}&quot; could
             not be found.
           </p>
-          <Link
-            href="/portfolio"
-            className="mt-8 text-neutral-600 hover:text-neutral-900 underline-offset-4 hover:underline"
-          >
-            Back to Portfolio
-          </Link>
+          <BackLink href="/portfolio" className="mt-8">
+            Back to Art
+          </BackLink>
         </div>
         <Footer />
       </>
@@ -138,7 +137,7 @@ const PortfolioSeriesPage: React.FC = () => {
         {/* Intro */}
         {intro && (
           <motion.section variants={fadeInUp} className="max-w-2xl mx-auto mb-16 md:mb-24">
-            <p className="font-display text-xs uppercase tracking-[0.28em] text-neutral-400 text-center mb-6">
+            <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 text-center mb-6">
               Introduction
             </p>
             <p className="text-sm font-light text-gray-600 text-center leading-relaxed md:text-base md:leading-relaxed whitespace-pre-line">
@@ -153,7 +152,7 @@ const PortfolioSeriesPage: React.FC = () => {
             variants={fadeInUp}
             className="max-w-2xl mx-auto mb-16 md:mb-24 border-t border-neutral-200 pt-16"
           >
-            <p className="font-display text-xs uppercase tracking-[0.28em] text-neutral-400 text-center mb-6">
+            <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 text-center mb-6">
               Artist statement
             </p>
             <blockquote className="font-display text-xl md:text-2xl font-light leading-relaxed text-neutral-800 text-center tracking-tight whitespace-pre-line">
@@ -164,7 +163,7 @@ const PortfolioSeriesPage: React.FC = () => {
 
         {/* Works */}
         <motion.section variants={fadeInUp} className="mb-16 md:mb-24">
-          <p className="font-display text-xs uppercase tracking-[0.28em] text-neutral-400 text-center mb-10">
+          <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 text-center mb-10">
             Works
           </p>
           {artworks.length === 0 ? (
@@ -206,7 +205,7 @@ const PortfolioSeriesPage: React.FC = () => {
             variants={fadeInUp}
             className="mb-16 md:mb-24 border-t border-neutral-200 pt-16"
           >
-            <p className="font-display text-xs uppercase tracking-[0.28em] text-neutral-400 text-center mb-10">
+            <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 text-center mb-10">
               Behind the scenes
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -245,7 +244,7 @@ const PortfolioSeriesPage: React.FC = () => {
             variants={fadeInUp}
             className="mb-16 md:mb-24 border-t border-neutral-200 pt-16"
           >
-            <p className="font-display text-xs uppercase tracking-[0.28em] text-neutral-400 text-center mb-10">
+            <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 text-center mb-10">
               Film
             </p>
             <div className="max-w-3xl mx-auto">
@@ -261,14 +260,9 @@ const PortfolioSeriesPage: React.FC = () => {
                 </div>
               ) : (
                 <p className="text-center text-sm font-light">
-                  <a
-                    href={series.filmUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-neutral-700 underline-offset-4 hover:underline"
-                  >
-                    Watch the film →
-                  </a>
+                  <TextAction href={series.filmUrl ?? "#"} external>
+                    Watch the film
+                  </TextAction>
                 </p>
               )}
             </div>
@@ -281,7 +275,7 @@ const PortfolioSeriesPage: React.FC = () => {
             variants={fadeInUp}
             className="text-center border-t border-neutral-200 pt-16"
           >
-            <p className="font-display text-xs uppercase tracking-[0.28em] text-neutral-400 mb-8">
+            <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-8">
               Collect
             </p>
             <div className="flex flex-wrap justify-center gap-4">
@@ -295,12 +289,9 @@ const PortfolioSeriesPage: React.FC = () => {
                 </Link>
               ))}
             </div>
-            <Link
-              href="/portfolio"
-              className="mt-10 inline-block font-display text-xs uppercase tracking-[0.28em] text-neutral-500 underline-offset-4 hover:text-neutral-900 hover:underline"
-            >
-              Back to Portfolio
-            </Link>
+            <BackLink href="/portfolio" className="mt-10">
+              Back to Art
+            </BackLink>
           </motion.section>
         )}
       </div>

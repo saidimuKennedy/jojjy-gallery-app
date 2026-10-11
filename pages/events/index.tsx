@@ -94,7 +94,7 @@ export default function EventsIndexPage() {
         </motion.div>
 
         {isLoading && (
-          <p className="text-center font-display text-xs uppercase tracking-[0.28em] text-neutral-400">
+          <p className="text-center font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
             Loading
           </p>
         )}
@@ -145,7 +145,7 @@ export default function EventsIndexPage() {
                         imageLeft ? "md:order-2" : "md:order-1"
                       }`}
                     >
-                      <p className="font-archive-body text-[0.7rem] font-medium uppercase tracking-[0.28em] text-neutral-500 mb-4">
+                      <p className="font-archive-body text-[0.7rem] font-medium uppercase tracking-[0.2em] text-neutral-500 mb-4">
                         {status.label}
                         {status.detail ? ` · ${status.detail}` : ""}
                         {" · "}

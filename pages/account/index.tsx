@@ -23,6 +23,25 @@ interface TransactionRow {
   currency: string;
   timestamp: string;
   itemTypes: string[];
+  fulfilledAt: string | null;
+  items: { itemType: string; quantity: number; label: string }[];
+}
+
+interface WalletTicketPreview {
+  id: string;
+  code: string;
+  ticketType: string;
+  event: { title: string; slug: string };
+}
+
+interface LibraryPreview {
+  collection: { id: number; slug: string; title: string }[];
+  studioMembership: {
+    active: boolean;
+    expiresAt?: string;
+    startedAt?: string;
+    isFounding?: boolean;
+  };
 }
 
 const jsonFetcher = async (url: string) => {
@@ -54,10 +73,20 @@ export default function AccountPage() {
     jsonFetcher
   );
 
+  const { data: tickets } = useSWR<WalletTicketPreview[]>(
+    loggedIn ? "/api/account/tickets" : null,
+    jsonFetcher
+  );
+
+  const { data: library } = useSWR<LibraryPreview>(
+    loggedIn ? "/api/music/library" : null,
+    jsonFetcher
+  );
+
   if (authStatus === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-        <p className="font-display text-xs uppercase tracking-[0.28em] text-neutral-400">
+        <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
           Loading
         </p>
       </div>
@@ -143,7 +172,7 @@ export default function AccountPage() {
 
         {/* Follow */}
         <section className="mb-16 border-b border-neutral-200 pb-12">
-          <p className="font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-4">
+          <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-4">
             Follow the artist
           </p>
           <p className="text-sm font-light text-neutral-600 mb-6 max-w-md">
@@ -165,7 +194,7 @@ export default function AccountPage() {
 
         {/* Wishlist */}
         <section className="mb-16 border-b border-neutral-200 pb-12">
-          <p className="font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-6">
+          <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-6">
             Wishlist
           </p>
           {!wishlist || wishlist.length === 0 ? (
@@ -205,7 +234,7 @@ export default function AccountPage() {
                     <button
                       type="button"
                       onClick={() => handleRemoveWishlist(item.artworkId)}
-                      className="mt-2 block font-display text-[0.65rem] uppercase tracking-[0.24em] text-neutral-400 hover:text-neutral-800"
+                      className="mt-2 block py-1 font-display text-[0.7rem] uppercase tracking-[0.2em] text-neutral-500 hover:text-neutral-800"
                     >
                       Remove
                     </button>
@@ -217,8 +246,8 @@ export default function AccountPage() {
         </section>
 
         {/* Purchases */}
-        <section>
-          <p className="font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-6">
+        <section className="mb-16 border-b border-neutral-200 pb-12">
+          <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-6">
             Purchase history
           </p>
           {!purchases || purchases.length === 0 ? (
@@ -230,27 +259,123 @@ export default function AccountPage() {
               {purchases.map((tx) => (
                 <li
                   key={tx.id}
-                  className="flex justify-between text-sm font-light text-neutral-700 border-b border-neutral-100 pb-3"
+                  className="border-b border-neutral-100 pb-3"
                 >
-                  <div>
-                    <p className="text-neutral-900">
+                  <Link
+                    href={`/account/orders/${tx.id}`}
+                    className="flex justify-between gap-4 group"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-light text-neutral-900 group-hover:underline underline-offset-4">
+                        {tx.items.length > 0
+                          ? tx.items
+                              .map(
+                                (i) =>
+                                  `${i.label}${
+                                    i.quantity > 1 ? ` × ${i.quantity}` : ""
+                                  }`
+                              )
+                              .join("; ")
+                          : tx.itemTypes.join(", ")}
+                      </p>
+                      <p className="text-xs text-neutral-500 mt-1">
+                        {new Date(tx.timestamp).toLocaleDateString()} ·{" "}
+                        {tx.status}
+                        {tx.fulfilledAt ? " · fulfilled" : ""}
+                      </p>
+                    </div>
+                    <p className="text-sm font-light text-neutral-700 whitespace-nowrap">
                       {tx.currency} {tx.amount.toLocaleString()}
                     </p>
-                    <p className="text-xs text-neutral-400 mt-1">
-                      {new Date(tx.timestamp).toLocaleDateString()} ·{" "}
-                      {tx.status}
-                    </p>
-                  </div>
-                  {tx.itemTypes.length > 0 && (
-                    <p className="text-xs text-neutral-400">
-                      {tx.itemTypes.join(", ")}
-                    </p>
-                  )}
+                  </Link>
                 </li>
               ))}
             </ul>
           )}
         </section>
+
+        {/* Tickets */}
+        <section className="mb-16 border-b border-neutral-200 pb-12">
+          <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-6">
+            Tickets
+          </p>
+          {!tickets || tickets.length === 0 ? (
+            <p className="text-sm font-light text-neutral-500">
+              No tickets yet.{" "}
+              <Link href="/events" className="underline-offset-4 hover:underline">
+                Browse events
+              </Link>
+            </p>
+          ) : (
+            <div>
+              <ul className="space-y-3 mb-6">
+                {tickets.slice(0, 3).map((t) => (
+                  <li
+                    key={t.id}
+                    className="flex justify-between gap-4 text-sm font-light"
+                  >
+                    <Link
+                      href={`/events/${t.event.slug}`}
+                      className="text-neutral-900 hover:underline underline-offset-4 truncate"
+                    >
+                      {t.event.title}
+                    </Link>
+                    <span className="font-mono tracking-widest text-neutral-700 whitespace-nowrap">
+                      {t.code}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/account/tickets"
+                className="font-display text-xs uppercase tracking-[0.24em] text-neutral-900 underline-offset-4 hover:underline"
+              >
+                Open ticket wallet →
+              </Link>
+            </div>
+          )}
+        </section>
+
+        {/* Music & membership */}
+        {(!!library?.collection.length ||
+          !!library?.studioMembership.active) && (
+          <section className="mb-16 border-b border-neutral-200 pb-12">
+            <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-6">
+              Music &amp; membership
+            </p>
+            {library.studioMembership.active && (
+              <p className="text-sm font-light text-neutral-700 mb-4">
+                Studio member
+                {library.studioMembership.expiresAt
+                  ? ` · until ${new Date(
+                      library.studioMembership.expiresAt
+                    ).toLocaleDateString()}`
+                  : ""}
+                {library.studioMembership.isFounding ? " · founding" : ""}
+              </p>
+            )}
+            {library.collection.length > 0 && (
+              <ul className="space-y-2 mb-6">
+                {library.collection.slice(0, 5).map((r) => (
+                  <li key={r.id} className="text-sm font-light">
+                    <Link
+                      href={`/music/${r.slug}`}
+                      className="text-neutral-900 hover:underline underline-offset-4"
+                    >
+                      {r.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Link
+              href="/music/library"
+              className="font-display text-xs uppercase tracking-[0.24em] text-neutral-900 underline-offset-4 hover:underline"
+            >
+              Open your library →
+            </Link>
+          </section>
+        )}
       </main>
       <Footer />
     </div>

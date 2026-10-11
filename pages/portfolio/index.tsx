@@ -215,7 +215,7 @@ export default function PortfolioPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <p className="font-display text-xs uppercase tracking-[0.28em] text-neutral-400">
+        <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
           Loading
         </p>
       </div>

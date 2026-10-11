@@ -3,6 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
+import TextAction from "@/components/ui/TextAction";
 import Image from "next/image";
 import StatCounter from "@/components/Animations/StatCounter";
 import { useSession } from "next-auth/react";
@@ -132,12 +133,9 @@ export default function AboutPage() {
                   </Link>
                 )}
                 {session?.user && (
-                  <Link
-                    href="/account"
-                    className="font-display text-xs uppercase tracking-[0.24em] text-neutral-500 underline-offset-4 hover:underline py-3"
-                  >
-                    Your account →
-                  </Link>
+                  <TextAction href="/account" className="py-3">
+                    Your account
+                  </TextAction>
                 )}
               </div>
             </div>

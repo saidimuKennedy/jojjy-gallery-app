@@ -22,6 +22,7 @@ These documents are **action plans**, not feature specs. Each one describes how 
 | 12 | [Fix announcement publish bug](./12-announcement-publish-fix.md) | CRM | S | — |
 | 13 | [Public announcements (Updates)](./13-public-announcements-updates.md) | Gallery | S | Plan 12 |
 | 14 | [Remove legacy M-Pesa](./14-remove-legacy-mpesa.md) | Gallery + CRM | M | Plan 02 (Paystack live) |
+| 15 | [Event & ticketing end to end](./15-event-ticketing-end-to-end.md) | CRM + Gallery | L | Plan 02 (payment verification) |
 
 **Effort key:** S = half day · M = 1–2 days · L = 2–4 days
 
@@ -30,6 +31,8 @@ These documents are **action plans**, not feature specs. Each one describes how 
 Polish and business items stay tracked in [LAUNCH_CHECKLIST.md](../../LAUNCH_CHECKLIST.md) under **Polish**, **Business**, and **Version 2**.
 
 **Music module:** [Plan 09 — Music paid unlock checkout](./09-music-paid-unlock-checkout.md) closes the paid-release loop (tease → Paystack → `ReleaseUnlock`). [Plan 10 — The Studio experience](./10-studio-experience.md) adds the emotional layer: dedicated `/music/studio`, language, library split, and belonging UX on top of MVP commerce.
+
+**Event ticketing:** [Plan 15](./15-event-ticketing-end-to-end.md) is the end-to-end source of truth for the event/ticket lifecycle across both repos. It supersedes Plan 06 and includes guest checkout, complimentary issuance, QR check-in, Paystack refunds, CRM Roboto/shared UI, customer UI consistency, reporting, and audit requirements.
 
 **Audience:** [Plan 11 — Audience (newsletter) MVP](./11-audience-newsletter-mvp.md) collects guest emails via a dedicated `/subscribe` page + scroll modal CTA, plus CRM list/search/CSV. No footer form, no sending or campaigns. CRM module named **Audience**, not Newsletter.
 

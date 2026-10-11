@@ -92,7 +92,7 @@ export default function StudioJoinSection({
   };
 
   if (isLoading) {
-    return <p className="text-sm text-neutral-400">Loading…</p>;
+    return <p className="text-sm text-neutral-500">Loading…</p>;
   }
   if (error) {
     return (
@@ -139,9 +139,9 @@ export default function StudioJoinSection({
           </p>
           <Link
             href="/music/library"
-            className="mt-4 inline-block text-sm underline text-neutral-700"
+            className="mt-4 inline-block font-archive-body text-sm font-medium text-neutral-700 underline-offset-4 underline decoration-neutral-400 transition-colors hover:text-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-900"
           >
-            Your collection →
+            Your collection
           </Link>
         </div>
       ) : (
@@ -166,7 +166,7 @@ export default function StudioJoinSection({
                       {plan.description}
                     </p>
                   )}
-                  <p className="mt-2 text-xs uppercase tracking-[0.18em] text-neutral-400">
+                  <p className="mt-2 text-xs uppercase tracking-[0.18em] text-neutral-500">
                     {formatDisplayPrice(plan.price)}
                   </p>
                 </div>

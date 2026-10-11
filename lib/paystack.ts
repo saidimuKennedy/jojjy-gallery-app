@@ -103,6 +103,101 @@ export async function verifyTransaction(
   };
 }
 
+export interface PaystackRefundResult {
+  id: number;
+  status: string;
+  amount: number;
+  currency: string;
+  transaction: string | { reference?: string; id?: number };
+  customer_note?: string | null;
+  merchant_note?: string | null;
+}
+
+/**
+ * Initiate a refund for an original transaction. `transaction` must be the
+ * server-verified Paystack transaction reference/id — never a client-supplied
+ * value. Omit `amount` for a full refund.
+ * Docs: https://paystack.com/docs/payments/refunds/
+ */
+export async function initializeRefund(params: {
+  transaction: string;
+  amount?: number;
+  currency?: string;
+  merchantNote?: string;
+}): Promise<PaystackRefundResult> {
+  const secret = paystackSecretKey();
+  if (!secret) throw new Error("PAYSTACK_SECRET_KEY is not configured");
+
+  const body: Record<string, unknown> = { transaction: params.transaction };
+  if (params.amount != null) body.amount = toPaystackAmount(params.amount);
+  if (params.currency) body.currency = params.currency;
+  if (params.merchantNote) body.merchant_note = params.merchantNote;
+
+  const res = await fetch(`${PAYSTACK_BASE}/refund`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${secret}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  const json = await res.json();
+  if (!res.ok || !json.status) {
+    throw new Error(json.message || "Failed to initiate Paystack refund");
+  }
+  return json.data as PaystackRefundResult;
+}
+
+/** Fetch a refund's current provider state by Paystack refund id or reference. */
+export async function verifyRefund(
+  refundId: string | number
+): Promise<PaystackRefundResult> {
+  const secret = paystackSecretKey();
+  if (!secret) throw new Error("PAYSTACK_SECRET_KEY is not configured");
+
+  const res = await fetch(
+    `${PAYSTACK_BASE}/refund/${encodeURIComponent(String(refundId))}`,
+    { headers: { Authorization: `Bearer ${secret}` } }
+  );
+  const json = await res.json();
+  if (!res.ok || !json.status) {
+    throw new Error(json.message || "Failed to fetch Paystack refund");
+  }
+  return json.data as PaystackRefundResult;
+}
+
+/**
+ * Map Paystack's refund status strings onto our CRM RefundStatus values. Unknown
+ * values fall back to NEEDS_ATTENTION so the CRM never claims success blindly.
+ */
+export function mapPaystackRefundStatus(
+  status: string
+):
+  | "SUBMITTED"
+  | "PROCESSING"
+  | "PROCESSED"
+  | "FAILED"
+  | "NEEDS_ATTENTION" {
+  switch ((status || "").toLowerCase()) {
+    case "pending":
+      return "SUBMITTED";
+    case "processing":
+      return "PROCESSING";
+    case "success":
+    case "processed":
+      return "PROCESSED";
+    case "failed":
+    case "rejected":
+      return "FAILED";
+    case "reversed":
+    case "needs-attention":
+    case "needs_attention":
+      return "NEEDS_ATTENTION";
+    default:
+      return "NEEDS_ATTENTION";
+  }
+}
+
 export function verifyWebhookSignature(
   rawBody: string,
   signatureHeader: string | undefined

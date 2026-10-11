@@ -74,7 +74,9 @@ export default function ShopIndexPage({
       (a) => a.isAvailable && a.status === "AVAILABLE" && (a.price ?? 0) > 0
     ) ?? [];
   const availableProducts =
-    products?.filter((p) => p.variants.length > 0) ?? [];
+    products?.filter((p) =>
+      p.variants.some((v) => v.stock > 0)
+    ) ?? [];
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -100,7 +102,7 @@ export default function ShopIndexPage({
         </p>
 
         {isLoading && (
-          <p className="text-center font-display text-xs uppercase tracking-[0.28em] text-neutral-400">
+          <p className="text-center font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
             Loading
           </p>
         )}
@@ -137,7 +139,7 @@ export default function ShopIndexPage({
                   {artwork.title}
                 </h2>
                 {artwork.medium && (
-                  <p className="text-xs font-light text-neutral-400 mt-1">
+                  <p className="text-xs font-light text-neutral-600 mt-1">
                     {artwork.medium}
                   </p>
                 )}
@@ -155,7 +157,7 @@ export default function ShopIndexPage({
               <h2 className="font-display text-2xl md:text-3xl font-light text-neutral-900 tracking-tight">
                 Merch
               </h2>
-              <span className="text-xs font-light uppercase tracking-[0.24em] text-neutral-400">
+              <span className="text-xs font-light uppercase tracking-[0.2em] text-neutral-500">
                 Apparel &amp; objects
               </span>
             </div>
@@ -177,8 +179,13 @@ export default function ShopIndexPage({
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="flex items-center justify-center h-full font-display text-xs uppercase tracking-[0.28em] text-neutral-300">
-                        {product.name}
+                      <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
+                        <p className="font-display text-[0.7rem] uppercase tracking-[0.2em] text-neutral-500">
+                          {product.category || "Merch"}
+                        </p>
+                        <p className="font-display text-lg font-light tracking-tight text-neutral-700">
+                          {product.name}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -186,7 +193,7 @@ export default function ShopIndexPage({
                     {product.name}
                   </h2>
                   {product.category && (
-                    <p className="text-xs font-light text-neutral-400 mt-1">
+                    <p className="text-xs font-light text-neutral-600 mt-1">
                       {product.category}
                     </p>
                   )}

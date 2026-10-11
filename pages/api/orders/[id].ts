@@ -51,12 +51,14 @@ export default async function handler(
                 event: { select: { title: true, slug: true, startsAt: true } },
               },
             },
-            productVariant: {
-              select: {
-                sku: true,
-                product: { select: { name: true } },
-              },
+          productVariant: {
+            select: {
+              sku: true,
+              product: { select: { name: true } },
             },
+          },
+          release: { select: { id: true, title: true, slug: true } },
+          membershipPlan: { select: { id: true, name: true } },
           },
         },
         tickets: {
@@ -81,6 +83,14 @@ export default async function handler(
         amount: order.amount.toNumber(),
         currency: order.currency,
         paystackRef: order.paystackRef,
+        chargeAmount: order.paystackChargeAmount
+          ? order.paystackChargeAmount.toNumber()
+          : null,
+        chargeCurrency: order.paystackChargeCurrency,
+        customerName: order.customerName,
+        phoneNumber: order.phoneNumber,
+        deliveryNotes: order.deliveryNotes,
+        fulfilledAt: order.fulfilledAt ? order.fulfilledAt.toISOString() : null,
         deliveryMethod: order.deliveryMethod,
         deliveryAddress: order.deliveryAddress,
         packaging: order.packaging,
@@ -93,6 +103,8 @@ export default async function handler(
           artwork: item.artwork,
           ticketType: item.ticketType,
           productVariant: item.productVariant,
+          release: item.release,
+          membershipPlan: item.membershipPlan,
         })),
         tickets: order.tickets,
       },

@@ -8,9 +8,18 @@ function serializeOrder(order: NonNullable<Awaited<ReturnType<typeof loadOrder>>
   return {
     id: order.id,
     status: order.status,
+    paymentStatus: order.paymentStatus,
     amount: order.amount.toNumber(),
     currency: order.currency,
     paystackRef: order.paystackRef,
+    chargeAmount: order.paystackChargeAmount
+      ? order.paystackChargeAmount.toNumber()
+      : null,
+    chargeCurrency: order.paystackChargeCurrency,
+    customerName: order.customerName,
+    phoneNumber: order.phoneNumber,
+    deliveryNotes: order.deliveryNotes,
+    fulfilledAt: order.fulfilledAt ? order.fulfilledAt.toISOString() : null,
     deliveryMethod: order.deliveryMethod,
     deliveryAddress: order.deliveryAddress,
     packaging: order.packaging,

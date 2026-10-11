@@ -46,13 +46,13 @@ export default function NewsletterModal({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 text-xs uppercase tracking-[0.18em] text-neutral-400 transition-colors hover:text-neutral-900"
+          className="absolute right-4 top-4 text-xs uppercase tracking-[0.18em] text-neutral-600 transition-colors hover:text-neutral-900"
           aria-label="Dismiss"
         >
           Close
         </button>
 
-        <p className="font-display text-xs uppercase tracking-[0.32em] text-neutral-400">
+        <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500">
           Updates
         </p>
         <h2

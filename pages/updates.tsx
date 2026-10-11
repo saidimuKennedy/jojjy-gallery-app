@@ -10,6 +10,7 @@ type AnnouncementItem = {
   id: number;
   title: string;
   body: string;
+  imageUrl: string | null;
   publishedAt: string;
   event: { id: number; title: string; slug: string } | null;
 };
@@ -64,7 +65,7 @@ export default function UpdatesPage() {
         </motion.div>
 
         {isLoading && (
-          <p className="text-center font-display text-xs uppercase tracking-[0.28em] text-neutral-400">
+          <p className="text-center font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
             Loading
           </p>
         )}
@@ -88,7 +89,7 @@ export default function UpdatesPage() {
         )}
 
         {updates && updates.length > 0 && (
-          <ul className="mx-auto max-w-2xl">
+          <ul className="mx-auto max-w-5xl">
             {updates.map((item, index) => (
               <motion.li
                 key={item.id}
@@ -101,23 +102,43 @@ export default function UpdatesPage() {
                 }}
                 className="border-t border-neutral-100 py-12 md:py-14"
               >
-                <p className="font-archive-body text-[0.7rem] font-medium uppercase tracking-[0.28em] text-neutral-500">
-                  {formatDate(item.publishedAt)}
-                </p>
-                <h2 className="mt-4 font-display text-3xl font-light tracking-tight text-neutral-900 md:text-4xl">
-                  {item.title}
-                </h2>
-                <p className="mt-5 whitespace-pre-wrap font-archive-body text-[1.0625rem] leading-[1.7] text-neutral-600 md:text-lg">
-                  {item.body}
-                </p>
-                {item.event && (
-                  <Link
-                    href={`/events/${item.event.slug}`}
-                    className="mt-6 inline-block font-display text-xs uppercase tracking-[0.22em] text-neutral-700 underline-offset-4 transition-colors hover:text-neutral-900 hover:underline"
-                  >
-                    {item.event.title}
-                  </Link>
-                )}
+                <article
+                  className={
+                    item.imageUrl
+                      ? "grid items-center gap-7 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] md:gap-12"
+                      : "mx-auto max-w-2xl"
+                  }
+                >
+                  {item.imageUrl && (
+                    <div className="aspect-[4/3] overflow-hidden bg-neutral-100 md:aspect-[5/4]">
+                      <img
+                        src={item.imageUrl}
+                        alt=""
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-archive-body text-[0.7rem] font-medium uppercase tracking-[0.2em] text-neutral-500">
+                      {formatDate(item.publishedAt)}
+                    </p>
+                    <h2 className="mt-4 font-display text-3xl font-light tracking-tight text-neutral-900 md:text-4xl">
+                      {item.title}
+                    </h2>
+                    <p className="mt-5 whitespace-pre-wrap font-archive-body text-[1.0625rem] leading-[1.7] text-neutral-600 md:text-lg">
+                      {item.body}
+                    </p>
+                    {item.event && (
+                      <Link
+                        href={`/events/${item.event.slug}`}
+                        className="mt-6 inline-block font-display text-xs uppercase tracking-[0.22em] text-neutral-700 underline-offset-4 transition-colors hover:text-neutral-900 hover:underline"
+                      >
+                        {item.event.title}
+                      </Link>
+                    )}
+                  </div>
+                </article>
               </motion.li>
             ))}
           </ul>

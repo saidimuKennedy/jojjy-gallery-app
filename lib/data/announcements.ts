@@ -8,6 +8,7 @@ export async function getPublishedAnnouncements() {
       id: true,
       title: true,
       body: true,
+      imageUrl: true,
       publishedAt: true,
       event: {
         select: { id: true, title: true, slug: true },
@@ -19,6 +20,7 @@ export async function getPublishedAnnouncements() {
     id: a.id,
     title: a.title,
     body: a.body,
+    imageUrl: a.imageUrl,
     publishedAt: a.publishedAt!.toISOString(),
     event: a.event
       ? {

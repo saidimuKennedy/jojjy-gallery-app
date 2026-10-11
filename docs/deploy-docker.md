@@ -25,7 +25,7 @@ server instead of the sandbox.
    - Domains are optional — leave `APP_DOMAIN`/`CRM_DOMAIN` blank for
      auto-generated `*.nip.io` names, or set real ones.
    - `POSTGRES_PASSWORD`, `NEXTAUTH_SECRET` (`openssl rand -base64 32`)
-   - `PAYSTACK_SECRET_KEY`, `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`
+   - `PAYSTACK_SECRET_KEY` (server-side only; no browser Paystack key is used — checkout redirects via the server)
    - `APP_DATABASE_URL` / `APP_DIRECT_URL` (host `db`, inside the network)
    - `BUILD_DATABASE_URL` / `BUILD_DIRECT_URL` (host `localhost:$POSTGRES_PORT`,
      used by `next build` because `/shop`, `/gallery` pages run `getStaticProps`

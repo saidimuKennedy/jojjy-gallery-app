@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import useSWR from "swr";
 import { motion } from "framer-motion";
 import type { GetStaticPaths, GetStaticProps } from "next";
 import Navbar from "@/components/ui/Navbar";
 import OptimizedImage from "@/components/ui/OptimizedImage";
+import BackLink from "@/components/ui/BackLink";
 import { pickImageUrl } from "@/lib/cloudinary";
 import { getMediaBlogEntryById } from "@/lib/data/media-blog";
 import { APIResponse, MediaBlogEntryWithRelations } from "@/types/api";
@@ -86,7 +86,7 @@ const SingleArchiveEntryPage = ({ initialEntry }: ArchiveDetailPageProps) => {
       <div className="min-h-screen bg-white text-[#1a1a1a]">
         <Navbar />
         <div className="flex min-h-[70vh] items-center justify-center">
-          <p className="font-display text-lg tracking-wide text-[#8a8a8a]">
+          <p className="font-display text-lg tracking-wide text-neutral-600">
             Loading…
           </p>
         </div>
@@ -100,12 +100,9 @@ const SingleArchiveEntryPage = ({ initialEntry }: ArchiveDetailPageProps) => {
         <Navbar />
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
           <p className="font-display text-2xl">{error.message}</p>
-          <Link
-            href="/gallery"
-            className="mt-8 font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a] hover:text-[#1a1a1a]"
-          >
-            Back to archive
-          </Link>
+          <BackLink href="/gallery" className="mt-8">
+            Back to Studio
+          </BackLink>
         </div>
       </div>
     );
@@ -116,15 +113,12 @@ const SingleArchiveEntryPage = ({ initialEntry }: ArchiveDetailPageProps) => {
       <div className="min-h-screen bg-white text-[#1a1a1a]">
         <Navbar />
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
-          <p className="font-display text-2xl text-[#8a8a8a]">
+          <p className="font-display text-2xl text-neutral-600">
             This entry could not be found.
           </p>
-          <Link
-            href="/gallery"
-            className="mt-8 font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a] hover:text-[#1a1a1a]"
-          >
-            Back to archive
-          </Link>
+          <BackLink href="/gallery" className="mt-8">
+            Back to Studio
+          </BackLink>
         </div>
       </div>
     );
@@ -198,14 +192,14 @@ const SingleArchiveEntryPage = ({ initialEntry }: ArchiveDetailPageProps) => {
                     preset={index === 0 ? "hero" : "card"}
                   />
                   {file.description && (
-                    <figcaption className="mt-4 font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a]">
+                    <figcaption className="mt-4 font-display text-xs uppercase tracking-[0.2em] text-[#6b6b6b]">
                       {file.description}
                     </figcaption>
                   )}
                 </motion.figure>
               ))
             ) : (
-              <p className="font-light text-[#8a8a8a]">No images available.</p>
+              <p className="font-light text-neutral-600">No images available.</p>
             )}
           </div>
         );
@@ -292,12 +286,7 @@ const SingleArchiveEntryPage = ({ initialEntry }: ArchiveDetailPageProps) => {
       <Navbar />
 
       <div className="px-6 pt-10 md:px-12 lg:px-20">
-        <Link
-          href="/gallery"
-          className="font-display text-xs uppercase tracking-[0.32em] text-[#8a8a8a] transition-colors duration-500 hover:text-[#1a1a1a]"
-        >
-          ← Studio
-        </Link>
+        <BackLink href="/gallery">Back to Studio</BackLink>
       </div>
 
       <header className="mx-auto max-w-4xl px-6 pb-12 pt-16 md:px-12 md:pb-16 md:pt-24">
@@ -306,7 +295,7 @@ const SingleArchiveEntryPage = ({ initialEntry }: ArchiveDetailPageProps) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className="font-display text-xs uppercase tracking-[0.32em] text-[#8a8a8a]">
+          <p className="font-display text-xs uppercase tracking-[0.22em] text-[#6b6b6b]">
             {label}
             {year ? ` · ${year}` : ""}
             {entry.duration ? ` · ${entry.duration}` : ""}
@@ -361,12 +350,7 @@ const SingleArchiveEntryPage = ({ initialEntry }: ArchiveDetailPageProps) => {
       </motion.div>
 
       <footer className="mx-auto max-w-4xl px-6 pb-28 pt-24 md:px-12">
-        <Link
-          href="/gallery"
-          className="font-display text-xs uppercase tracking-[0.28em] text-[#8a8a8a] transition-colors duration-500 hover:text-[#1a1a1a]"
-        >
-          ← Back to archive
-        </Link>
+        <BackLink href="/gallery">Back to Studio</BackLink>
       </footer>
     </div>
   );

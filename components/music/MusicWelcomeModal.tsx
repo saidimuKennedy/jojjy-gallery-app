@@ -6,12 +6,14 @@ type MusicWelcomeModalProps = {
   type: "studio" | "release";
   title?: string;
   onClose: () => void;
+  onListen?: () => void;
 };
 
 export default function MusicWelcomeModal({
   type,
   title,
   onClose,
+  onListen,
 }: MusicWelcomeModalProps) {
   return (
     <div
@@ -27,7 +29,7 @@ export default function MusicWelcomeModal({
       >
         {type === "studio" ? (
           <>
-            <p className="font-display text-xs uppercase tracking-[0.32em] text-neutral-400">
+            <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500">
               Welcome
             </p>
             <h2 className="mt-4 font-display text-3xl font-light text-neutral-900">
@@ -56,7 +58,7 @@ export default function MusicWelcomeModal({
           </>
         ) : (
           <>
-            <p className="font-display text-xs uppercase tracking-[0.32em] text-neutral-400">
+            <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500">
               Welcome
             </p>
             <h2 className="mt-4 font-display text-3xl font-light text-neutral-900">
@@ -69,7 +71,10 @@ export default function MusicWelcomeModal({
               <button
                 type="button"
                 className="border border-neutral-900 bg-neutral-900 px-6 py-3 font-display text-xs uppercase tracking-[0.22em] text-white hover:bg-white hover:text-neutral-900"
-                onClick={onClose}
+                onClick={() => {
+                  onClose();
+                  onListen?.();
+                }}
               >
                 Listen now
               </button>

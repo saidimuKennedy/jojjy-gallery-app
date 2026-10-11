@@ -9,6 +9,10 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
+import BackLink from "@/components/ui/BackLink";
+import TicketCheckout, {
+  type TicketCheckoutTarget,
+} from "@/components/events/TicketCheckout";
 import { CATALOG_CURRENCY } from "@/lib/currency";
 
 interface EventDetail {
@@ -27,9 +31,11 @@ interface EventDetail {
   ticketTypes: {
     id: number;
     name: string;
+    description: string | null;
     price: number;
     quantity: number;
     quantitySold: number;
+    quantityReserved: number;
     salesStart: string | null;
     salesEnd: string | null;
   }[];
@@ -181,7 +187,9 @@ export default function EventDetailPage() {
   const eventSlug = typeof slug === "string" ? slug : undefined;
   const { data: session, status: authStatus } = useSession();
   const [rsvpBusy, setRsvpBusy] = useState(false);
-  const [ticketBusyId, setTicketBusyId] = useState<number | null>(null);
+  const [ticketQty, setTicketQty] = useState<Record<number, number>>({});
+  const [checkoutTarget, setCheckoutTarget] =
+    useState<TicketCheckoutTarget | null>(null);
 
   const { data: event, error, isLoading, mutate } = useSWR(
     eventSlug ? `/api/events/${eventSlug}` : null,
@@ -245,39 +253,24 @@ export default function EventDetailPage() {
     }
   };
 
-  const handleBuyTicket = async (ticketTypeId: number) => {
+  const openTicketCheckout = (tt: EventDetail["ticketTypes"][number]) => {
     if (!event) return;
-    if (authStatus === "loading") return;
-    if (!session?.user) {
-      toast.error("Sign in to purchase tickets");
-      router.push(`/login?callbackUrl=${encodeURIComponent(router.asPath)}`);
-      return;
-    }
-    setTicketBusyId(ticketTypeId);
-    try {
-      const res = await fetch("/api/orders/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: [{ ticketTypeId, quantity: 1 }],
-          paymentProvider: "PAYSTACK",
-        }),
-      });
-      const body = await res.json();
-      if (!res.ok) {
-        toast.error(body.message || "Checkout failed");
-        return;
-      }
-      if (body.data?.authorizationUrl) {
-        window.location.href = body.data.authorizationUrl as string;
-        return;
-      }
-      toast.success(body.message || "Order created.");
-    } catch {
-      toast.error("Checkout failed");
-    } finally {
-      setTicketBusyId(null);
-    }
+    const remaining = Math.max(
+      0,
+      tt.quantity - tt.quantitySold - tt.quantityReserved
+    );
+    setCheckoutTarget({
+      eventId: event.id,
+      eventSlug: event.slug,
+      eventTitle: event.title,
+      venue: event.venue,
+      startsAt: event.startsAt,
+      currency: CATALOG_CURRENCY,
+      ticketTypeId: tt.id,
+      ticketTypeName: tt.name,
+      price: tt.price,
+      remaining: Math.max(1, remaining),
+    });
   };
 
   const downloadIcs = () => {
@@ -296,7 +289,7 @@ export default function EventDetailPage() {
   if (isLoading || !router.isReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <p className="font-display text-sm tracking-[0.28em] uppercase text-neutral-400">
+        <p className="font-display text-sm tracking-[0.2em] uppercase text-neutral-500">
           Loading
         </p>
       </div>
@@ -311,18 +304,14 @@ export default function EventDetailPage() {
           <h1 className="font-display text-3xl font-light text-neutral-900 mb-4">
             Event not found
           </h1>
-          <Link
-            href="/events"
-            className="font-display text-xs uppercase tracking-[0.28em] text-neutral-500 underline-offset-4 hover:underline"
-          >
-            Back to events
-          </Link>
+          <BackLink href="/events" className="mt-2">
+            Back to Events
+          </BackLink>
         </div>
         <Footer />
       </>
     );
   }
-
   const isCompleted = event.status === "COMPLETED";
   const isSoldOut = capacity != null && capacity.remaining === 0 && !isCompleted;
   const currency = CATALOG_CURRENCY;
@@ -342,12 +331,9 @@ export default function EventDetailPage() {
       <main>
         {/* Chapter: invitation */}
         <section className="px-5 pt-10 pb-12 md:px-10 md:pt-16 lg:px-16 lg:pb-16">
-          <Link
-            href="/events"
-            className="mb-12 inline-block font-display text-xs uppercase tracking-[0.28em] text-neutral-400 transition-colors hover:text-neutral-800"
-          >
-            ← Events
-          </Link>
+          <BackLink href="/events" className="mb-12">
+            Back to Events
+          </BackLink>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -355,7 +341,7 @@ export default function EventDetailPage() {
             transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
             className="mx-auto max-w-5xl"
           >
-            <p className="font-archive-body text-[0.7rem] font-medium uppercase tracking-[0.32em] text-neutral-500 mb-8">
+            <p className="font-archive-body text-[0.7rem] font-medium uppercase tracking-[0.22em] text-neutral-500 mb-8">
               {isCompleted
                 ? "Past"
                 : isSoldOut
@@ -390,7 +376,7 @@ export default function EventDetailPage() {
                 preset="hero"
                 priority
                 sizes="100vw"
-                className="object-cover"
+                className="object-contain"
               />
             </div>
           </motion.section>
@@ -414,7 +400,7 @@ export default function EventDetailPage() {
         {/* Chapter: Event facts */}
         <section className="border-t border-neutral-100 px-5 py-20 md:px-10 md:py-28 lg:px-16">
           <div className="mx-auto max-w-2xl">
-            <p className="font-display text-xs uppercase tracking-[0.32em] text-neutral-400 mb-12">
+            <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500 mb-12">
               Event
             </p>
             <dl className="space-y-10">
@@ -449,7 +435,7 @@ export default function EventDetailPage() {
         {!isCompleted && (
           <section className="border-t border-neutral-100 px-5 py-20 md:px-10 md:py-28 lg:px-16 bg-neutral-50">
             <div className="mx-auto max-w-2xl">
-              <p className="font-display text-xs uppercase tracking-[0.32em] text-neutral-400 mb-12">
+              <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500 mb-12">
                 Experience
               </p>
               <ul className="space-y-6">
@@ -479,7 +465,7 @@ export default function EventDetailPage() {
         {atmosphere.length > 0 && (
           <section className="border-t border-neutral-100 px-5 py-20 md:px-10 md:py-28 lg:px-16">
             <div className="mx-auto max-w-5xl">
-              <p className="font-display text-xs uppercase tracking-[0.32em] text-neutral-400 mb-12">
+              <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500 mb-12">
                 {isCompleted ? "From the evening" : "Atmosphere"}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
@@ -512,7 +498,7 @@ export default function EventDetailPage() {
         {event.directions && (
           <section className="border-t border-neutral-100 px-5 py-16 md:px-10 md:py-20 lg:px-16">
             <div className="mx-auto max-w-2xl">
-              <p className="font-display text-xs uppercase tracking-[0.32em] text-neutral-400 mb-6">
+              <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500 mb-6">
                 Directions
               </p>
               <p className="font-archive-body text-[1.0625rem] leading-[1.7] text-neutral-600 whitespace-pre-line">
@@ -526,7 +512,7 @@ export default function EventDetailPage() {
         {!isCompleted && (
           <section className="border-t border-neutral-100 px-5 py-20 md:px-10 md:py-28 lg:px-16">
             <div className="mx-auto max-w-2xl">
-              <p className="font-display text-xs uppercase tracking-[0.32em] text-neutral-400 mb-4">
+              <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500 mb-4">
                 Tickets
               </p>
               {capacity && capacity.remaining > 0 && capacity.remaining <= 40 && (
@@ -543,13 +529,13 @@ export default function EventDetailPage() {
               {event.ticketTypes.length > 0 && (
                 <div className="mb-16">
                   {event.ticketTypes.map((tt) => {
-                    const left = Math.max(0, tt.quantity - tt.quantitySold);
+                    const left = Math.max(
+                      0,
+                      tt.quantity - tt.quantitySold - tt.quantityReserved
+                    );
                     const saleStatus = ticketSaleStatus(tt);
                     const saleLabel = ticketSaleLabel(tt, saleStatus);
-                    const canBuy =
-                      tt.price > 0 &&
-                      saleStatus === "open" &&
-                      ticketBusyId !== tt.id;
+                    const canBuy = saleStatus === "open";
                     return (
                       <div
                         key={tt.id}
@@ -558,6 +544,11 @@ export default function EventDetailPage() {
                         <h3 className="font-display text-2xl md:text-[1.75rem] font-light tracking-tight text-neutral-900">
                           {tt.name}
                         </h3>
+                        {tt.description && (
+                          <p className="mt-3 font-archive-body text-[1.0625rem] leading-[1.7] text-neutral-600">
+                            {tt.description}
+                          </p>
+                        )}
                         <ul className="mt-5 space-y-2">
                           {ticketPerks(tt.name).map((perk) => (
                             <li
@@ -581,23 +572,77 @@ export default function EventDetailPage() {
                             {left} left
                           </p>
                         )}
-                        {tt.price > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => handleBuyTicket(tt.id)}
-                            disabled={!canBuy}
-                            className="mt-6 border border-neutral-900 bg-neutral-900 px-8 py-4 font-display text-xs uppercase tracking-[0.28em] text-white transition-colors hover:bg-white hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40"
-                          >
-                            {ticketBusyId === tt.id
-                              ? "…"
-                              : saleStatus === "open"
-                                ? "Buy ticket"
-                                : saleStatus === "sold_out"
-                                  ? "Sold out"
-                                  : saleStatus === "upcoming"
-                                    ? "Not on sale yet"
-                                    : "Sales closed"}
-                          </button>
+                        {saleStatus === "open" && (
+                          <div className="mt-4 flex items-center gap-3">
+                            <span className="font-display text-[0.7rem] uppercase tracking-[0.2em] text-neutral-500">
+                              Qty
+                            </span>
+                            <div className="inline-flex items-stretch border border-neutral-300 bg-white">
+                              <button
+                                type="button"
+                                aria-label={`Fewer ${tt.name} tickets`}
+                                onClick={() =>
+                                  setTicketQty((q) => ({
+                                    ...q,
+                                    [tt.id]: Math.max(1, (q[tt.id] ?? 1) - 1),
+                                  }))
+                                }
+                                disabled={(ticketQty[tt.id] ?? 1) <= 1}
+                                className="flex w-9 items-center justify-center text-neutral-700 transition-colors hover:bg-neutral-100 disabled:opacity-30"
+                              >
+                                −
+                              </button>
+                              <span
+                                aria-live="polite"
+                                className="w-10 border-x border-neutral-300 py-1 text-center text-sm text-neutral-900"
+                              >
+                                {ticketQty[tt.id] ?? 1}
+                              </span>
+                              <button
+                                type="button"
+                                aria-label={`More ${tt.name} tickets`}
+                                onClick={() =>
+                                  setTicketQty((q) => ({
+                                    ...q,
+                                    [tt.id]: Math.min(
+                                      left,
+                                      (q[tt.id] ?? 1) + 1
+                                    ),
+                                  }))
+                                }
+                                disabled={(ticketQty[tt.id] ?? 1) >= left}
+                                className="flex w-9 items-center justify-center text-neutral-700 transition-colors hover:bg-neutral-100 disabled:opacity-30"
+                              >
+                                +
+                              </button>
+                            </div>
+                            <span className="font-display text-base font-light text-neutral-900">
+                              {currency}{" "}
+                              {(tt.price * (ticketQty[tt.id] ?? 1)).toLocaleString()}
+                            </span>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => openTicketCheckout(tt)}
+                          disabled={!canBuy}
+                          className="mt-6 border border-neutral-900 bg-neutral-900 px-8 py-4 font-display text-xs uppercase tracking-[0.28em] text-white transition-colors hover:bg-white hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          {saleStatus === "open"
+                            ? tt.price > 0
+                              ? "Buy ticket"
+                              : "Get free ticket"
+                            : saleStatus === "sold_out"
+                              ? "Sold out"
+                              : saleStatus === "upcoming"
+                                ? "Not on sale yet"
+                                : "Sales closed"}
+                        </button>
+                        {saleStatus === "open" && tt.price > 0 && (
+                          <p className="mt-3 text-xs font-light text-neutral-600">
+                            Charged in KES via Paystack — exact amount shown
+                            before you authorize.
+                          </p>
                         )}
                       </div>
                     );
@@ -637,7 +682,7 @@ export default function EventDetailPage() {
                 )}
 
                 <div className="pt-4">
-                  <p className="font-display text-xs uppercase tracking-[0.28em] text-neutral-400 mb-4">
+                  <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-4">
                     Add to calendar
                   </p>
                   <div className="flex flex-wrap gap-x-8 gap-y-3">
@@ -692,7 +737,7 @@ export default function EventDetailPage() {
         {isCompleted && event.pressMentions.length > 0 && (
           <section className="border-t border-neutral-100 px-5 py-20 md:px-10 md:py-28 lg:px-16">
             <div className="mx-auto max-w-2xl">
-              <p className="font-display text-xs uppercase tracking-[0.32em] text-neutral-400 mb-12">
+              <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500 mb-12">
                 Press
               </p>
               <ul className="space-y-8">
@@ -725,6 +770,13 @@ export default function EventDetailPage() {
           </section>
         )}
       </main>
+      {checkoutTarget && (
+        <TicketCheckout
+          target={checkoutTarget}
+          initialQuantity={ticketQty[checkoutTarget.ticketTypeId] ?? 1}
+          onClose={() => setCheckoutTarget(null)}
+        />
+      )}
       <Footer />
     </div>
   );

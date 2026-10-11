@@ -153,7 +153,7 @@ export default function StudioJoinCompact({
       <button
         type="button"
         onClick={() => setDismissed(true)}
-        className="text-xs text-neutral-400 underline-offset-2 hover:text-neutral-600 hover:underline"
+        className="text-xs text-neutral-600 underline-offset-2 hover:text-neutral-900 hover:underline"
       >
         Wait until public release
       </button>

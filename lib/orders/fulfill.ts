@@ -1,4 +1,4 @@
-import { OrderItemType } from "@prisma/client";
+import { OrderItemType, PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { generateTicketCode } from "@/lib/orders/ticket-code";
 import { grantOrExtendMembership } from "@/lib/music/membership";
@@ -10,11 +10,47 @@ export class FulfillmentError extends Error {
   }
 }
 
-export async function fulfillOrder(orderId: string): Promise<void> {
+export interface FulfillOptions {
+  /** Payment state to set once fulfilled. Free/complimentary orders pass
+   * NOT_REQUIRED; paid orders default to SUCCESS. */
+  paymentStatus?: PaymentStatus;
+}
+
+function holderFrom(
+  attendee: unknown,
+  order: {
+    guestName: string | null;
+    guestEmail: string | null;
+    customerName: string | null;
+    user: { email: string } | null;
+  }
+): { holderName: string | null; holderEmail: string | null } {
+  const a = (attendee ?? {}) as { name?: string; email?: string };
+  const name =
+    (typeof a.name === "string" && a.name.trim()) ||
+    order.guestName ||
+    order.customerName ||
+    null;
+  const email =
+    (typeof a.email === "string" && a.email.trim()) ||
+    order.guestEmail ||
+    order.user?.email ||
+    null;
+  return { holderName: name, holderEmail: email };
+}
+
+export async function fulfillOrder(
+  orderId: string,
+  options: FulfillOptions = {}
+): Promise<void> {
+  const finalPaymentStatus: PaymentStatus =
+    options.paymentStatus ?? "SUCCESS";
+
   await prisma.$transaction(async (tx) => {
     const order = await tx.order.findUnique({
       where: { id: orderId },
       include: {
+        user: { select: { email: true } },
         items: {
           include: {
             artwork: true,
@@ -39,6 +75,14 @@ export async function fulfillOrder(orderId: string): Promise<void> {
       );
     }
 
+    // Consume pre-payment ticket reservations for this order (if any).
+    const reservations = await tx.ticketReservation.findMany({
+      where: { orderId, status: "ACTIVE" },
+    });
+    const reservationByType = new Map(
+      reservations.map((r) => [r.ticketTypeId, r])
+    );
+
     for (const item of order.items) {
       switch (item.itemType) {
         case OrderItemType.ARTWORK: {
@@ -52,10 +96,7 @@ export async function fulfillOrder(orderId: string): Promise<void> {
               isAvailable: true,
               OR: [
                 { status: "AVAILABLE" },
-                {
-                  status: "RESERVED",
-                  reservedByUserId: order.userId,
-                },
+                { status: "RESERVED", reservedByUserId: order.userId },
               ],
             },
             data: {
@@ -80,19 +121,43 @@ export async function fulfillOrder(orderId: string): Promise<void> {
           if (!ticketType) {
             throw new FulfillmentError(`Ticket type ${item.ticketTypeId} not found`);
           }
-          // Atomic increment under the row lock, then enforce capacity on the
-          // post-increment value: concurrent fulfills serialize here, so the
-          // loser observes the winner's increment and fails instead of
-          // overselling. Throwing rolls the whole transaction back.
-          const updatedType = await tx.ticketType.update({
-            where: { id: item.ticketTypeId },
-            data: { quantitySold: { increment: item.quantity } },
-          });
-          if (updatedType.quantity - updatedType.quantitySold < 0) {
-            throw new FulfillmentError(
-              `Not enough tickets for ${ticketType.name}`
-            );
+
+          const reservation = reservationByType.get(item.ticketTypeId);
+          if (reservation) {
+            // reserved → sold, under the row lock.
+            const updatedType = await tx.ticketType.update({
+              where: { id: item.ticketTypeId },
+              data: {
+                quantityReserved: { decrement: reservation.quantity },
+                quantitySold: { increment: reservation.quantity },
+              },
+            });
+            if (updatedType.quantitySold > updatedType.quantity) {
+              throw new FulfillmentError(
+                `Not enough tickets for ${ticketType.name}`
+              );
+            }
+            await tx.ticketReservation.update({
+              where: { id: reservation.id },
+              data: { status: "CONSUMED" },
+            });
+            reservationByType.delete(item.ticketTypeId);
+          } else {
+            // No reservation (legacy/backfill): atomic increment + capacity check.
+            const updatedType = await tx.ticketType.update({
+              where: { id: item.ticketTypeId },
+              data: { quantitySold: { increment: item.quantity } },
+            });
+            if (updatedType.quantity - updatedType.quantitySold < 0) {
+              throw new FulfillmentError(
+                `Not enough tickets for ${ticketType.name}`
+              );
+            }
           }
+
+          const attendees = Array.isArray(item.attendees)
+            ? (item.attendees as unknown[])
+            : [];
           for (let i = 0; i < item.quantity; i++) {
             let code = generateTicketCode();
             for (let attempt = 0; attempt < 5; attempt++) {
@@ -100,12 +165,19 @@ export async function fulfillOrder(orderId: string): Promise<void> {
               if (!exists) break;
               code = generateTicketCode();
             }
+            const { holderName, holderEmail } = holderFrom(
+              attendees[i],
+              order
+            );
             await tx.ticket.create({
               data: {
                 ticketTypeId: item.ticketTypeId,
                 userId: order.userId,
                 orderId: order.id,
                 code,
+                source: "PAID",
+                holderName,
+                holderEmail,
               },
             });
           }
@@ -136,6 +208,11 @@ export async function fulfillOrder(orderId: string): Promise<void> {
         }
         case OrderItemType.RELEASE: {
           if (!item.releaseId) break;
+          if (!order.userId) {
+            throw new FulfillmentError(
+              "A paid music purchase requires a signed-in buyer"
+            );
+          }
           const existing = await tx.releaseUnlock.findUnique({
             where: {
               userId_releaseId: {
@@ -158,6 +235,11 @@ export async function fulfillOrder(orderId: string): Promise<void> {
         }
         case OrderItemType.MEMBERSHIP_PASS: {
           if (!item.membershipPlanId) break;
+          if (!order.userId) {
+            throw new FulfillmentError(
+              "A membership purchase requires a signed-in buyer"
+            );
+          }
           await grantOrExtendMembership(
             {
               userId: order.userId,
@@ -175,7 +257,7 @@ export async function fulfillOrder(orderId: string): Promise<void> {
 
     await tx.order.update({
       where: { id: orderId },
-      data: { status: "PAID" },
+      data: { status: "PAID", paymentStatus: finalPaymentStatus },
     });
   });
 }

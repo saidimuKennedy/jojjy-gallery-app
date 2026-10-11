@@ -3,6 +3,7 @@ import { buffer } from "node:stream/consumers";
 import prisma from "@/lib/prisma";
 import { verifyWebhookSignature } from "@/lib/paystack";
 import { completeOrderFromPaystackReference } from "@/lib/orders/complete-payment";
+import { releaseOrderReservations } from "@/lib/ticketing/inventory";
 
 export const config = {
   api: {
@@ -63,13 +64,30 @@ export default async function handler(
     }
 
     if (event.event === "charge.failed" && event.data?.reference) {
-      await prisma.order.updateMany({
-        where: {
-          paystackRef: event.data.reference,
-          status: "PENDING",
-        },
-        data: { status: "FAILED" },
+      const pending = await prisma.order.findUnique({
+        where: { paystackRef: event.data.reference },
+        select: { id: true, status: true },
       });
+      if (pending && pending.status === "PENDING") {
+        // Mark failed and return any held ticket stock to the pool, atomically.
+        await prisma.$transaction(async (tx) => {
+          await tx.order.update({
+            where: { id: pending.id },
+            data: { status: "FAILED", paymentStatus: "FAILED" },
+          });
+          await releaseOrderReservations(tx, pending.id);
+        });
+      }
+    }
+
+    // Refund status events are reconciled by the CRM (which owns the Refund
+    // model) via Paystack status polling; acknowledge them here so Paystack
+    // does not retry. Never claim refund success from a browser/webhook alone.
+    if (
+      typeof event.event === "string" &&
+      event.event.startsWith("refund.") 
+    ) {
+      return res.status(200).json({ success: true });
     }
 
     return res.status(200).json({ success: true });

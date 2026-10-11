@@ -67,14 +67,9 @@ const VARS = [
     value: local.DIRECT_URL,
     sensitive: true,
   },
-  {
-    key: "NEXT_PUBLIC_CURRENCY",
-    value: local.NEXT_PUBLIC_CURRENCY || "USD",
-    productionValue: "USD",
-  },
 ];
 
-const missing = VARS.filter((v) => !v.value && v.key !== "NEXT_PUBLIC_CURRENCY");
+const missing = VARS.filter((v) => !v.value);
 if (missing.length) {
   console.error("Missing local values for:", missing.map((v) => v.key).join(", "));
   process.exit(1);

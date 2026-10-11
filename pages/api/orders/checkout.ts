@@ -12,15 +12,36 @@ import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { releaseExpiredReservations } from "@/lib/reservations";
 import { promoteEventStatus } from "@/lib/data/events";
 import {
+  TicketInventoryError,
+  releaseExpiredTicketReservations,
+  reserveTickets,
+  type ReservationLine,
+} from "@/lib/ticketing/inventory";
+import { fulfillOrder } from "@/lib/orders/fulfill";
+import { sendOrderConfirmationEmail } from "@/lib/email/order-confirmation";
+import { newRetrievalToken } from "@/lib/ticketing/retrieval";
+import {
   buildPaystackReference,
   initializeTransaction,
   isPaystackConfigured,
   paystackCallbackUrl,
 } from "@/lib/paystack";
-import { CATALOG_CURRENCY, MUSIC_PAYMENT_CURRENCY, musicPaymentAmount, normalizeToUsd, usdToKes } from "@/lib/currency";
+import {
+  CATALOG_CURRENCY,
+  MUSIC_PAYMENT_CURRENCY,
+  musicPaymentAmount,
+  normalizeToUsd,
+  usdToKes,
+} from "@/lib/currency";
 
 const DELIVERY_METHODS = new Set(Object.values(DeliveryMethod));
 const PACKAGING_TYPES = new Set(Object.values(PackagingType));
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+interface CheckoutAttendee {
+  name?: string;
+  email?: string;
+}
 
 interface CheckoutItem {
   productVariantId?: number;
@@ -29,6 +50,7 @@ interface CheckoutItem {
   releaseId?: number;
   membershipPlanId?: number;
   quantity?: number;
+  attendees?: CheckoutAttendee[];
 }
 
 function countItemKinds(item: CheckoutItem) {
@@ -41,11 +63,31 @@ function countItemKinds(item: CheckoutItem) {
   );
 }
 
+/**
+ * Only same-origin relative paths may be echoed back into the Paystack callback
+ * URL, so a crafted returnPath can never redirect off-site.
+ */
 function validateReturnPath(path: unknown): string | undefined {
   if (typeof path !== "string") return undefined;
-  if (!path.startsWith("/music")) return undefined;
-  if (path.includes("://") || path.startsWith("//")) return undefined;
+  if (!path.startsWith("/") || path.startsWith("//")) return undefined;
+  if (path.includes("://") || path.length > 300) return undefined;
   return path;
+}
+
+/** Normalize a client-supplied attendee list to safe { name, email } objects. */
+function normalizeAttendees(
+  raw: unknown,
+  quantity: number
+): { name?: string; email?: string }[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.slice(0, quantity).map((entry) => {
+    const a = (entry ?? {}) as CheckoutAttendee;
+    const name =
+      typeof a.name === "string" ? a.name.trim().slice(0, 120) : undefined;
+    const email =
+      typeof a.email === "string" ? a.email.trim().slice(0, 200) : undefined;
+    return { name: name || undefined, email: email || undefined };
+  });
 }
 
 export default async function handler(
@@ -60,29 +102,32 @@ export default async function handler(
   }
 
   const session = await getServerSession(req, res, authOptions);
-  const userId = session?.user?.id;
-  const userEmail = session?.user?.email;
-  if (!userId) {
-    return res
-      .status(401)
-      .json({ success: false, message: "Authentication required" });
-  }
+  const userId = session?.user?.id ?? null;
+  const userEmail = session?.user?.email ?? null;
 
   const {
     items,
     deliveryMethod,
     deliveryAddress,
     packaging,
-    deliveryFee,
-    phoneNumber,
+    customerName: rawCustomerName,
+    phoneNumber: rawPhoneNumber,
+    deliveryNotes: rawDeliveryNotes,
+    guestName: rawGuestName,
+    guestEmail: rawGuestEmail,
+    guestPhone: rawGuestPhone,
     returnPath: rawReturnPath,
   } = req.body as {
     items?: CheckoutItem[];
     deliveryMethod?: string;
     deliveryAddress?: string;
     packaging?: string;
-    deliveryFee?: number;
+    customerName?: string;
+    deliveryNotes?: string;
     phoneNumber?: string;
+    guestName?: string;
+    guestEmail?: string;
+    guestPhone?: string;
     returnPath?: string;
   };
 
@@ -122,26 +167,105 @@ export default async function handler(
     deliveryMethod != null &&
     !DELIVERY_METHODS.has(deliveryMethod as DeliveryMethod)
   ) {
-    return res.status(400).json({
+    return res.status(400).json({ success: false, message: "Invalid deliveryMethod" });
+  }
+
+  if (packaging != null && !PACKAGING_TYPES.has(packaging as PackagingType)) {
+    return res.status(400).json({ success: false, message: "Invalid packaging" });
+  }
+
+  const allTickets = items.every(
+    (item) => typeof item.ticketTypeId === "number"
+  );
+
+  // Guests may only check out pure ticket orders.
+  if (!userId && !allTickets) {
+    return res.status(401).json({
       success: false,
-      message: "Invalid deliveryMethod",
+      message:
+        "Please sign in to buy merch, artwork, or music. Event tickets can be bought as a guest.",
     });
   }
 
-  if (
-    packaging != null &&
-    !PACKAGING_TYPES.has(packaging as PackagingType)
-  ) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid packaging",
-    });
+  const hasPhysicalItem = items.some(
+    (item) =>
+      typeof item.productVariantId === "number" ||
+      typeof item.artworkId === "number"
+  );
+
+  // Guest ticket buyer contact (email required for delivery/retrieval).
+  const guestName =
+    typeof rawGuestName === "string" ? rawGuestName.trim() : "";
+  const guestEmail =
+    typeof rawGuestEmail === "string" ? rawGuestEmail.trim() : "";
+  const guestPhone =
+    typeof rawGuestPhone === "string" ? rawGuestPhone.trim() : "";
+  if (!userId && allTickets) {
+    if (!EMAIL_RE.test(guestEmail) || guestEmail.length > 200) {
+      return res.status(400).json({
+        success: false,
+        message: "A valid email is required so we can send your tickets.",
+      });
+    }
+    if (guestName.length > 120) {
+      return res.status(400).json({ success: false, message: "Name is too long" });
+    }
+    if (guestPhone.length > 40) {
+      return res.status(400).json({ success: false, message: "Phone is too long" });
+    }
+  }
+
+  const customerName =
+    typeof rawCustomerName === "string" ? rawCustomerName.trim() : "";
+  const phoneNumber =
+    typeof rawPhoneNumber === "string" ? rawPhoneNumber.trim() : "";
+  const deliveryNotes =
+    typeof rawDeliveryNotes === "string" ? rawDeliveryNotes.trim() : "";
+
+  if (hasPhysicalItem) {
+    if (!deliveryMethod || !DELIVERY_METHODS.has(deliveryMethod as DeliveryMethod)) {
+      return res.status(400).json({
+        success: false,
+        message: "Choose delivery or collection",
+      });
+    }
+    if (!customerName || customerName.length > 120) {
+      return res.status(400).json({
+        success: false,
+        message: "Your name is required for fulfilment",
+      });
+    }
+    if (!/^[+\d][\d\s\-().]{4,24}$/.test(phoneNumber)) {
+      return res.status(400).json({
+        success: false,
+        message: "A valid phone number is required for fulfilment",
+      });
+    }
+    if (
+      (deliveryMethod as DeliveryMethod) !== "LOCAL_PICKUP" &&
+      (!deliveryAddress ||
+        typeof deliveryAddress !== "string" ||
+        !deliveryAddress.trim() ||
+        deliveryAddress.trim().length > 500)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "A delivery location is required for delivery orders",
+      });
+    }
+    if (deliveryNotes.length > 500) {
+      return res.status(400).json({
+        success: false,
+        message: "Delivery notes are too long",
+      });
+    }
   }
 
   const provider: PaymentProvider = "PAYSTACK";
 
   try {
     await releaseExpiredReservations();
+    await releaseExpiredTicketReservations();
 
     const orderItemsData: {
       itemType: OrderItemType;
@@ -152,7 +276,9 @@ export default async function handler(
       membershipPlanId: number | null;
       quantity: number;
       unitPrice: Prisma.Decimal;
+      attendees?: Prisma.InputJsonValue;
     }[] = [];
+    const ticketLines: ReservationLine[] = [];
 
     let subtotal = 0;
 
@@ -163,19 +289,14 @@ export default async function handler(
         const artwork = await prisma.artwork.findUnique({
           where: { id: item.artworkId },
         });
-        if (
-          !artwork ||
-          !artwork.isAvailable ||
-          artwork.price.toNumber() <= 0
-        ) {
+        if (!artwork || !artwork.isAvailable || artwork.price.toNumber() <= 0) {
           return res.status(404).json({
             success: false,
             message: `Artwork ${item.artworkId} is not available for purchase`,
           });
         }
         const reservedByBuyer =
-          artwork.status === "RESERVED" &&
-          artwork.reservedByUserId === userId;
+          artwork.status === "RESERVED" && artwork.reservedByUserId === userId;
         if (artwork.status !== "AVAILABLE" && !reservedByBuyer) {
           return res.status(404).json({
             success: false,
@@ -234,12 +355,12 @@ export default async function handler(
             message: `Ticket type ${item.ticketTypeId} not found`,
           });
         }
-        // Evaluate the canonical event lifecycle here instead of trusting the
-        // stored row: a scheduled event whose publishAt has passed may still
-        // be DRAFT until a read promotes it. Future drafts, CANCELLED and
-        // COMPLETED events all fail this check and cannot sell tickets.
         await promoteEventStatus(ticketType.event);
-        if (ticketType.event.status !== "PUBLISHED") {
+        if (
+          ticketType.event.status !== "PUBLISHED" ||
+          ticketType.event.ticketMode !== "TICKETED" ||
+          ticketType.archivedAt
+        ) {
           return res.status(404).json({
             success: false,
             message: `Ticket type ${item.ticketTypeId} not found`,
@@ -258,13 +379,15 @@ export default async function handler(
             message: "Ticket sales have ended",
           });
         }
-        const remaining = ticketType.quantity - ticketType.quantitySold;
+        const remaining =
+          ticketType.quantity - ticketType.quantitySold - ticketType.quantityReserved;
         if (remaining < quantity) {
           return res.status(409).json({
             success: false,
             message: `Not enough tickets remaining for ${ticketType.name}`,
           });
         }
+        const attendees = normalizeAttendees(item.attendees, quantity);
         orderItemsData.push({
           itemType: OrderItemType.TICKET,
           productVariantId: null,
@@ -274,9 +397,20 @@ export default async function handler(
           membershipPlanId: null,
           quantity,
           unitPrice: ticketType.price,
+          attendees:
+            attendees.length > 0
+              ? (attendees as Prisma.InputJsonValue)
+              : undefined,
         });
+        ticketLines.push({ ticketTypeId: ticketType.id, quantity });
         subtotal += ticketType.price.toNumber() * quantity;
       } else if (typeof item.releaseId === "number") {
+        if (!userId) {
+          return res.status(401).json({
+            success: false,
+            message: "Sign in to purchase music releases",
+          });
+        }
         const release = await prisma.release.findUnique({
           where: { id: item.releaseId },
           include: { accessPolicy: true },
@@ -294,9 +428,7 @@ export default async function handler(
           });
         }
         const existingUnlock = await prisma.releaseUnlock.findUnique({
-          where: {
-            userId_releaseId: { userId, releaseId: release.id },
-          },
+          where: { userId_releaseId: { userId, releaseId: release.id } },
         });
         if (existingUnlock) {
           return res.status(409).json({
@@ -322,6 +454,12 @@ export default async function handler(
         });
         subtotal += kesCharge;
       } else if (typeof item.membershipPlanId === "number") {
+        if (!userId) {
+          return res.status(401).json({
+            success: false,
+            message: "Sign in to purchase a membership",
+          });
+        }
         const plan = await prisma.membershipPlan.findUnique({
           where: { id: item.membershipPlanId },
         });
@@ -348,8 +486,7 @@ export default async function handler(
       }
     }
 
-    const fee =
-      typeof deliveryFee === "number" && deliveryFee >= 0 ? deliveryFee : 0;
+    const fee = 0;
     const amount = subtotal + fee;
 
     const hasMusicItem = orderItemsData.some(
@@ -370,29 +507,108 @@ export default async function handler(
       });
     }
 
-    const orderCurrency = hasMusicItem
-      ? MUSIC_PAYMENT_CURRENCY
-      : CATALOG_CURRENCY;
+    const orderCurrency = hasMusicItem ? MUSIC_PAYMENT_CURRENCY : CATALOG_CURRENCY;
+    const isGuestTicketOrder = !userId && allTickets;
+    const hasTicketItem = orderItemsData.some(
+      (oi) => oi.itemType === OrderItemType.TICKET
+    );
+    const isFreeTicketOrder = hasTicketItem && amount === 0 && allTickets;
 
-    const order = await prisma.order.create({
-      data: {
-        userId,
-        status: "PENDING",
-        paymentProvider: provider,
-        amount,
-        currency: orderCurrency,
-        phoneNumber: typeof phoneNumber === "string" ? phoneNumber : null,
-        deliveryMethod: (deliveryMethod as DeliveryMethod) || null,
-        deliveryAddress:
-          typeof deliveryAddress === "string" ? deliveryAddress : null,
-        packaging: (packaging as PackagingType) || null,
-        deliveryFee: fee > 0 ? fee : null,
-        items: {
-          create: orderItemsData,
+    // Create the order and atomically reserve ticket stock in one transaction.
+    let order;
+    try {
+      order = await prisma.$transaction(async (tx) => {
+        const created = await tx.order.create({
+          data: {
+            userId,
+            status: "PENDING",
+            paymentStatus: isFreeTicketOrder ? "NOT_REQUIRED" : "PENDING",
+            source: "ONLINE",
+            paymentProvider: isFreeTicketOrder ? null : provider,
+            amount,
+            currency: orderCurrency,
+            guestName: isGuestTicketOrder ? guestName || null : null,
+            guestEmail: isGuestTicketOrder ? guestEmail || null : null,
+            guestPhone: isGuestTicketOrder ? guestPhone || null : null,
+            customerName: hasPhysicalItem ? customerName : null,
+            phoneNumber: hasPhysicalItem ? phoneNumber : null,
+            deliveryNotes:
+              hasPhysicalItem && deliveryNotes ? deliveryNotes : null,
+            deliveryMethod: hasPhysicalItem
+              ? (deliveryMethod as DeliveryMethod)
+              : null,
+            deliveryAddress:
+              hasPhysicalItem &&
+              typeof deliveryAddress === "string" &&
+              (deliveryMethod as DeliveryMethod) !== "LOCAL_PICKUP"
+                ? deliveryAddress.trim()
+                : null,
+            packaging: hasPhysicalItem
+              ? (packaging as PackagingType) || null
+              : null,
+            deliveryFee: null,
+            items: { create: orderItemsData },
+          },
+          include: { items: true },
+        });
+        if (ticketLines.length > 0) {
+          await reserveTickets(tx, created.id, ticketLines);
+        }
+        return created;
+      });
+    } catch (err) {
+      if (err instanceof TicketInventoryError) {
+        return res.status(409).json({ success: false, message: err.message });
+      }
+      throw err;
+    }
+
+    // Guest/free ticket orders get a secure retrieval token so tickets are
+    // never exposed by sequential id or email-only lookup.
+    if (isGuestTicketOrder || isFreeTicketOrder) {
+      const { token, expiresAt } = newRetrievalToken();
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { retrievalToken: token, retrievalTokenExpiresAt: expiresAt },
+      });
+    }
+
+    // Free ticket order: issue immediately, no payment provider.
+    if (isFreeTicketOrder) {
+      await fulfillOrder(order.id, { paymentStatus: "NOT_REQUIRED" });
+      try {
+        await sendOrderConfirmationEmail(order.id);
+      } catch (emailErr) {
+        console.error("Free-ticket confirmation email failed:", emailErr);
+      }
+      const issued = await prisma.order.findUnique({
+        where: { id: order.id },
+        include: { items: true, tickets: true },
+      });
+      return res.status(201).json({
+        success: true,
+        message: "Free tickets issued — check your email.",
+        data: {
+          id: order.id,
+          status: "PAID",
+          paymentStatus: "NOT_REQUIRED",
+          amount: 0,
+          currency: order.currency,
+          free: true,
+          tickets: (issued?.tickets ?? []).map((t) => ({
+            code: t.code,
+            ticketTypeId: t.ticketTypeId,
+          })),
+          items: order.items.map((oi) => ({
+            id: oi.id,
+            itemType: oi.itemType,
+            ticketTypeId: oi.ticketTypeId,
+            quantity: oi.quantity,
+            unitPrice: oi.unitPrice.toNumber(),
+          })),
         },
-      },
-      include: { items: true },
-    });
+      });
+    }
 
     if (provider === "PAYSTACK") {
       if (!isPaystackConfigured()) {
@@ -402,17 +618,15 @@ export default async function handler(
             "Online payment is not configured. Set PAYSTACK_SECRET_KEY on the server.",
         });
       }
-      if (!userEmail) {
+      const payEmail = userEmail ?? guestEmail;
+      if (!payEmail) {
         return res.status(400).json({
           success: false,
-          message: "Your account must have an email address to pay online.",
+          message: "An email address is required to pay online.",
         });
       }
 
       const reference = buildPaystackReference(order.id);
-      // This Paystack account only settles in KES; the catalogue (and the
-      // order's own amount/currency, shown in the UI) stays in USD, so
-      // convert only the amount actually sent to Paystack.
       const chargeCurrency = MUSIC_PAYMENT_CURRENCY; // "KES"
       const chargeAmount =
         order.currency === chargeCurrency
@@ -420,7 +634,7 @@ export default async function handler(
           : usdToKes(order.amount.toNumber());
 
       const paystack = await initializeTransaction({
-        email: userEmail,
+        email: payEmail,
         amount: chargeAmount,
         currency: chargeCurrency,
         reference,
@@ -445,11 +659,14 @@ export default async function handler(
           status: order.status,
           amount: order.amount.toNumber(),
           currency: order.currency,
+          chargeAmount,
+          chargeCurrency,
+          deliveryFree: true,
           paystackRef: reference,
           authorizationUrl: paystack.authorization_url,
           accessCode: paystack.access_code,
           deliveryMethod: order.deliveryMethod,
-          deliveryFee: order.deliveryFee?.toNumber() ?? null,
+          deliveryFee: null,
           items: order.items.map((oi) => ({
             id: oi.id,
             itemType: oi.itemType,
@@ -473,8 +690,9 @@ export default async function handler(
         status: order.status,
         amount: order.amount.toNumber(),
         currency: order.currency,
+        deliveryFree: true,
         deliveryMethod: order.deliveryMethod,
-        deliveryFee: order.deliveryFee?.toNumber() ?? null,
+        deliveryFee: null,
         items: order.items.map((oi) => ({
           id: oi.id,
           itemType: oi.itemType,

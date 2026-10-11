@@ -8,6 +8,8 @@ import toast from "react-hot-toast";
 import { useArtwork } from "@/hooks/useArtWorks";
 import Navbar from "@/components/ui/Navbar";
 import OptimizedImage from "@/components/ui/OptimizedImage";
+import BackLink from "@/components/ui/BackLink";
+import TextAction from "@/components/ui/TextAction";
 
 const pageVariants: Variants = {
   hidden: { opacity: 0, y: 16 },
@@ -120,7 +122,7 @@ export default function ArtworkDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <p className="font-display text-sm tracking-[0.28em] uppercase text-neutral-400">
+        <p className="font-display text-sm tracking-[0.2em] uppercase text-neutral-500">
           Loading
         </p>
       </div>
@@ -136,12 +138,7 @@ export default function ArtworkDetailPage() {
         <p className="text-neutral-500 mb-10 font-light">
           This work could not be found.
         </p>
-        <Link
-          href="/portfolio"
-          className="font-display text-[0.7rem] uppercase tracking-[0.28em] text-neutral-900 underline-offset-4 hover:underline"
-        >
-          Back to portfolio
-        </Link>
+        <BackLink href="/portfolio">Back to Art</BackLink>
       </div>
     );
   }
@@ -176,12 +173,9 @@ export default function ArtworkDetailPage() {
       <Navbar />
 
       <section className="px-5 pt-8 pb-20 md:px-10 md:pt-10 lg:px-16 lg:pb-28">
-        <Link
-          href="/portfolio"
-          className="mb-10 inline-block font-display text-xs uppercase tracking-[0.28em] text-neutral-400 transition-colors duration-500 hover:text-neutral-800 md:mb-14"
-        >
-          ← Explore more artworks
-        </Link>
+        <BackLink href="/portfolio" className="mb-10 md:mb-14">
+          Back to Art
+        </BackLink>
 
         <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16 xl:gap-20">
           <motion.div
@@ -227,7 +221,7 @@ export default function ArtworkDetailPage() {
             >
               {artwork.artist && (
                 <div>
-                  <dt className="font-display text-xs uppercase tracking-[0.24em] text-neutral-400">
+                  <dt className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
                     Artist
                   </dt>
                   <dd className="mt-2 text-sm font-light text-neutral-800">
@@ -238,7 +232,7 @@ export default function ArtworkDetailPage() {
 
               {artwork.series && (
                 <div>
-                  <dt className="font-display text-xs uppercase tracking-[0.24em] text-neutral-400">
+                  <dt className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
                     Series
                   </dt>
                   <dd className="mt-2 text-sm font-light text-neutral-800">
@@ -254,7 +248,7 @@ export default function ArtworkDetailPage() {
 
               {artwork.medium && (
                 <div>
-                  <dt className="font-display text-xs uppercase tracking-[0.24em] text-neutral-400">
+                  <dt className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
                     Medium
                   </dt>
                   <dd className="mt-2 text-sm font-light text-neutral-800">
@@ -265,7 +259,7 @@ export default function ArtworkDetailPage() {
 
               {artwork.dimensions && (
                 <div>
-                  <dt className="font-display text-xs uppercase tracking-[0.24em] text-neutral-400">
+                  <dt className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
                     Dimensions
                   </dt>
                   <dd className="mt-2 text-sm font-light text-neutral-800">
@@ -278,7 +272,7 @@ export default function ArtworkDetailPage() {
               )}
 
               <div>
-                <dt className="font-display text-xs uppercase tracking-[0.24em] text-neutral-400">
+                <dt className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
                   Availability
                 </dt>
                 <dd className="mt-2 space-y-1.5 text-sm font-light text-neutral-800">
@@ -319,21 +313,16 @@ export default function ArtworkDetailPage() {
               </p>
 
               {whatsappLink && (
-                <a
-                  href={whatsappLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block font-display text-[0.7rem] uppercase tracking-[0.28em] text-neutral-500 underline-offset-4 transition-colors hover:text-neutral-900 hover:underline"
-                >
-                  Ask about this artwork →
-                </a>
+                <TextAction href={whatsappLink} external>
+                  Ask about this artwork
+                </TextAction>
               )}
 
               <button
                 type="button"
                 onClick={handleWishlistToggle}
                 disabled={wishlistBusy}
-                className="block font-display text-[0.7rem] uppercase tracking-[0.28em] text-neutral-400 underline-offset-4 transition-colors hover:text-neutral-800 hover:underline disabled:opacity-50"
+                className="block py-1 font-archive-body text-sm font-medium text-neutral-700 underline-offset-4 transition-colors hover:text-neutral-900 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-900 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {wishlistBusy
                   ? "…"
@@ -355,13 +344,13 @@ export default function ArtworkDetailPage() {
             transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
             className="mx-auto max-w-2xl"
           >
-            <p className="font-display text-xs uppercase tracking-[0.28em] text-neutral-400">
+            <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
               From the artist
             </p>
             <blockquote className="mt-8 font-display text-2xl font-light leading-[1.55] tracking-tight text-neutral-800 md:text-3xl">
               {artwork.description}
             </blockquote>
-            <p className="mt-10 text-sm font-light text-neutral-400">
+            <p className="mt-10 text-sm font-light leading-relaxed text-neutral-600">
               — {artwork.artist || "Njenga Ngugi"}
               {artwork.year ? `, ${artwork.year}` : ""}
             </p>

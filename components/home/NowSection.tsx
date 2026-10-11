@@ -107,7 +107,7 @@ export default function NowSection({
                   preset="card"
                   sizes="(max-width: 1024px) 50vw, 25vw"
                 />
-                <p className="jenga-accent mt-5 font-archive-body text-[0.625rem] font-medium uppercase tracking-[0.32em]">
+                <p className="jenga-accent mt-5 font-archive-body text-[0.6875rem] font-medium uppercase tracking-[0.32em]">
                   {card.label}
                 </p>
                 <h3 className="jenga-cream mt-3 font-display text-xl font-light leading-snug md:text-2xl">

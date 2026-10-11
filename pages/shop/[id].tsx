@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
@@ -8,16 +7,22 @@ import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
-import OptimizedImage from "@/components/ui/OptimizedImage";
+import BackLink from "@/components/ui/BackLink";
+import TextAction from "@/components/ui/TextAction";
+import Select from "@/components/ui/Select";
+import {
+  CustomerDetails,
+  DeliveryMethodSelect,
+  FulfilmentSelector,
+  OrderSummary,
+  PaymentAction,
+  ProductImage,
+  type CustomerDetailsValue,
+  type DeliveryMethodValue,
+  type FulfilmentChoice,
+} from "@/components/shop/checkout";
 import { formatUsdPrice } from "@/lib/utils";
 import { ArtworkWithRelations } from "@/types/api";
-
-const DELIVERY_OPTIONS = [
-  { value: "LOCAL_PICKUP", label: "Local pickup" },
-  { value: "NAIROBI_DELIVERY", label: "Nairobi delivery" },
-  { value: "KENYA_SHIPPING", label: "Kenya shipping" },
-  { value: "INTERNATIONAL_SHIPPING", label: "International shipping" },
-] as const;
 
 const PACKAGING_OPTIONS = [
   { value: "ROLLED", label: "Rolled" },
@@ -44,14 +49,30 @@ export default function ShopArtworkPage() {
     fetcher
   );
 
+  const [fulfilment, setFulfilment] = useState<FulfilmentChoice>("COLLECTION");
   const [deliveryMethod, setDeliveryMethod] =
-    useState<(typeof DELIVERY_OPTIONS)[number]["value"]>("LOCAL_PICKUP");
+    useState<DeliveryMethodValue>("NAIROBI_DELIVERY");
   const [packaging, setPackaging] =
     useState<(typeof PACKAGING_OPTIONS)[number]["value"]>("ROLLED");
-  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [customer, setCustomer] = useState<CustomerDetailsValue>({
+    name: "",
+    phone: "",
+    address: "",
+    notes: "",
+  });
   const [checkoutBusy, setCheckoutBusy] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
-  const needsAddress = deliveryMethod !== "LOCAL_PICKUP";
+  const needsAddress = fulfilment === "DELIVERY";
+  const effectiveMethod: DeliveryMethodValue =
+    fulfilment === "COLLECTION" ? "LOCAL_PICKUP" : deliveryMethod;
+
+  useEffect(() => {
+    const username = session?.user?.username;
+    if (username) {
+      setCustomer((c) => (c.name ? c : { ...c, name: username }));
+    }
+  }, [session?.user?.username]);
   const canPurchase =
     !!artwork &&
     artwork.isAvailable &&
@@ -69,27 +90,34 @@ export default function ShopArtworkPage() {
       router.push(`/login?callbackUrl=${encodeURIComponent(router.asPath)}`);
       return;
     }
-    if (needsAddress && !deliveryAddress.trim()) {
-      toast.error("Enter a delivery address");
+    if (needsAddress && !customer.address.trim()) {
+      toast.error("Enter a delivery location");
       return;
     }
 
     setCheckoutBusy(true);
+    setCheckoutError(null);
     try {
       const res = await fetch("/api/orders/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: [{ artworkId: artwork.id, quantity: 1 }],
-          deliveryMethod,
+          deliveryMethod: effectiveMethod,
           packaging,
-          deliveryAddress: needsAddress ? deliveryAddress.trim() : null,
+          deliveryAddress:
+            needsAddress && customer.address.trim()
+              ? customer.address.trim()
+              : null,
+          customerName: customer.name.trim() || null,
+          phoneNumber: customer.phone.trim() || null,
+          deliveryNotes: customer.notes.trim() || null,
           paymentProvider: "PAYSTACK",
         }),
       });
       const body = await res.json();
       if (!res.ok) {
-        toast.error(body.message || "Checkout failed");
+        setCheckoutError(body.message || "Checkout failed");
         return;
       }
       if (body.data?.authorizationUrl) {
@@ -98,7 +126,7 @@ export default function ShopArtworkPage() {
       }
       toast.success(body.message || "Order created.");
     } catch {
-      toast.error("Checkout failed");
+      setCheckoutError("Checkout failed. Please try again.");
     } finally {
       setCheckoutBusy(false);
     }
@@ -107,7 +135,7 @@ export default function ShopArtworkPage() {
   if (isLoading || !router.isReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-        <p className="font-display text-xs uppercase tracking-[0.28em] text-neutral-400">
+        <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
           Loading
         </p>
       </div>
@@ -122,12 +150,9 @@ export default function ShopArtworkPage() {
           <h1 className="font-display text-3xl font-light text-neutral-900 mb-4">
             Artwork not found
           </h1>
-          <Link
-            href="/shop"
-            className="font-display text-xs uppercase tracking-[0.28em] text-neutral-500 underline-offset-4 hover:underline"
-          >
-            Back to shop
-          </Link>
+          <BackLink href="/shop" className="mt-2">
+            Back to Shop
+          </BackLink>
         </div>
         <Footer />
       </>
@@ -146,35 +171,27 @@ export default function ShopArtworkPage() {
       <Navbar />
 
       <main className="container mx-auto px-4 py-12 md:py-20 max-w-4xl">
-        <Link
-          href="/shop"
-          className="mb-10 inline-block font-display text-xs uppercase tracking-[0.28em] text-neutral-400 hover:text-neutral-800"
-        >
-          ← Shop
-        </Link>
+        <BackLink href="/shop" className="mb-10">
+          Back to Shop
+        </BackLink>
 
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           className="grid grid-cols-1 md:grid-cols-2 gap-12"
         >
-          <div className="relative aspect-square bg-neutral-100 overflow-hidden">
-            <OptimizedImage
-              src={artwork.imageUrl}
-              alt={artwork.title}
-              fill
-              preset="hero"
-              priority
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-contain bg-white"
-            />
-          </div>
+          <ProductImage
+            src={artwork.imageUrl}
+            alt={artwork.title}
+            name={artwork.title}
+            kind="Original artwork"
+          />
 
           <div>
             <h1 className="font-display text-3xl md:text-4xl font-light text-neutral-900 tracking-tight mb-4">
               {artwork.title}
             </h1>
-            <p className="text-xs font-light uppercase tracking-[0.2em] text-neutral-400 mb-4">
+            <p className="text-xs font-light uppercase tracking-[0.2em] text-neutral-500 mb-4">
               Original artwork
               {artwork.medium ? ` · ${artwork.medium}` : ""}
             </p>
@@ -185,95 +202,80 @@ export default function ShopArtworkPage() {
             )}
 
             <p className="mb-8">
-              <Link
-                href={`/artworks/${artwork.id}`}
-                className="font-display text-[0.7rem] uppercase tracking-[0.28em] text-neutral-500 underline-offset-4 hover:text-neutral-900 hover:underline"
-              >
-                View catalogue page →
-              </Link>
+              <TextAction href={`/artworks/${artwork.id}`}>
+                View catalogue page
+              </TextAction>
             </p>
 
             {!canPurchase ? (
-              <p className="font-display text-xs uppercase tracking-[0.28em] text-neutral-400">
+              <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
                 Not available for purchase
               </p>
             ) : (
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="art-packaging" className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
+                  <label htmlFor="art-packaging" className="block font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-2">
                     Packaging
                   </label>
-                  <select
+                  <Select
                     id="art-packaging"
+                    label="Packaging"
+                    options={PACKAGING_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: o.label,
+                    }))}
                     value={packaging}
-                    onChange={(e) =>
+                    onChange={(v) =>
                       setPackaging(
-                        e.target.value as (typeof PACKAGING_OPTIONS)[number]["value"]
+                        v as (typeof PACKAGING_OPTIONS)[number]["value"]
                       )
                     }
-                    className="w-full border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 focus:outline-none focus:border-neutral-900"
-                  >
-                    {PACKAGING_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
 
-                <div>
-                  <label htmlFor="art-delivery" className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
-                    Delivery
-                  </label>
-                  <select
-                    id="art-delivery"
-                    value={deliveryMethod}
-                    onChange={(e) =>
-                      setDeliveryMethod(
-                        e.target.value as (typeof DELIVERY_OPTIONS)[number]["value"]
-                      )
-                    }
-                    className="w-full border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 focus:outline-none focus:border-neutral-900"
-                  >
-                    {DELIVERY_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <FulfilmentSelector
+                  value={fulfilment}
+                  onChange={setFulfilment}
+                />
 
                 {needsAddress && (
                   <div>
-                    <label htmlFor="art-address" className="block font-display text-xs uppercase tracking-[0.24em] text-neutral-400 mb-2">
-                      Delivery address
+                    <label htmlFor="art-delivery-method" className="block font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-2">
+                      Delivery method
                     </label>
-                    <textarea
-                      id="art-address"
-                      value={deliveryAddress}
-                      onChange={(e) => setDeliveryAddress(e.target.value)}
-                      rows={3}
-                      className="w-full border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 focus:outline-none focus:border-neutral-900"
-                      placeholder="Street, city, country…"
+                    <DeliveryMethodSelect
+                      id="art-delivery-method"
+                      value={deliveryMethod}
+                      onChange={setDeliveryMethod}
                     />
                   </div>
                 )}
 
-                <p className="font-display text-xl font-light text-neutral-900">
-                  {formatUsdPrice(artwork.price!)}
-                </p>
+                <CustomerDetails
+                  value={customer}
+                  onChange={setCustomer}
+                  needAddress={needsAddress}
+                  idPrefix="art"
+                />
 
-                <button
-                  type="button"
+                <OrderSummary
+                  lines={[
+                    {
+                      label: artwork.title,
+                      detail: "Original · quantity 1",
+                      amount: formatUsdPrice(artwork.price!),
+                    },
+                  ]}
+                  total={formatUsdPrice(artwork.price!)}
+                  currency="USD"
+                />
+
+                <PaymentAction
+                  busy={checkoutBusy}
                   onClick={handleCheckout}
-                  disabled={checkoutBusy}
-                  className="w-full border border-neutral-900 bg-neutral-900 py-4 font-display text-xs uppercase tracking-[0.28em] text-white hover:bg-neutral-800 disabled:opacity-50"
-                >
-                  {checkoutBusy ? "Redirecting to payment…" : "Proceed to payment"}
-                </button>
-                <p className="text-xs font-light text-neutral-400">
-                  Secure checkout via Paystack. You&apos;ll return here after payment.
-                </p>
+                  label="Continue to payment"
+                  error={checkoutError}
+                />
               </div>
             )}
           </div>

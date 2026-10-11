@@ -38,12 +38,6 @@ const ENV_MANIFEST = {
       "pages/api/auth/[...nextauth].ts",
     ],
   },
-  NEXT_PUBLIC_CURRENCY: {
-    category: "Display",
-    required: "feature",
-    feature: "Price labels (defaults to USD if unset)",
-    usedBy: ["shop", "events", "account", "orders/checkout"],
-  },
   NEXT_PUBLIC_ARTIST_WHATSAPP_NUMBER: {
     category: "Display",
     required: "feature",
@@ -89,12 +83,6 @@ const ENV_MANIFEST = {
       "pages/api/orders/checkout.ts",
       "pages/api/paystack/webhook.ts",
     ],
-  },
-  NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: {
-    category: "Payments",
-    required: "feature",
-    feature: "Paystack public key (optional if using redirect-only checkout)",
-    usedBy: ["lib/paystack.ts"],
   },
   NEXT_PUBLIC_SITE_URL: {
     category: "Display",

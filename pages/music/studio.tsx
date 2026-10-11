@@ -10,6 +10,7 @@ import { Camera, Music, Palette, Ticket } from "lucide-react";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
+import TextAction from "@/components/ui/TextAction";
 import StudioJoinSection from "@/components/music/StudioJoinSection";
 import MusicWelcomeModal from "@/components/music/MusicWelcomeModal";
 
@@ -150,7 +151,7 @@ export default function MusicStudioPage() {
         )}
 
         {isLoading && !confirmingPayment && (
-          <p className="text-center text-neutral-400">Loading…</p>
+          <p className="text-center text-neutral-500">Loading…</p>
         )}
         {error && (
           <p className="text-center text-red-600">{(error as Error).message}</p>
@@ -164,7 +165,7 @@ export default function MusicStudioPage() {
               transition={{ duration: 0.7 }}
               className="mx-auto max-w-3xl text-center"
             >
-              <p className="font-display text-xs uppercase tracking-[0.32em] text-neutral-400">
+              <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500">
                 The Studio
               </p>
               <h1 className="mt-6 font-display text-5xl font-light tracking-tight text-neutral-900 md:text-6xl lg:text-7xl">
@@ -180,12 +181,7 @@ export default function MusicStudioPage() {
                 >
                   Join the Studio
                 </a>
-                <Link
-                  href="/music"
-                  className="font-display text-xs uppercase tracking-[0.24em] text-neutral-500 underline-offset-4 hover:text-neutral-900 hover:underline"
-                >
-                  Listen on Music →
-                </Link>
+                <TextAction href="/music">Listen on Music</TextAction>
               </div>
             </motion.section>
 
@@ -281,7 +277,7 @@ export default function MusicStudioPage() {
                         <p className="mt-3 font-display text-lg text-neutral-900">
                           {r.title}
                         </p>
-                        <p className="text-xs uppercase tracking-[0.18em] text-neutral-400">
+                        <p className="text-xs uppercase tracking-[0.18em] text-neutral-500">
                           Inside the Studio
                         </p>
                       </Link>
@@ -322,7 +318,7 @@ export default function MusicStudioPage() {
             </section>
 
             <section className="mx-auto mt-20 max-w-2xl">
-              <h3 className="font-display text-xs uppercase tracking-[0.28em] text-neutral-400">
+              <h3 className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
                 Questions
               </h3>
               <ul className="mt-8 space-y-8">

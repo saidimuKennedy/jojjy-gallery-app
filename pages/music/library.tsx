@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
+import BackLink from "@/components/ui/BackLink";
 
 type LibItem = {
   id: number;
@@ -85,12 +86,7 @@ export default function MusicLibraryPage() {
       </Head>
       <Navbar />
       <main className="mx-auto max-w-4xl px-5 py-14 md:px-10 md:py-20">
-        <Link
-          href="/music"
-          className="text-xs uppercase tracking-[0.2em] text-neutral-400 hover:text-neutral-800"
-        >
-          ← Music
-        </Link>
+        <BackLink href="/music">Back to Music</BackLink>
         <h1 className="mt-8 font-display text-4xl font-light text-neutral-900 md:text-5xl">
           Your Collection
         </h1>
@@ -112,7 +108,7 @@ export default function MusicLibraryPage() {
           </p>
         )}
 
-        {isLoading && <p className="mt-10 text-neutral-400">Loading…</p>}
+        {isLoading && <p className="mt-10 text-neutral-500">Loading…</p>}
         {error && (
           <p className="mt-10 text-red-600">{(error as Error).message}</p>
         )}
@@ -120,7 +116,7 @@ export default function MusicLibraryPage() {
         {data && (
           <>
             <section className="mt-14">
-              <h2 className="font-display text-xs uppercase tracking-[0.28em] text-neutral-400">
+              <h2 className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
                 Purchased forever
               </h2>
               <p className="mt-2 text-sm text-neutral-500">
@@ -143,7 +139,7 @@ export default function MusicLibraryPage() {
             </section>
 
             <section className="mt-16 border-t border-neutral-100 pt-12">
-              <h2 className="font-display text-xs uppercase tracking-[0.28em] text-neutral-400">
+              <h2 className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
                 Studio access
               </h2>
               <p className="mt-2 text-sm text-neutral-500">

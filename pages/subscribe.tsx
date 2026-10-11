@@ -23,7 +23,7 @@ export default function SubscribePage() {
             aria-hidden
           />
           <div className="relative mx-auto flex min-h-[70vh] max-w-xl flex-col justify-center px-6 py-24 md:px-8 md:py-32">
-            <p className="font-display text-xs uppercase tracking-[0.32em] text-neutral-400">
+            <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500">
               Updates
             </p>
             <h1 className="mt-5 font-display text-4xl font-light tracking-tight text-neutral-900 md:text-5xl">

@@ -1,6 +1,6 @@
 # Plan 06 — Ticket Sales Window & Checkout Enforcement
 
-**Status:** Not started  
+**Status:** Superseded by [Plan 15 — Event & Ticketing End to End](./15-event-ticketing-end-to-end.md)  
 **Repo:** `jojjy-gallery-crm` + `jojjy-gallery-app`  
 **Effort:** M (1–2 days)  
 **Blocks launch:** Yes  
@@ -9,6 +9,8 @@
 ---
 
 ## Goal
+
+> Historical scope only. Its login-required purchase assumption is superseded: public ticket checkout must support guests under Plan 15.
 
 1. CRM: edit ticket types (qty, price, **sales window**)
 2. Gallery: enforce `salesStart` / `salesEnd` at checkout

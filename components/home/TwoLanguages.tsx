@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { ArrowLink, MediaFrame, Shell } from "@/components/home/primitives";
+import { MediaFrame, Shell } from "@/components/home/primitives";
+import BackLink from "@/components/ui/BackLink";
 import { Reveal, RevealGroup, RevealItem } from "@/components/home/motion";
 
 export default function TwoLanguages({
@@ -111,9 +112,13 @@ export default function TwoLanguages({
                 </RevealItem>
 
                 <RevealItem y={14} className="mt-10">
-                  <div className="flex items-center justify-center gap-x-12">
-                    <ArrowLink href="/portfolio">Art</ArrowLink>
-                    <ArrowLink href="/music">Music</ArrowLink>
+                  <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+                    <BackLink href="/portfolio" tone="dark">
+                      Art
+                    </BackLink>
+                    <BackLink href="/music" tone="dark">
+                      Music
+                    </BackLink>
                   </div>
                 </RevealItem>
               </RevealGroup>

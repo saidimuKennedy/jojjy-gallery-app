@@ -104,6 +104,22 @@ const PRODUCTS: SeedProduct[] = [
       { sku: "HOOD-XL-OAT", size: "XL", color: "Oat", price: 65, stock: 4 },
     ],
   },
+  {
+    // Demo art reproduction: an editioned canvas print modelled as a plain
+    // Product + size variants (no parallel architecture). imageUrl is
+    // deliberately null so the storefront no-image fallback is exercised.
+    name: "The Crossing — Canvas",
+    slug: "the-crossing-canvas",
+    description:
+      "Demo reproduction: gallery-wrapped canvas print of The Crossing, printed to order. Sizes are finished dimensions in centimetres.",
+    category: "Canvas Edition",
+    imageUrl: null,
+    variants: [
+      { sku: "CNV-3040", size: "30 × 40 cm", price: 120, stock: 10 },
+      { sku: "CNV-4560", size: "45 × 60 cm", price: 180, stock: 8 },
+      { sku: "CNV-6080", size: "60 × 80 cm", price: 260, stock: 5 },
+    ],
+  },
 ];
 
 async function seedProducts() {
