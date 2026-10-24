@@ -222,7 +222,7 @@ export default function MusicIndexPage() {
                   type="button"
                   disabled={!heroRelease || heroRelease.tracks.length === 0}
                   onClick={() => heroRelease && playRelease(heroRelease)}
-                  className={`inline-flex min-h-12 items-center gap-2 border border-white bg-white px-6 py-3 font-display text-xs uppercase tracking-[0.22em] text-neutral-900 transition-colors hover:bg-transparent hover:text-white disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${dark ? "" : "md:border-neutral-900 md:bg-neutral-900 md:text-white md:hover:bg-white md:hover:text-neutral-900 md:focus-visible:outline-neutral-900"}`}
+                  className={`inline-flex min-h-12 items-center gap-2 border border-white bg-white px-6 py-3 font-display text-xs uppercase tracking-[0.22em] text-neutral-900 transition-colors hover:bg-transparent hover:text-white disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${dark ? "!text-neutral-900 hover:!text-white" : "md:border-neutral-900 md:bg-neutral-900 md:text-white md:hover:bg-white md:hover:text-neutral-900 md:focus-visible:outline-neutral-900"}`}
                 >
                   <Play className="h-4 w-4 fill-current" aria-hidden="true" />
                   Play latest
@@ -279,7 +279,7 @@ export default function MusicIndexPage() {
                   New music, fresh stories, and evolving sounds.
                 </p>
               </div>
-              <TextAction href="#latest" className="gap-2">
+              <TextAction href="#latest" tone={dark ? "dark" : "light"} className="gap-2">
                 View all
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </TextAction>
@@ -305,7 +305,7 @@ export default function MusicIndexPage() {
                   Exclusive releases for Studio Pass members.
                 </p>
               </div>
-              <TextAction href="/music/studio">
+              <TextAction href="/music/studio" tone={dark ? "dark" : "light"}>
                 Learn about Studio Pass
                 <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
               </TextAction>
@@ -321,8 +321,8 @@ export default function MusicIndexPage() {
 
         <section className="mx-auto max-w-[1600px] px-6 py-16 md:px-10">
           <div className="flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-neutral-200 pt-8">
-            <TextAction href="/music/studio">Step inside the Studio</TextAction>
-            <TextAction href="/music/library">Your library</TextAction>
+            <TextAction href="/music/studio" tone={dark ? "dark" : "light"}>Step inside the Studio</TextAction>
+            <TextAction href="/music/library" tone={dark ? "dark" : "light"}>Your library</TextAction>
           </div>
         </section>
       </main>
@@ -391,7 +391,7 @@ function ReleaseTile({
             onClick={() => onPlay(release)}
             disabled={!playable}
             aria-label={playable ? `Play ${release.title}` : `${release.title} preview only`}
-            className="absolute bottom-3 left-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-neutral-900 shadow-sm transition hover:bg-neutral-100 disabled:cursor-default focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="absolute bottom-3 left-3 flex h-10 w-10 items-center justify-center rounded-full bg-white !text-neutral-900 shadow-sm transition hover:bg-neutral-100 disabled:cursor-default focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             <Play className="h-4 w-4 fill-current" aria-hidden="true" />
           </button>
