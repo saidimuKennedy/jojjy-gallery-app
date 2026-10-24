@@ -22,6 +22,12 @@ import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
 import StudioJoinSection from "@/components/music/StudioJoinSection";
 import { CHECKOUT_SUPPORT_COPY } from "@/lib/music/studio-defaults";
+import {
+  HERO_BODY,
+  HERO_LABEL,
+  HERO_MIN_HEIGHT,
+  HERO_TITLE,
+} from "@/lib/music/hero-styles";
 import MusicWelcomeModal from "@/components/music/MusicWelcomeModal";
 
 type StudioPayload = {
@@ -227,20 +233,20 @@ export default function MusicStudioPage() {
                 />
               </div>
               <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/50 to-black/20 md:bg-gradient-to-r md:from-[#f8f6f1] md:from-[38%] md:via-[#f8f6f1]/70 md:via-[48%] md:to-transparent md:to-[66%]" />
-              <div className="mx-auto flex min-h-[420px] max-w-[1600px] items-center md:min-h-[400px]">
+              <div className={`mx-auto flex max-w-[1600px] items-center ${HERO_MIN_HEIGHT}`}>
                 <motion.div
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.7 }}
                   className="w-full px-6 py-14 md:w-[48%] md:px-12 lg:px-16"
                 >
-                  <p className="font-archive-body text-[11px] uppercase tracking-[0.28em] text-white/80 md:text-neutral-700">
+                  <p className={`${HERO_LABEL} text-white/80 md:text-neutral-700`}>
                     The Studio
                   </p>
-                  <h1 className="mt-5 font-display text-5xl font-light leading-[1.02] tracking-tight text-white md:text-neutral-900 md:text-6xl lg:text-[4.25rem]">
+                  <h1 className={`mt-5 ${HERO_TITLE} text-white md:text-neutral-900`}>
                     {content.heroTitle}
                   </h1>
-                  <p className="mt-5 max-w-md font-archive-body text-[15px] leading-[1.7] text-white/90 md:text-neutral-800">
+                  <p className={`mt-5 max-w-md ${HERO_BODY} text-white/90 md:text-neutral-800`}>
                     {STUDIO_HERO_COPY}
                   </p>
                   <div className="mt-8 flex flex-wrap items-center gap-6">
@@ -278,10 +284,10 @@ export default function MusicStudioPage() {
                         strokeWidth={1.1}
                         aria-hidden
                       />
-                      <p className="mt-4 font-archive-body text-[13px] font-semibold text-neutral-900">
+                      <p className="mt-4 font-archive-body text-sm font-semibold text-neutral-900">
                         {title}
                       </p>
-                      <p className="mt-2 font-archive-body text-xs leading-relaxed text-neutral-600">
+                      <p className="mt-2 font-archive-body text-sm leading-relaxed text-neutral-700">
                         {lines}
                       </p>
                     </li>
@@ -293,7 +299,7 @@ export default function MusicStudioPage() {
               <section className="mx-auto max-w-[1600px] px-6 pt-6 md:px-12 lg:px-16">
                 <div className="flex items-end justify-between gap-4">
                   <div>
-                    <h2 className="font-display text-3xl font-normal tracking-tight text-neutral-900 md:text-[2.1rem]">
+                    <h2 className="font-display text-3xl font-medium tracking-tight text-neutral-900 md:text-[2.1rem]">
                       Currently inside the Studio
                     </h2>
                     <p className="mt-1 font-archive-body text-sm text-neutral-600">
@@ -335,10 +341,10 @@ export default function MusicStudioPage() {
                             </span>
                           )}
                         </div>
-                        <p className="mt-3 font-archive-body text-[13px] font-medium text-neutral-900">
+                        <p className="mt-3 font-archive-body text-sm font-medium text-neutral-900">
                           {tile.title}
                         </p>
-                        <p className="mt-1 font-archive-body text-[11px] text-neutral-500">
+                        <p className="mt-1 font-archive-body text-xs text-neutral-600">
                           {tile.meta}
                         </p>
                       </>
@@ -365,7 +371,7 @@ export default function MusicStudioPage() {
             </div>
 
             {/* Journey band */}
-            <section className="mt-16 grid bg-[#1b1b19] text-white md:mt-20 md:grid-cols-[47%_1fr]">
+            <section className="mt-16 grid bg-black text-white md:mt-20 md:grid-cols-[47%_1fr]">
               <div className="relative min-h-[260px] md:min-h-[340px]">
                 <OptimizedImage
                   src="/images/studio/journey.jpg"
@@ -377,10 +383,10 @@ export default function MusicStudioPage() {
                 />
               </div>
               <div className="flex flex-col justify-center px-6 py-14 md:px-14 lg:px-20">
-                <p className="font-archive-body text-[11px] uppercase tracking-[0.28em] text-white/60">
+                <p className="font-archive-body text-xs uppercase tracking-[0.28em] text-white/60">
                   The Journey
                 </p>
-                <p className="mt-6 max-w-lg font-display text-4xl font-light leading-[1.12] md:text-[2.6rem]">
+                <p className="mt-6 max-w-lg font-display text-4xl font-normal leading-[1.12] md:text-[2.6rem]">
                   {content.heroSubtitle}
                 </p>
                 <p className="mt-6 max-w-md font-archive-body text-sm leading-relaxed text-white/80">
@@ -392,7 +398,7 @@ export default function MusicStudioPage() {
             <div className="bg-[#f8f6f1]">
               {/* Join */}
               <section className="mx-auto max-w-[1600px] px-6 pt-14 md:px-12 lg:px-16">
-                <h2 className="font-display text-3xl font-normal tracking-tight text-neutral-900 md:text-[2.1rem]">
+                <h2 className="font-display text-3xl font-medium tracking-tight text-neutral-900 md:text-[2.1rem]">
                   Join the Studio
                 </h2>
                 <p className="mt-2 max-w-xl font-archive-body text-sm leading-relaxed text-neutral-600">
@@ -410,14 +416,14 @@ export default function MusicStudioPage() {
 
               {/* FAQ */}
               <section className="mx-auto grid max-w-[1600px] gap-8 px-6 pb-4 pt-20 md:grid-cols-[1fr_1.6fr] md:px-12 lg:px-16">
-                <h2 className="font-display text-3xl font-normal text-neutral-900 md:text-[2.1rem]">
+                <h2 className="font-display text-3xl font-medium text-neutral-900 md:text-[2.1rem]">
                   Questions
                 </h2>
                 <ul className="divide-y divide-neutral-300/70 border-y border-neutral-300/70">
                   {content.faq.map((item) => (
                     <li key={item.q}>
                       <details className="group py-4">
-                        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-archive-body text-[13px] text-neutral-900 [&::-webkit-details-marker]:hidden">
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-archive-body text-sm text-neutral-900 [&::-webkit-details-marker]:hidden">
                           {item.q}
                           <ChevronDown
                             className="h-4 w-4 shrink-0 text-neutral-600 transition-transform group-open:rotate-180"

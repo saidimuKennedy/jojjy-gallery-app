@@ -7,6 +7,12 @@ import { useSession } from "next-auth/react";
 import { ArrowRight, Play } from "lucide-react";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
+import {
+  HERO_BODY,
+  HERO_LABEL,
+  HERO_MIN_HEIGHT,
+  HERO_TITLE,
+} from "@/lib/music/hero-styles";
 import OptimizedImage from "@/components/ui/OptimizedImage";
 import TextAction from "@/components/ui/TextAction";
 import { useLibrary } from "@/components/music/LibrarySidebar";
@@ -201,20 +207,20 @@ export default function MusicIndexPage() {
             </div>
             <div className={`absolute inset-0 bg-gradient-to-t from-black/85 via-black/55 to-black/25 md:bg-gradient-to-r ${dark ? "md:from-black md:via-black/75" : "md:from-white md:via-white/75"} md:via-[35%] md:to-transparent md:to-[74%]`} />
           </div>
-          <div className="mx-auto flex min-h-[440px] max-w-[1600px] items-center md:min-h-[min(82svh,820px)]">
+          <div className={`mx-auto flex max-w-[1600px] items-center ${HERO_MIN_HEIGHT}`}>
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7 }}
               className="flex w-full flex-col justify-center px-6 py-16 sm:w-[78%] md:w-[66%] md:px-10 md:py-20 lg:w-[62%]"
             >
-              <p className={`font-display text-xs font-semibold uppercase tracking-[0.28em] text-white/80 ${dark ? "" : "md:text-neutral-700"}`}>
+              <p className={`${HERO_LABEL} text-white/80 ${dark ? "" : "md:text-neutral-700"}`}>
                 Music
               </p>
-              <h1 className={`mt-5 font-display text-5xl font-light leading-[1.05] tracking-tight text-white md:text-7xl lg:text-8xl xl:text-9xl ${dark ? "" : "md:text-neutral-900"}`}>
+              <h1 className={`mt-5 ${HERO_TITLE} text-white ${dark ? "" : "md:text-neutral-900"}`}>
                 Stories in sound.
               </h1>
-              <p className={`mt-5 max-w-md font-archive-body text-lg leading-[1.7] text-white/90 ${dark ? "" : "md:text-neutral-600"}`}>
+              <p className={`mt-5 max-w-md ${HERO_BODY} text-white/90 ${dark ? "" : "md:text-neutral-600"}`}>
                 Explore releases, listen, and take the journey deeper.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">

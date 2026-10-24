@@ -269,7 +269,7 @@ const ArchivePage = ({ initialEntries, initialTotal }: ArchivePageProps) => {
         {mediaItems.length === 0 ? (
           <div className="px-6 py-40 text-center md:px-12">
             <p className="font-display text-xl text-neutral-600">
-              The Studio is empty for now.
+              The Gallery is empty for now.
             </p>
           </div>
         ) : (
@@ -283,7 +283,7 @@ const ArchivePage = ({ initialEntries, initialTotal }: ArchivePageProps) => {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.7, ease }}
                   >
-                    Studio
+                    Gallery
                   </motion.p>
                   <motion.p
                     className="mt-3 max-w-sm text-sm font-light leading-relaxed text-[#6b6b6b]"

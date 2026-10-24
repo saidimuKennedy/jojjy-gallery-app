@@ -101,7 +101,7 @@ const SingleArchiveEntryPage = ({ initialEntry }: ArchiveDetailPageProps) => {
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
           <p className="font-display text-2xl">{error.message}</p>
           <BackLink href="/gallery" className="mt-8">
-            Back to Studio
+            Back to Gallery
           </BackLink>
         </div>
       </div>
@@ -117,7 +117,7 @@ const SingleArchiveEntryPage = ({ initialEntry }: ArchiveDetailPageProps) => {
             This entry could not be found.
           </p>
           <BackLink href="/gallery" className="mt-8">
-            Back to Studio
+            Back to Gallery
           </BackLink>
         </div>
       </div>
@@ -286,7 +286,7 @@ const SingleArchiveEntryPage = ({ initialEntry }: ArchiveDetailPageProps) => {
       <Navbar />
 
       <div className="px-6 pt-10 md:px-12 lg:px-20">
-        <BackLink href="/gallery">Back to Studio</BackLink>
+        <BackLink href="/gallery">Back to Gallery</BackLink>
       </div>
 
       <header className="mx-auto max-w-4xl px-6 pb-12 pt-16 md:px-12 md:pb-16 md:pt-24">
@@ -350,7 +350,7 @@ const SingleArchiveEntryPage = ({ initialEntry }: ArchiveDetailPageProps) => {
       </motion.div>
 
       <footer className="mx-auto max-w-4xl px-6 pb-28 pt-24 md:px-12">
-        <BackLink href="/gallery">Back to Studio</BackLink>
+        <BackLink href="/gallery">Back to Gallery</BackLink>
       </footer>
     </div>
   );

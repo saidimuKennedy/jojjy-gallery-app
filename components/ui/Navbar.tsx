@@ -81,13 +81,13 @@ export default function Navbar({ variant = "default" }: NavbarProps = {}) {
   const isActive = (path: string) => router.pathname === path;
 
   // V1 primary navigation: Art (portfolio/artworks/series), Music, Events,
-  // Studio (editorial journal), Shop, About, Contact. Home is reached via
+  // Gallery (editorial journal), Shop, About, Contact. Home is reached via
   // the brand/logo. Music Studio membership and Updates stay contextual.
   const navItems = [
     { label: "Art", path: "/portfolio" },
     { label: "Music", path: "/music" },
     { label: "Events", path: "/events" },
-    { label: "Studio", path: "/gallery" },
+    { label: "Gallery", path: "/gallery" },
     { label: "Shop", path: "/shop" },
     { label: "About", path: "/about" },
     { label: "Contact", path: "/contact" },
