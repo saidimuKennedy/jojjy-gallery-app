@@ -436,7 +436,11 @@ export default function MusicReleasePage() {
         />
       )}
 
-      <div className="mx-auto max-w-[1600px] lg:grid lg:grid-cols-[300px_1fr]">
+      <div
+        className={`mx-auto max-w-[1600px] ${
+          showSidebar ? "lg:grid lg:grid-cols-[300px_1fr]" : ""
+        }`}
+      >
         {showSidebar && (
           <aside
             className={`hidden border-r lg:block ${t.border}`}
