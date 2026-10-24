@@ -99,7 +99,7 @@ export default function MusicStudioPage() {
           setWelcomeType(isPass ? "studio" : "release");
           setShowWelcome(true);
           toast.success(
-            isPass ? "Welcome to the Studio" : "Added to your collection"
+            isPass ? "Welcome to the Studio" : "Added to your library"
           );
         }
       } catch {

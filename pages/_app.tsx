@@ -1,6 +1,7 @@
 import "@/styles/globals.css";
 import Layout from "@/components/Layout/Layout";
 import AudienceCapture from "@/components/ui/AudienceCapture";
+import { MusicPlayerProvider } from "@/components/music/MusicPlayer";
 import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "react-hot-toast";
@@ -11,9 +12,11 @@ const toastFont = '"Public Sans", system-ui, sans-serif';
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <SessionProvider>
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
+      <MusicPlayerProvider>
+        <Layout>
+          <Component {...pageProps} />
+        </Layout>
+      </MusicPlayerProvider>
       <AudienceCapture />
       <Toaster
         position="top-center"

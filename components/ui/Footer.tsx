@@ -6,16 +6,31 @@ import Link from "next/link";
 const ARTIST_INSTAGRAM_URL =
   process.env.NEXT_PUBLIC_ARTIST_INSTAGRAM_URL || "";
 
-export default function Footer() {
+export default function Footer({ tone = "light" }: { tone?: "light" | "dark" } = {}) {
+  const isDark = tone === "dark";
   return (
-    <footer className="border-t border-neutral-100 bg-white">
+    <footer
+      className={
+        isDark
+          ? "border-t border-neutral-800 bg-[#000]"
+          : "border-t border-neutral-100 bg-white"
+      }
+    >
       <div className="px-8 py-16 md:px-16 lg:px-24">
         <div className="mx-auto flex max-w-5xl flex-col items-start gap-8 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2">
-            <p className="font-display text-2xl font-light tracking-tight text-neutral-900 md:text-3xl">
+            <p
+              className={`font-display text-2xl font-light tracking-tight md:text-3xl ${
+                isDark ? "text-white" : "text-neutral-900"
+              }`}
+            >
               Njenga Ngugi
             </p>
-            <p className="text-sm font-light text-neutral-500 md:text-base">
+            <p
+              className={`text-sm font-light md:text-base ${
+                isDark ? "text-neutral-400" : "text-neutral-500"
+              }`}
+            >
               Nairobi, Kenya
             </p>
           </div>
@@ -26,26 +41,42 @@ export default function Footer() {
                 href={ARTIST_INSTAGRAM_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm uppercase tracking-[0.18em] text-neutral-600 transition-colors hover:text-neutral-900"
+                className={
+                  isDark
+                    ? "text-sm uppercase tracking-[0.18em] text-neutral-400 transition-colors hover:text-white"
+                    : "text-sm uppercase tracking-[0.18em] text-neutral-600 transition-colors hover:text-neutral-900"
+                }
               >
                 Instagram
               </a>
             )}
             <Link
               href="/updates"
-              className="text-sm uppercase tracking-[0.18em] text-neutral-600 transition-colors hover:text-neutral-900"
+              className={
+                isDark
+                  ? "text-sm uppercase tracking-[0.18em] text-neutral-400 transition-colors hover:text-white"
+                  : "text-sm uppercase tracking-[0.18em] text-neutral-600 transition-colors hover:text-neutral-900"
+              }
             >
               Updates
             </Link>
             <Link
               href="/subscribe"
-              className="text-sm uppercase tracking-[0.18em] text-neutral-600 transition-colors hover:text-neutral-900"
+              className={
+                isDark
+                  ? "text-sm uppercase tracking-[0.18em] text-neutral-400 transition-colors hover:text-white"
+                  : "text-sm uppercase tracking-[0.18em] text-neutral-600 transition-colors hover:text-neutral-900"
+              }
             >
               Subscribe
             </Link>
             <Link
               href="/contact"
-              className="text-sm uppercase tracking-[0.18em] text-neutral-600 transition-colors hover:text-neutral-900"
+              className={
+                isDark
+                  ? "text-sm uppercase tracking-[0.18em] text-neutral-400 transition-colors hover:text-white"
+                  : "text-sm uppercase tracking-[0.18em] text-neutral-600 transition-colors hover:text-neutral-900"
+              }
             >
               Contact
             </Link>

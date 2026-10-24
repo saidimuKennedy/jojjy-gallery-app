@@ -170,6 +170,20 @@ export default function Navbar({ variant = "default" }: NavbarProps = {}) {
                 (user ? (
                   <>
                     <Link
+                      href="/music/library"
+                      className={`text-sm tracking-wide transition-colors duration-200 ${
+                        isActive("/music/library")
+                          ? isTransparent
+                            ? "text-white"
+                            : "text-gray-900"
+                          : isTransparent
+                            ? "text-white/70 hover:text-white"
+                            : "text-gray-500 hover:text-gray-900"
+                      }`}
+                    >
+                      Your Library
+                    </Link>
+                    <Link
                       href="/account"
                       className={`text-sm tracking-wide transition-colors duration-200 ${
                         isActive("/account")
@@ -281,6 +295,13 @@ export default function Navbar({ variant = "default" }: NavbarProps = {}) {
             <div className="flex flex-col space-y-4 mt-6 border-t border-gray-100 pt-6">
               {user ? (
                 <>
+                  <Link
+                    href="/music/library"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block text-lg font-medium py-2 px-3 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200"
+                  >
+                    Your Library
+                  </Link>
                   <Link
                     href="/account"
                     onClick={() => setIsMobileMenuOpen(false)}

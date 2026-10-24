@@ -52,7 +52,7 @@ export default function MusicWelcomeModal({
                 className="border border-neutral-300 px-6 py-3 font-display text-xs uppercase tracking-[0.22em] text-neutral-700 hover:border-neutral-900"
                 onClick={onClose}
               >
-                Your collection
+                Your library
               </Link>
             </div>
           </>
@@ -62,10 +62,10 @@ export default function MusicWelcomeModal({
               Welcome
             </p>
             <h2 className="mt-4 font-display text-3xl font-light text-neutral-900">
-              {title ? `"${title}" is yours` : "Added to your collection"}
+              {title ? `"${title}" is yours` : "In your library"}
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-neutral-600">
-              Unlimited playback — forever in your collection.
+              Unlimited playback — yours to keep.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <button
@@ -83,7 +83,7 @@ export default function MusicWelcomeModal({
                 className="border border-neutral-300 px-6 py-3 font-display text-xs uppercase tracking-[0.22em] text-neutral-700 hover:border-neutral-900"
                 onClick={onClose}
               >
-                Your collection
+                Your library
               </Link>
             </div>
           </>

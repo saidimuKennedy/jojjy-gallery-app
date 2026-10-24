@@ -141,7 +141,7 @@ export default function StudioJoinSection({
             href="/music/library"
             className="mt-4 inline-block font-archive-body text-sm font-medium text-neutral-700 underline-offset-4 underline decoration-neutral-400 transition-colors hover:text-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-900"
           >
-            Your collection
+            Your library
           </Link>
         </div>
       ) : (

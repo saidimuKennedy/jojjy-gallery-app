@@ -45,37 +45,37 @@ function TicketCard({ ticket }: { ticket: RetrievedTicket }) {
 
   const invalid = ticket.status === "REFUNDED" || ticket.status === "CANCELLED";
   return (
-    <div className="flex flex-col items-center gap-4 border border-neutral-200 p-6 sm:flex-row sm:items-start">
-      <div className="flex h-[220px] w-[220px] items-center justify-center bg-neutral-50">
+    <div className="flex flex-col items-center gap-4 border border-neutral-800 p-6 sm:flex-row sm:items-start">
+      <div className="flex h-[220px] w-[220px] items-center justify-center bg-white">
         {qr ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={qr} alt={`QR code for ticket ${ticket.code}`} width={220} height={220} />
         ) : (
-          <span className="text-xs text-neutral-400">Loading QR…</span>
+          <span className="text-xs text-neutral-500">Loading QR…</span>
         )}
       </div>
       <div className="flex-1 text-center sm:text-left">
-        <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500">
+        <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-400">
           {ticket.ticketType}
         </p>
-        <p className="mt-2 font-display text-lg font-light text-neutral-900">
+        <p className="mt-2 font-display text-lg font-light text-white">
           {ticket.holderName || "Guest"}
         </p>
-        <p className="mt-3 font-mono text-sm tracking-widest text-neutral-700">
+        <p className="mt-3 font-mono text-sm tracking-widest text-neutral-200">
           {ticket.code}
         </p>
         <p className="mt-3 font-archive-body text-sm">
           {invalid ? (
-            <span className="text-red-600">
+            <span className="text-red-400">
               {ticket.status === "REFUNDED" ? "Refunded" : "Cancelled"} — not
               valid for entry
             </span>
           ) : ticket.checkedInAt ? (
-            <span className="text-neutral-500">
+            <span className="text-neutral-400">
               Checked in {formatDateTime(ticket.checkedInAt)}
             </span>
           ) : (
-            <span className="text-green-700">Valid for entry</span>
+            <span className="text-green-400">Valid for entry</span>
           )}
         </p>
       </div>
@@ -143,19 +143,19 @@ export default function RetrieveTicketsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-neutral-900">
+    <div className="min-h-screen bg-[#000] text-white">
       <Head>
         <title>Retrieve your tickets — Jojjy Gallery</title>
       </Head>
-      <Navbar />
-      <main className="mx-auto max-w-2xl px-5 py-16 md:py-24">
+      <Navbar variant="transparent" />
+      <main className="mx-auto max-w-2xl px-5 pb-16 pt-24 md:pb-24 md:pt-28">
         <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500">
           Tickets
         </p>
         <h1 className="mt-4 font-display text-3xl font-light tracking-tight md:text-4xl">
           Retrieve your tickets
         </h1>
-        <p className="mt-4 font-archive-body text-[1.0625rem] leading-[1.7] text-neutral-600">
+        <p className="mt-4 font-archive-body text-[1.0625rem] leading-[1.7] text-neutral-400">
           Enter your order reference and the email you used at checkout. We
           never list tickets by name or email alone.
         </p>
@@ -168,7 +168,7 @@ export default function RetrieveTicketsPage() {
             <input
               value={reference}
               onChange={(e) => setReference(e.target.value)}
-              className="mt-1 w-full border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-900 focus:outline-none"
+              className="mt-1 w-full border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-white focus:outline-none"
               placeholder="e.g. jojjy_abc123 or order id"
             />
           </label>
@@ -180,20 +180,22 @@ export default function RetrieveTicketsPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-900 focus:outline-none"
+              className="mt-1 w-full border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-white focus:outline-none"
             />
           </label>
           <button
             type="submit"
             disabled={busy}
-            className="border border-neutral-900 bg-neutral-900 px-8 py-4 font-display text-xs uppercase tracking-[0.28em] text-white transition-colors hover:bg-white hover:text-neutral-900 disabled:opacity-40"
+            className="border border-white bg-white px-8 py-4 font-display text-xs uppercase tracking-[0.28em] text-neutral-950 transition-colors hover:bg-transparent hover:text-white disabled:opacity-40"
           >
             {busy ? "…" : "Find tickets"}
           </button>
         </form>
 
         {error && (
-          <p className="mt-6 font-archive-body text-sm text-red-600">{error}</p>
+          <p role="alert" className="mt-6 font-archive-body text-sm text-red-400">
+            {error}
+          </p>
         )}
 
         {events && events.length > 0 && (
@@ -203,7 +205,7 @@ export default function RetrieveTicketsPage() {
                 <h2 className="font-display text-2xl font-light tracking-tight">
                   {group.event.title}
                 </h2>
-                <p className="mt-1 font-archive-body text-sm text-neutral-500">
+                <p className="mt-1 font-archive-body text-sm text-neutral-400">
                   {formatDateTime(group.event.startsAt)}
                   {group.event.venue ? ` · ${group.event.venue}` : ""}
                 </p>
@@ -217,7 +219,7 @@ export default function RetrieveTicketsPage() {
           </div>
         )}
       </main>
-      <Footer />
+      <Footer tone="dark" />
     </div>
   );
 }

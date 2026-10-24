@@ -6,42 +6,13 @@ import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import BackLink from "@/components/ui/BackLink";
 import TextAction from "@/components/ui/TextAction";
+import { resolveCallbackReference } from "@/lib/paystack-callback";
 
 type OrderTicket = {
   id: string;
   code: string;
   ticketType: { name: string };
 };
-
-/** First non-empty value of a query param that may be a string or string[]. */
-export function firstQueryValue(
-  value: string | string[] | undefined
-): string | undefined {
-  if (typeof value === "string" && value.length > 0) return value;
-  if (Array.isArray(value)) {
-    const found = value.find((v) => typeof v === "string" && v.length > 0);
-    return found;
-  }
-  return undefined;
-}
-
-/**
- * Paystack returns reference, trxref, and sometimes reference twice, so
- * Next.js may expose `reference` as string[]. Resolve deterministically:
- * prefer `reference`, fall back to `trxref`. If both are present but differ,
- * refuse to guess which transaction to verify.
- */
-export function resolveCallbackReference(query: {
-  reference?: string | string[];
-  trxref?: string | string[];
-}): { reference?: string; mismatch?: boolean } {
-  const fromReference = firstQueryValue(query.reference);
-  const fromTrxref = firstQueryValue(query.trxref);
-  if (fromReference && fromTrxref && fromReference !== fromTrxref) {
-    return { mismatch: true };
-  }
-  return { reference: fromReference ?? fromTrxref };
-}
 
 const DELIVERY_LABELS: Record<string, string> = {
   LOCAL_PICKUP: "Local pickup",
@@ -152,34 +123,38 @@ export default function ShopConfirmationPage() {
   );
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-[#000] text-white">
       <Head>
         <title>Order confirmation — Jojjy Gallery</title>
       </Head>
-      <Navbar />
-      <main className="container mx-auto max-w-2xl px-4 py-16 md:py-24">
+      <Navbar variant="transparent" />
+      <main className="container mx-auto max-w-2xl px-4 pb-16 pt-24 md:pb-24 md:pt-28">
         {loading ? (
-          <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
+          <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-400">
             Confirming payment…
           </p>
         ) : error ? (
           <div>
-            <h1 className="font-display text-3xl font-light text-neutral-900 mb-4">
+            <h1 className="font-display text-3xl font-light text-white mb-4">
               Payment not confirmed
             </h1>
-            <p className="text-sm font-light text-neutral-600 mb-8">{error}</p>
+            <p className="text-sm font-light text-neutral-400 mb-8">{error}</p>
             <div className="flex flex-wrap gap-6">
               <button
                 type="button"
                 onClick={() => setRetryCount((c) => c + 1)}
-                className="border border-neutral-900 px-8 py-4 font-display text-xs uppercase tracking-[0.28em] text-neutral-900 transition-colors hover:bg-neutral-900 hover:text-white"
+                className="border border-white px-8 py-4 font-display text-xs uppercase tracking-[0.28em] text-white transition-colors hover:bg-white hover:text-neutral-950"
               >
                 Try again
               </button>
-              <TextAction href="/account">View orders</TextAction>
+              <TextAction href="/account" tone="dark">
+                View orders
+              </TextAction>
             </div>
             <div className="mt-8">
-              <BackLink href="/shop">Back to Shop</BackLink>
+              <BackLink href="/shop" tone="dark">
+                Back to Shop
+              </BackLink>
             </div>
           </div>
         ) : order ? (
@@ -187,12 +162,12 @@ export default function ShopConfirmationPage() {
             <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500 mb-4">
               {isPaid ? "Thank you" : "Order status"}
             </p>
-            <h1 className="font-display text-3xl md:text-4xl font-light text-neutral-900 mb-6">
+            <h1 className="font-display text-3xl md:text-4xl font-light text-white mb-6">
               {isPaid ? "Payment confirmed" : "Payment pending"}
             </h1>
-            <p className="text-sm font-light text-neutral-600 mb-10">
+            <p className="text-sm font-light text-neutral-400 mb-10">
               Order{" "}
-              <span className="font-mono text-neutral-800">{order.id.slice(0, 8)}</span>
+              <span className="font-mono text-neutral-200">{order.id.slice(0, 8)}</span>
               {" · "}
               {order.currency}{" "}
               {order.amount.toLocaleString(undefined, {
@@ -203,7 +178,7 @@ export default function ShopConfirmationPage() {
             </p>
 
             {order.chargeAmount != null && order.chargeCurrency && (
-              <p className="text-sm font-light text-neutral-600 mb-10 -mt-6">
+              <p className="text-sm font-light text-neutral-400 mb-10 -mt-6">
                 Charged {order.chargeCurrency}{" "}
                 {order.chargeAmount.toLocaleString(undefined, {
                   minimumFractionDigits: 2,
@@ -213,13 +188,13 @@ export default function ShopConfirmationPage() {
             )}
 
             {order.deliveryMethod && (
-              <div className="mb-10 -mt-2 border border-neutral-200 bg-white px-5 py-5">
-                <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-3">
+              <div className="mb-10 -mt-2 border border-neutral-800 bg-neutral-950 px-5 py-5">
+                <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-400 mb-3">
                   {order.deliveryMethod === "LOCAL_PICKUP"
                     ? "Collection"
                     : "Delivery"}
                 </p>
-                <dl className="space-y-1.5 text-sm font-light text-neutral-700">
+                <dl className="space-y-1.5 text-sm font-light text-neutral-200">
                   {order.customerName && (
                     <div className="flex gap-2">
                       <dt className="text-neutral-500">Name:</dt>
@@ -261,18 +236,18 @@ export default function ShopConfirmationPage() {
                   )}
                 </dl>
                 {isPaid ? (
-                  <p className="mt-4 text-xs font-light leading-relaxed text-neutral-600">
+                  <p className="mt-4 text-xs font-light leading-relaxed text-neutral-400">
                     {order.deliveryMethod === "LOCAL_PICKUP"
                       ? "Paid. We will contact you to arrange collection."
                       : "Paid. We will contact you about delivery — nothing has shipped yet."}
                   </p>
                 ) : (
-                  <p className="mt-4 text-xs font-light leading-relaxed text-neutral-600">
+                  <p className="mt-4 text-xs font-light leading-relaxed text-neutral-400">
                     Complete payment to confirm this order.
                   </p>
                 )}
                 {order.fulfilledAt && (
-                  <p className="mt-2 text-xs font-light leading-relaxed text-neutral-600">
+                  <p className="mt-2 text-xs font-light leading-relaxed text-neutral-400">
                     Fulfilled on{" "}
                     {new Date(order.fulfilledAt).toLocaleDateString()}.
                   </p>
@@ -280,7 +255,7 @@ export default function ShopConfirmationPage() {
               </div>
             )}
 
-            <ul className="space-y-4 border-t border-neutral-200 pt-8 mb-8">
+            <ul className="space-y-4 border-t border-neutral-800 pt-8 mb-8">
               {order.items.map((item) => {
                 let label = item.itemType;
                 if (item.artwork) label = item.artwork.title;
@@ -299,7 +274,7 @@ export default function ShopConfirmationPage() {
                 return (
                   <li
                     key={`${item.itemType}-${label}`}
-                    className="flex justify-between text-sm font-light text-neutral-700"
+                    className="flex justify-between text-sm font-light text-neutral-200"
                   >
                     <span>
                       {label} × {item.quantity}
@@ -314,18 +289,18 @@ export default function ShopConfirmationPage() {
             </ul>
 
             {order.tickets.length > 0 && (
-              <div className="mb-10 border-t border-neutral-200 pt-8">
-                <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-4">
+              <div className="mb-10 border-t border-neutral-800 pt-8">
+                <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-400 mb-4">
                   Your ticket codes
                 </p>
                 <ul className="space-y-2">
                   {order.tickets.map((t) => (
                     <li
                       key={t.id}
-                      className="font-mono text-lg tracking-widest text-neutral-900"
+                      className="font-mono text-lg tracking-widest text-white"
                     >
                       {t.code}
-                      <span className="ml-3 font-sans text-xs text-neutral-500">
+                      <span className="ml-3 font-sans text-xs text-neutral-400">
                         {t.ticketType.name}
                       </span>
                     </li>
@@ -339,29 +314,37 @@ export default function ShopConfirmationPage() {
 
             <div className="flex flex-wrap gap-6">
               {isPaid && (
-                <TextAction href={`/account/orders/${order.id}`}>
+                <TextAction href={`/account/orders/${order.id}`} tone="dark">
                   View order
                 </TextAction>
               )}
               {musicRelease && isPaid && (
-                <TextAction href={`/music/${musicRelease.slug}`}>
+                <TextAction href={`/music/${musicRelease.slug}`} tone="dark">
                   Listen now
                 </TextAction>
               )}
               {hasMusicItem && isPaid && (
-                <TextAction href="/music/library">Your library</TextAction>
+                <TextAction href="/music/library" tone="dark">
+                  Your library
+                </TextAction>
               )}
-              <TextAction href="/account">View account</TextAction>
+              <TextAction href="/account" tone="dark">
+                View account
+              </TextAction>
               {hasMusicItem ? (
-                <BackLink href="/music">Back to Music</BackLink>
+                <BackLink href="/music" tone="dark">
+                  Back to Music
+                </BackLink>
               ) : (
-                <TextAction href="/shop">Continue browsing</TextAction>
+                <TextAction href="/shop" tone="dark">
+                  Continue browsing
+                </TextAction>
               )}
             </div>
           </div>
         ) : null}
       </main>
-      <Footer />
+      <Footer tone="dark" />
     </div>
   );
 }

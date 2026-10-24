@@ -85,8 +85,8 @@ export default function AccountPage() {
 
   if (authStatus === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-        <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
+      <div className="flex min-h-screen items-center justify-center bg-[#000]">
+        <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-400">
           Loading
         </p>
       </div>
@@ -96,22 +96,22 @@ export default function AccountPage() {
   if (!session?.user) {
     return (
       <>
-        <Navbar />
-        <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-50 p-8 text-center">
-          <h1 className="font-display text-3xl font-light text-neutral-900 mb-4">
+        <Navbar variant="transparent" />
+        <div className="flex min-h-screen flex-col items-center justify-center bg-[#000] p-8 text-center text-white">
+          <h1 className="font-display text-3xl font-light text-white mb-4">
             Account
           </h1>
-          <p className="text-sm font-light text-neutral-500 mb-8">
+          <p className="text-sm font-light text-neutral-400 mb-8">
             Sign in to view your wishlist, follow status, and purchases.
           </p>
           <Link
             href={`/login?callbackUrl=${encodeURIComponent("/account")}`}
-            className="border border-neutral-900 px-8 py-4 font-display text-xs uppercase tracking-[0.28em] text-neutral-900 hover:bg-neutral-900 hover:text-white"
+            className="border border-white px-8 py-4 font-display text-xs uppercase tracking-[0.28em] text-white hover:bg-white hover:text-neutral-950"
           >
             Sign in
           </Link>
         </div>
-        <Footer />
+        <Footer tone="dark" />
       </>
     );
   }
@@ -156,33 +156,33 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-[#000] text-white">
       <Head>
         <title>Account — Njenga Ngugi</title>
       </Head>
-      <Navbar />
+      <Navbar variant="transparent" />
 
-      <main className="container mx-auto px-4 py-12 md:py-20 max-w-3xl">
-        <h1 className="font-display text-4xl font-light text-neutral-900 tracking-tight mb-2">
+      <main className="container mx-auto max-w-3xl px-4 pb-16 pt-24 md:pb-20 md:pt-28">
+        <h1 className="font-display text-4xl font-light tracking-tight text-white mb-2">
           Account
         </h1>
-        <p className="text-sm font-light text-neutral-500 mb-14">
+        <p className="text-sm font-light text-neutral-400 mb-14">
           {session.user.username || session.user.email}
         </p>
 
         {/* Follow */}
-        <section className="mb-16 border-b border-neutral-200 pb-12">
+        <section className="mb-16 border-b border-neutral-800 pb-12">
           <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-4">
             Follow the artist
           </p>
-          <p className="text-sm font-light text-neutral-600 mb-6 max-w-md">
+          <p className="text-sm font-light text-neutral-400 mb-6 max-w-md">
             Get updates on new work, exhibitions, and studio news.
           </p>
           <button
             type="button"
             onClick={handleFollowToggle}
             disabled={followBusy}
-            className="border border-neutral-900 px-6 py-3 font-display text-xs uppercase tracking-[0.24em] text-neutral-900 hover:bg-neutral-900 hover:text-white disabled:opacity-50"
+            className="border border-white px-6 py-3 font-display text-xs uppercase tracking-[0.24em] text-white hover:bg-white hover:text-neutral-950 disabled:opacity-50"
           >
             {followBusy
               ? "…"
@@ -193,27 +193,24 @@ export default function AccountPage() {
         </section>
 
         {/* Wishlist */}
-        <section className="mb-16 border-b border-neutral-200 pb-12">
+        <section className="mb-16 border-b border-neutral-800 pb-12">
           <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-6">
             Wishlist
           </p>
           {!wishlist || wishlist.length === 0 ? (
-            <p className="text-sm font-light text-neutral-500">
+            <p className="text-sm font-light text-neutral-400">
               No saved artworks yet.{" "}
-              <Link href="/portfolio" className="underline-offset-4 hover:underline">
+              <Link href="/portfolio" className="underline underline-offset-4 hover:text-white">
                 Browse the portfolio
               </Link>
             </p>
           ) : (
             <ul className="space-y-6">
               {wishlist.map((item) => (
-                <li
-                  key={item.id}
-                  className="flex gap-4 items-start"
-                >
+                <li key={item.id} className="flex gap-4 items-start">
                   <Link
                     href={`/artworks/${item.artwork.id}`}
-                    className="relative w-20 h-20 bg-neutral-100 shrink-0 overflow-hidden"
+                    className="relative w-20 h-20 bg-neutral-900 shrink-0 overflow-hidden"
                   >
                     <OptimizedImage
                       src={item.artwork.imageUrl}
@@ -227,14 +224,14 @@ export default function AccountPage() {
                   <div className="flex-1 min-w-0">
                     <Link
                       href={`/artworks/${item.artwork.id}`}
-                      className="font-display text-lg font-light text-neutral-900 hover:text-neutral-600"
+                      className="font-display text-lg font-light text-white hover:text-neutral-300"
                     >
                       {item.artwork.title}
                     </Link>
                     <button
                       type="button"
                       onClick={() => handleRemoveWishlist(item.artworkId)}
-                      className="mt-2 block py-1 font-display text-[0.7rem] uppercase tracking-[0.2em] text-neutral-500 hover:text-neutral-800"
+                      className="mt-2 block py-1 font-display text-[0.7rem] uppercase tracking-[0.2em] text-neutral-400 hover:text-white"
                     >
                       Remove
                     </button>
@@ -246,27 +243,24 @@ export default function AccountPage() {
         </section>
 
         {/* Purchases */}
-        <section className="mb-16 border-b border-neutral-200 pb-12">
+        <section className="mb-16 border-b border-neutral-800 pb-12">
           <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-6">
             Purchase history
           </p>
           {!purchases || purchases.length === 0 ? (
-            <p className="text-sm font-light text-neutral-500">
+            <p className="text-sm font-light text-neutral-400">
               No purchases yet.
             </p>
           ) : (
             <ul className="space-y-4">
               {purchases.map((tx) => (
-                <li
-                  key={tx.id}
-                  className="border-b border-neutral-100 pb-3"
-                >
+                <li key={tx.id} className="border-b border-neutral-900 pb-3">
                   <Link
                     href={`/account/orders/${tx.id}`}
                     className="flex justify-between gap-4 group"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-light text-neutral-900 group-hover:underline underline-offset-4">
+                      <p className="truncate text-sm font-light text-white group-hover:underline underline-offset-4">
                         {tx.items.length > 0
                           ? tx.items
                               .map(
@@ -278,13 +272,13 @@ export default function AccountPage() {
                               .join("; ")
                           : tx.itemTypes.join(", ")}
                       </p>
-                      <p className="text-xs text-neutral-500 mt-1">
+                      <p className="text-xs text-neutral-400 mt-1">
                         {new Date(tx.timestamp).toLocaleDateString()} ·{" "}
                         {tx.status}
                         {tx.fulfilledAt ? " · fulfilled" : ""}
                       </p>
                     </div>
-                    <p className="text-sm font-light text-neutral-700 whitespace-nowrap">
+                    <p className="text-sm font-light text-neutral-200 whitespace-nowrap">
                       {tx.currency} {tx.amount.toLocaleString()}
                     </p>
                   </Link>
@@ -295,14 +289,14 @@ export default function AccountPage() {
         </section>
 
         {/* Tickets */}
-        <section className="mb-16 border-b border-neutral-200 pb-12">
+        <section className="mb-16 border-b border-neutral-800 pb-12">
           <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-6">
             Tickets
           </p>
           {!tickets || tickets.length === 0 ? (
-            <p className="text-sm font-light text-neutral-500">
+            <p className="text-sm font-light text-neutral-400">
               No tickets yet.{" "}
-              <Link href="/events" className="underline-offset-4 hover:underline">
+              <Link href="/events" className="underline underline-offset-4 hover:text-white">
                 Browse events
               </Link>
             </p>
@@ -316,11 +310,11 @@ export default function AccountPage() {
                   >
                     <Link
                       href={`/events/${t.event.slug}`}
-                      className="text-neutral-900 hover:underline underline-offset-4 truncate"
+                      className="text-white hover:underline underline-offset-4 truncate"
                     >
                       {t.event.title}
                     </Link>
-                    <span className="font-mono tracking-widest text-neutral-700 whitespace-nowrap">
+                    <span className="font-mono tracking-widest text-neutral-300 whitespace-nowrap">
                       {t.code}
                     </span>
                   </li>
@@ -328,7 +322,7 @@ export default function AccountPage() {
               </ul>
               <Link
                 href="/account/tickets"
-                className="font-display text-xs uppercase tracking-[0.24em] text-neutral-900 underline-offset-4 hover:underline"
+                className="font-display text-xs uppercase tracking-[0.24em] text-white underline-offset-4 hover:underline"
               >
                 Open ticket wallet →
               </Link>
@@ -339,12 +333,12 @@ export default function AccountPage() {
         {/* Music & membership */}
         {(!!library?.collection.length ||
           !!library?.studioMembership.active) && (
-          <section className="mb-16 border-b border-neutral-200 pb-12">
+          <section className="mb-16 border-b border-neutral-800 pb-12">
             <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-6">
               Music &amp; membership
             </p>
             {library.studioMembership.active && (
-              <p className="text-sm font-light text-neutral-700 mb-4">
+              <p className="text-sm font-light text-neutral-200 mb-4">
                 Studio member
                 {library.studioMembership.expiresAt
                   ? ` · until ${new Date(
@@ -360,7 +354,7 @@ export default function AccountPage() {
                   <li key={r.id} className="text-sm font-light">
                     <Link
                       href={`/music/${r.slug}`}
-                      className="text-neutral-900 hover:underline underline-offset-4"
+                      className="text-white hover:underline underline-offset-4"
                     >
                       {r.title}
                     </Link>
@@ -370,14 +364,14 @@ export default function AccountPage() {
             )}
             <Link
               href="/music/library"
-              className="font-display text-xs uppercase tracking-[0.24em] text-neutral-900 underline-offset-4 hover:underline"
+              className="font-display text-xs uppercase tracking-[0.24em] text-white underline-offset-4 hover:underline"
             >
               Open your library →
             </Link>
           </section>
         )}
       </main>
-      <Footer />
+      <Footer tone="dark" />
     </div>
   );
 }

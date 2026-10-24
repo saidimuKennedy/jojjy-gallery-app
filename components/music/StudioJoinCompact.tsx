@@ -116,7 +116,7 @@ export default function StudioJoinCompact({
       <p className={`text-sm text-neutral-600 ${className}`}>
         ✓ Studio Member — you&apos;re listening before public release.{" "}
         <Link href="/music/library" className="underline">
-          Your collection
+          Your library
         </Link>
       </p>
     );

@@ -85,8 +85,8 @@ export default function AccountOrderPage() {
 
   if (authStatus === "loading" || isLoading || !router.isReady) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-        <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
+      <div className="flex min-h-screen items-center justify-center bg-[#000]">
+        <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-400">
           Loading
         </p>
       </div>
@@ -99,22 +99,22 @@ export default function AccountOrderPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-[#000] text-white">
       <Head>
         <title>Order — Account</title>
       </Head>
-      <Navbar />
-      <main className="container mx-auto px-4 py-12 md:py-20 max-w-2xl">
-        <BackLink href="/account" className="mb-10">
+      <Navbar variant="transparent" />
+      <main className="container mx-auto max-w-2xl px-4 pb-16 pt-24 md:pb-20 md:pt-28">
+        <BackLink href="/account" tone="dark" className="mb-10">
           Back to Account
         </BackLink>
 
         {error || !order ? (
           <div>
-            <h1 className="font-display text-3xl font-light text-neutral-900 mb-4">
+            <h1 className="font-display text-3xl font-light text-white mb-4">
               Order not found
             </h1>
-            <p className="text-sm font-light text-neutral-600">
+            <p className="text-sm font-light text-neutral-400">
               {error?.message ||
                 "This order does not exist or belongs to another account."}
             </p>
@@ -125,7 +125,7 @@ export default function AccountOrderPage() {
               Order {order.id.slice(0, 8)} ·{" "}
               {new Date(order.createdAt).toLocaleDateString()}
             </p>
-            <h1 className="font-display text-3xl md:text-4xl font-light text-neutral-900 mb-6">
+            <h1 className="font-display text-3xl md:text-4xl font-light text-white mb-6">
               {order.status === "PAID"
                 ? "Payment confirmed"
                 : order.status === "PENDING"
@@ -133,19 +133,19 @@ export default function AccountOrderPage() {
                   : `Order ${order.status.toLowerCase()}`}
             </h1>
 
-            <ul className="space-y-4 border-t border-neutral-200 pt-8 mb-8">
+            <ul className="space-y-4 border-t border-neutral-800 pt-8 mb-8">
               {order.items.map((item) => {
                 const href = itemHref(item);
                 return (
                   <li
                     key={item.id}
-                    className="flex justify-between gap-4 text-sm font-light text-neutral-700"
+                    className="flex justify-between gap-4 text-sm font-light text-neutral-200"
                   >
                     <span>
                       {href ? (
                         <Link
                           href={href}
-                          className="underline-offset-4 hover:underline text-neutral-900"
+                          className="text-white underline-offset-4 hover:underline"
                         >
                           {itemLabel(item)}
                         </Link>
@@ -163,10 +163,10 @@ export default function AccountOrderPage() {
               })}
             </ul>
 
-            <dl className="border-t border-neutral-200 pt-6 mb-8 space-y-2 text-sm font-light">
+            <dl className="border-t border-neutral-800 pt-6 mb-8 space-y-2 text-sm font-light">
               <div className="flex justify-between">
                 <dt className="text-neutral-500">Total ({order.currency})</dt>
-                <dd className="font-display text-xl font-light text-neutral-900">
+                <dd className="font-display text-xl font-light text-white">
                   {order.currency}{" "}
                   {order.amount.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
@@ -212,7 +212,7 @@ export default function AccountOrderPage() {
             </dl>
 
             {order.tickets.length > 0 && (
-              <div className="mb-10 border-t border-neutral-200 pt-8">
+              <div className="mb-10 border-t border-neutral-800 pt-8">
                 <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-4">
                   Your tickets
                 </p>
@@ -220,17 +220,17 @@ export default function AccountOrderPage() {
                   {order.tickets.map((t) => (
                     <li
                       key={t.id}
-                      className="font-mono text-lg tracking-widest text-neutral-900"
+                      className="font-mono text-lg tracking-widest text-white"
                     >
                       {t.code}
-                      <span className="ml-3 font-sans text-xs text-neutral-500">
+                      <span className="ml-3 font-sans text-xs text-neutral-400">
                         {t.ticketType.name}
                       </span>
                     </li>
                   ))}
                 </ul>
                 <p className="mt-4">
-                  <TextAction href="/account/tickets">
+                  <TextAction href="/account/tickets" tone="dark">
                     Open ticket wallet
                   </TextAction>
                 </p>
@@ -241,7 +241,7 @@ export default function AccountOrderPage() {
               (i) => i.itemType === "RELEASE" || i.itemType === "MEMBERSHIP_PASS"
             ) && (
               <p className="mb-10">
-                <TextAction href="/music/library">
+                <TextAction href="/music/library" tone="dark">
                   Open your music library
                 </TextAction>
               </p>
@@ -249,7 +249,7 @@ export default function AccountOrderPage() {
           </div>
         )}
       </main>
-      <Footer />
+      <Footer tone="dark" />
     </div>
   );
 }
