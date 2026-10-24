@@ -1,7 +1,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 
@@ -22,6 +22,26 @@ export default function Navbar({ variant = "default" }: NavbarProps = {}) {
   const isLoadingAuth = status === "loading";
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isAccountMenuOpen) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (!accountMenuRef.current?.contains(e.target as Node)) {
+        setIsAccountMenuOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsAccountMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [isAccountMenuOpen]);
 
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -47,6 +67,7 @@ export default function Navbar({ variant = "default" }: NavbarProps = {}) {
   useEffect(() => {
     const handleRouteChange = () => {
       setIsMobileMenuOpen(false);
+      setIsAccountMenuOpen(false);
     };
     router.events.on("routeChangeComplete", handleRouteChange);
     router.events.on("routeChangeError", handleRouteChange);
@@ -168,53 +189,85 @@ export default function Navbar({ variant = "default" }: NavbarProps = {}) {
             <div className="hidden md:flex md:items-center md:space-x-4">
               {!isLoadingAuth &&
                 (user ? (
-                  <>
-                    <Link
-                      href="/music/library"
-                      className={`text-sm tracking-wide transition-colors duration-200 ${
-                        isActive("/music/library")
-                          ? isTransparent
-                            ? "text-white"
-                            : "text-gray-900"
-                          : isTransparent
-                            ? "text-white/70 hover:text-white"
-                            : "text-gray-500 hover:text-gray-900"
-                      }`}
-                    >
-                      Your Library
-                    </Link>
-                    <Link
-                      href="/account"
-                      className={`text-sm tracking-wide transition-colors duration-200 ${
-                        isActive("/account")
-                          ? isTransparent
-                            ? "text-white"
-                            : "text-gray-900"
-                          : isTransparent
-                            ? "text-white/70 hover:text-white"
-                            : "text-gray-500 hover:text-gray-900"
-                      }`}
-                    >
-                      Account
-                    </Link>
-                    <span
-                      className={`text-sm font-medium ${
-                        isTransparent ? "text-white/80" : "text-gray-700"
-                      }`}
-                    >
-                      Welcome, {user.username || user.email}
-                    </span>
+                  <div ref={accountMenuRef} className="relative">
                     <button
-                      onClick={handleLogout}
-                      className={`text-sm font-medium transition-colors duration-200 ${
+                      type="button"
+                      onClick={() => setIsAccountMenuOpen((open) => !open)}
+                      aria-haspopup="menu"
+                      aria-expanded={isAccountMenuOpen}
+                      className={`flex items-center gap-3 rounded-full py-1 pl-1 pr-3 text-sm transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 ${
                         isTransparent
-                          ? "text-white/70 hover:text-white"
-                          : "text-gray-500 hover:text-gray-900"
+                          ? "text-white/80 hover:text-white"
+                          : "text-gray-700 hover:text-gray-900"
                       }`}
                     >
-                      Logout
+                      <span
+                        className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-medium ${
+                          isTransparent
+                            ? "bg-white text-neutral-900"
+                            : "bg-neutral-900 text-white"
+                        }`}
+                        aria-hidden="true"
+                      >
+                        {(user.username || user.email || "?")
+                          .charAt(0)
+                          .toUpperCase()}
+                      </span>
+                      Account
                     </button>
-                  </>
+                    {isAccountMenuOpen && (
+                      <div
+                        role="menu"
+                        className={`absolute right-0 top-full z-50 mt-2 w-60 border py-2 shadow-lg ${
+                          isTransparent
+                            ? "border-neutral-800 bg-black text-white"
+                            : "border-gray-100 bg-white text-gray-700"
+                        }`}
+                      >
+                        <p
+                          className={`truncate px-4 py-2 text-xs ${
+                            isTransparent ? "text-white/60" : "text-gray-500"
+                          }`}
+                        >
+                          {user.username || user.email}
+                        </p>
+                        <Link
+                          href="/music/library"
+                          role="menuitem"
+                          className={`block px-4 py-2 text-sm ${
+                            isTransparent
+                              ? "hover:bg-white/10"
+                              : "hover:bg-gray-50 hover:text-gray-900"
+                          }`}
+                        >
+                          Your Library
+                        </Link>
+                        <Link
+                          href="/account"
+                          role="menuitem"
+                          className={`block px-4 py-2 text-sm ${
+                            isTransparent
+                              ? "hover:bg-white/10"
+                              : "hover:bg-gray-50 hover:text-gray-900"
+                          }`}
+                        >
+                          Account
+                        </Link>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={handleLogout}
+                          className={`block w-full px-4 py-2 text-left text-sm ${
+                            isTransparent
+                              ? "hover:bg-white/10"
+                              : "hover:bg-gray-50 hover:text-gray-900"
+                          }`}
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <Link
                     href="/login"
