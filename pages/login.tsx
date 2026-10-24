@@ -77,9 +77,9 @@ export default function LoginPage() {
         <div className="hidden lg:flex lg:w-1/2 bg-black flex-col justify-between px-16 py-12">
           <Link
             href="/"
-            className="text-sm tracking-wide text-white/60 transition-colors hover:text-white"
+            className="group inline-flex w-fit items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-white/60 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
           >
-            ← Njenga Ngugi
+            Back to site
           </Link>
           <div className="text-white text-center">
             <Brush className="w-24 h-24 mx-auto mb-6" />
@@ -96,9 +96,9 @@ export default function LoginPage() {
             <div className="mb-12">
               <Link
                 href="/"
-                className="mb-8 inline-flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-gray-900 lg:hidden"
+                className="group mb-8 inline-flex w-fit items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-gray-500 transition-colors hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gray-900 lg:hidden"
               >
-                ← Back to site
+                Back to site
               </Link>
               <h1 className="text-4xl font-bold text-black mb-2">Sign In</h1>
               <p className="text-gray-600 text-lg">

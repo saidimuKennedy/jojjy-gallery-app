@@ -54,7 +54,7 @@ export default function RegisterPage() {
       <Head>
         <title>Register - Njenga Ngugi</title>
       </Head>
-      <div className="min-h-screen bg-white flex relative">
+      <div className="relative grid min-h-screen w-full grid-cols-1 overflow-x-hidden bg-white lg:grid-cols-2">
         <Link
           href="/"
           className="absolute top-0 right-0 z-20 flex h-12 w-12 items-center justify-center border-l border-b border-white bg-white text-black transition-colors hover:bg-black hover:text-white hover:border-white lg:h-14 lg:w-14"
@@ -63,7 +63,7 @@ export default function RegisterPage() {
           <X className="h-5 w-5 stroke-[1.5]" />
         </Link>
 
-        <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 lg:px-16 pt-16">
+        <div className="flex min-w-0 w-full flex-col justify-center px-6 pt-16 sm:px-8 lg:px-16">
           <div className="max-w-md mx-auto w-full">
             <div className="mb-12">
               <Link
@@ -183,7 +183,7 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <div className="hidden lg:flex lg:w-1/2 bg-black flex-col justify-between px-16 py-12">
+        <div className="hidden min-w-0 items-center justify-center bg-black px-8 py-12 lg:flex lg:px-16">
       
           <div className="text-white text-center">
             <Palette className="w-24 h-24 mx-auto mb-6" />
@@ -193,7 +193,6 @@ export default function RegisterPage() {
               creators.
             </p>
           </div>
-          <div aria-hidden className="h-5" />
         </div>
       </div>
     </>
