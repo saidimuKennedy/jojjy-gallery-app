@@ -57,7 +57,7 @@ export default function NewsletterModal({
         </p>
         <h2
           id="audience-modal-title"
-          className="mt-4 font-display text-3xl font-light text-neutral-900"
+          className="mt-4 font-display text-3xl font-normal text-neutral-900"
         >
           Stay Close to the Work
         </h2>

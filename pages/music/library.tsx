@@ -85,7 +85,7 @@ export default function MusicLibraryPage() {
         <BackLink href="/music" tone="dark">
           Back to Music
         </BackLink>
-        <h1 className="mt-8 font-display text-4xl font-light tracking-tight md:text-5xl">
+        <h1 className="mt-8 font-display text-4xl font-medium tracking-tight md:text-5xl">
           Your Library
         </h1>
         <p className="mt-2 text-neutral-400">Your music, in one place.</p>

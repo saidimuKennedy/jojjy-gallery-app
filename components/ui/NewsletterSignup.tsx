@@ -59,7 +59,7 @@ export default function NewsletterSignup({
     return (
       <div className={className} role="status">
         <p
-          className={`font-display text-3xl font-light tracking-tight md:text-4xl ${
+          className={`font-display text-3xl font-normal tracking-tight md:text-4xl ${
             isDark ? "text-white" : "text-neutral-900"
           }`}
         >

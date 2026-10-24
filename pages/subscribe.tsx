@@ -26,7 +26,7 @@ export default function SubscribePage() {
             <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500">
               Updates
             </p>
-            <h1 className="mt-5 font-display text-4xl font-light tracking-tight text-neutral-900 md:text-5xl">
+            <h1 className="mt-5 font-display text-4xl font-medium tracking-tight text-neutral-900 md:text-5xl">
               Stay Close to the Work
             </h1>
             <p className="mt-6 text-sm font-light leading-relaxed text-neutral-600 md:text-base">

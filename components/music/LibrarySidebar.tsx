@@ -96,7 +96,7 @@ export default function LibrarySidebar({
   return (
     <div className={`flex h-full flex-col ${className}`}>
       <div className="mb-6 flex items-baseline justify-between gap-3">
-        <h2 className={`font-display text-2xl font-light tracking-tight ${text}`}>
+        <h2 className={`font-display text-2xl font-normal tracking-tight ${text}`}>
           Your Library
         </h2>
       </div>

@@ -87,7 +87,7 @@ export default function LoginPage() {
         <div className="hidden lg:flex lg:w-1/2 bg-black flex-col justify-between px-16 py-12">
           <Link
             href="/"
-            className="group inline-flex w-fit items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-white/60 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+            className="group inline-flex w-fit items-center gap-2 text-xs uppercase tracking-[0.18em] text-white/60 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
           >
             Back to site
           </Link>
@@ -106,7 +106,7 @@ export default function LoginPage() {
             <div className="mb-12">
               <Link
                 href="/"
-                className="group mb-8 inline-flex w-fit items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-gray-500 transition-colors hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gray-900 lg:hidden"
+                className="group mb-8 inline-flex w-fit items-center gap-2 text-xs uppercase tracking-[0.18em] text-gray-500 transition-colors hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gray-900 lg:hidden"
               >
                 Back to site
               </Link>

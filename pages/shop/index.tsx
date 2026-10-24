@@ -93,7 +93,7 @@ export default function ShopIndexPage({
         <motion.h1
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="font-display text-4xl md:text-5xl font-light text-neutral-900 text-center mb-4 tracking-tight"
+          className="font-display text-4xl md:text-5xl font-medium text-neutral-900 text-center mb-4 tracking-tight"
         >
           Shop
         </motion.h1>
@@ -135,7 +135,7 @@ export default function ShopIndexPage({
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
-                <h2 className="font-display text-lg font-light text-neutral-900">
+                <h2 className="font-display text-lg font-normal text-neutral-900">
                   {artwork.title}
                 </h2>
                 {artwork.medium && (
@@ -154,7 +154,7 @@ export default function ShopIndexPage({
         {availableProducts.length > 0 && (
           <div className="max-w-5xl mx-auto mt-20 md:mt-28">
             <div className="flex items-baseline justify-between mb-10">
-              <h2 className="font-display text-2xl md:text-3xl font-light text-neutral-900 tracking-tight">
+              <h2 className="font-display text-2xl md:text-3xl font-normal text-neutral-900 tracking-tight">
                 Merch
               </h2>
               <span className="text-xs font-light uppercase tracking-[0.2em] text-neutral-500">
@@ -183,13 +183,13 @@ export default function ShopIndexPage({
                         <p className="font-display text-[0.7rem] uppercase tracking-[0.2em] text-neutral-500">
                           {product.category || "Merch"}
                         </p>
-                        <p className="font-display text-lg font-light tracking-tight text-neutral-700">
+                        <p className="font-display text-lg font-normal tracking-tight text-neutral-700">
                           {product.name}
                         </p>
                       </div>
                     )}
                   </div>
-                  <h2 className="font-display text-lg font-light text-neutral-900">
+                  <h2 className="font-display text-lg font-normal text-neutral-900">
                     {product.name}
                   </h2>
                   {product.category && (

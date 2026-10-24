@@ -300,7 +300,7 @@ const SingleArchiveEntryPage = ({ initialEntry }: ArchiveDetailPageProps) => {
             {year ? ` · ${year}` : ""}
             {entry.duration ? ` · ${entry.duration}` : ""}
           </p>
-          <h1 className="mt-6 font-display text-4xl font-light leading-[1.05] tracking-tight text-[#1a1a1a] md:text-6xl lg:text-7xl">
+          <h1 className="mt-6 font-display text-4xl font-medium leading-[1.05] tracking-tight text-[#1a1a1a] md:text-6xl lg:text-7xl">
             {entry.title}
           </h1>
           {entry.shortDesc && (

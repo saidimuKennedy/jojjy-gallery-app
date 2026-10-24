@@ -301,7 +301,7 @@ export default function EventDetailPage() {
       <>
         <Navbar />
         <div className="min-h-screen flex flex-col items-center justify-center bg-white p-8 text-center">
-          <h1 className="font-display text-3xl font-light text-neutral-900 mb-4">
+          <h1 className="font-display text-3xl font-normal text-neutral-900 mb-4">
             Event not found
           </h1>
           <BackLink href="/events" className="mt-2">
@@ -354,7 +354,7 @@ export default function EventDetailPage() {
                   : ""}
             </p>
 
-            <h1 className="font-display text-[2.75rem] sm:text-6xl md:text-7xl lg:text-[4.5rem] font-light leading-[1.05] tracking-tight text-neutral-900 max-w-4xl">
+            <h1 className="font-display text-[2.75rem] sm:text-6xl md:text-7xl lg:text-[4.5rem] font-medium leading-[1.05] tracking-tight text-neutral-900 max-w-4xl">
               {event.title}
             </h1>
           </motion.div>
@@ -406,7 +406,7 @@ export default function EventDetailPage() {
             <dl className="space-y-10">
               <div>
                 <dt className="sr-only">Date</dt>
-                <dd className="font-display text-[1.35rem] md:text-[1.5rem] font-light tracking-tight text-neutral-900">
+                <dd className="font-display text-[1.35rem] md:text-[1.5rem] font-normal tracking-tight text-neutral-900">
                   {formatDay(event.startsAt)}
                 </dd>
               </div>
@@ -541,7 +541,7 @@ export default function EventDetailPage() {
                         key={tt.id}
                         className="border-t border-neutral-200 py-10 first:border-t-0 first:pt-0"
                       >
-                        <h3 className="font-display text-2xl md:text-[1.75rem] font-light tracking-tight text-neutral-900">
+                        <h3 className="font-display text-2xl md:text-[1.75rem] font-normal tracking-tight text-neutral-900">
                           {tt.name}
                         </h3>
                         {tt.description && (
@@ -559,7 +559,7 @@ export default function EventDetailPage() {
                             </li>
                           ))}
                         </ul>
-                        <p className="mt-6 font-display text-xl font-light text-neutral-900">
+                        <p className="mt-6 font-display text-xl font-normal text-neutral-900">
                           {currency} {tt.price.toLocaleString()}
                         </p>
                         {saleLabel && (
@@ -616,7 +616,7 @@ export default function EventDetailPage() {
                                 +
                               </button>
                             </div>
-                            <span className="font-display text-base font-light text-neutral-900">
+                            <span className="font-display text-base font-normal text-neutral-900">
                               {currency}{" "}
                               {(tt.price * (ticketQty[tt.id] ?? 1)).toLocaleString()}
                             </span>
@@ -712,7 +712,7 @@ export default function EventDetailPage() {
         {!isCompleted && (
           <section className="border-t border-neutral-100 bg-neutral-950 px-5 py-24 md:px-10 md:py-32 lg:px-16 text-neutral-50">
             <div className="mx-auto max-w-2xl">
-              <h2 className="font-display text-3xl md:text-4xl font-light tracking-tight mb-14">
+              <h2 className="font-display text-3xl md:text-4xl font-normal tracking-tight mb-14">
                 What to expect
               </h2>
               <ul className="space-y-7">
@@ -725,7 +725,7 @@ export default function EventDetailPage() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-16 font-display text-xl md:text-2xl font-light leading-snug text-neutral-300 max-w-md">
+              <p className="mt-16 font-display text-xl md:text-2xl font-normal leading-snug text-neutral-300 max-w-md">
                 An evening in the room with the work — and the people who care
                 about it.
               </p>

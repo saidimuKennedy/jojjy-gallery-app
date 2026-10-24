@@ -20,7 +20,7 @@ export default function Footer({ tone = "light" }: { tone?: "light" | "dark" } =
         <div className="mx-auto flex max-w-5xl flex-col items-start gap-8 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2">
             <p
-              className={`font-display text-2xl font-light tracking-tight md:text-3xl ${
+              className={`font-display text-2xl font-normal tracking-tight md:text-3xl ${
                 isDark ? "text-white" : "text-neutral-900"
               }`}
             >

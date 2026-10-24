@@ -98,7 +98,7 @@ export default function AccountPage() {
       <>
         <Navbar variant="transparent" />
         <div className="flex min-h-screen flex-col items-center justify-center bg-[#000] p-8 text-center text-white">
-          <h1 className="font-display text-3xl font-light text-white mb-4">
+          <h1 className="font-display text-3xl font-normal text-white mb-4">
             Account
           </h1>
           <p className="text-sm font-light text-neutral-400 mb-8">
@@ -163,7 +163,7 @@ export default function AccountPage() {
       <Navbar variant="transparent" />
 
       <main className="container mx-auto max-w-3xl px-4 pb-16 pt-24 md:pb-20 md:pt-28">
-        <h1 className="font-display text-4xl font-light tracking-tight text-white mb-2">
+        <h1 className="font-display text-4xl font-normal tracking-tight text-white mb-2">
           Account
         </h1>
         <p className="text-sm font-light text-neutral-400 mb-14">
@@ -224,7 +224,7 @@ export default function AccountPage() {
                   <div className="flex-1 min-w-0">
                     <Link
                       href={`/artworks/${item.artwork.id}`}
-                      className="font-display text-lg font-light text-white hover:text-neutral-300"
+                      className="font-display text-lg font-normal text-white hover:text-neutral-300"
                     >
                       {item.artwork.title}
                     </Link>

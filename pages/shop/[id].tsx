@@ -147,7 +147,7 @@ export default function ShopArtworkPage() {
       <>
         <Navbar />
         <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-50 p-8 text-center">
-          <h1 className="font-display text-3xl font-light text-neutral-900 mb-4">
+          <h1 className="font-display text-3xl font-normal text-neutral-900 mb-4">
             Artwork not found
           </h1>
           <BackLink href="/shop" className="mt-2">
@@ -188,7 +188,7 @@ export default function ShopArtworkPage() {
           />
 
           <div>
-            <h1 className="font-display text-3xl md:text-4xl font-light text-neutral-900 tracking-tight mb-4">
+            <h1 className="font-display text-3xl md:text-4xl font-normal text-neutral-900 tracking-tight mb-4">
               {artwork.title}
             </h1>
             <p className="text-xs font-light uppercase tracking-[0.2em] text-neutral-500 mb-4">

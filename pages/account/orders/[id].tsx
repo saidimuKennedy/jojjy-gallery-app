@@ -111,7 +111,7 @@ export default function AccountOrderPage() {
 
         {error || !order ? (
           <div>
-            <h1 className="font-display text-3xl font-light text-white mb-4">
+            <h1 className="font-display text-3xl font-normal text-white mb-4">
               Order not found
             </h1>
             <p className="text-sm font-light text-neutral-400">
@@ -125,7 +125,7 @@ export default function AccountOrderPage() {
               Order {order.id.slice(0, 8)} ·{" "}
               {new Date(order.createdAt).toLocaleDateString()}
             </p>
-            <h1 className="font-display text-3xl md:text-4xl font-light text-white mb-6">
+            <h1 className="font-display text-3xl md:text-4xl font-normal text-white mb-6">
               {order.status === "PAID"
                 ? "Payment confirmed"
                 : order.status === "PENDING"
@@ -166,7 +166,7 @@ export default function AccountOrderPage() {
             <dl className="border-t border-neutral-800 pt-6 mb-8 space-y-2 text-sm font-light">
               <div className="flex justify-between">
                 <dt className="text-neutral-500">Total ({order.currency})</dt>
-                <dd className="font-display text-xl font-light text-white">
+                <dd className="font-display text-xl font-normal text-white">
                   {order.currency}{" "}
                   {order.amount.toLocaleString(undefined, {
                     minimumFractionDigits: 2,

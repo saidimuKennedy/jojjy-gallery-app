@@ -104,7 +104,7 @@ export default function TakeSomething({
                   preset="card"
                   sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 18vw"
                 />
-                <h3 className="jenga-cream mt-4 font-display text-lg font-light">
+                <h3 className="jenga-cream mt-4 font-display text-lg font-normal">
                   {category.label}
                 </h3>
                 <p className="jenga-body-text mt-2 text-sm leading-relaxed">

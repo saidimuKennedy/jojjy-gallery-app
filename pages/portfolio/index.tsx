@@ -101,7 +101,7 @@ function MuseumLabel({
         align === "center" ? "text-center" : "text-left"
       }`}
     >
-      <p className="font-display text-lg font-light text-neutral-900 md:text-xl">
+      <p className="font-display text-lg font-normal text-neutral-900 md:text-xl">
         {artwork.title}
       </p>
       {artwork.year != null && (
@@ -225,7 +225,7 @@ export default function PortfolioPage() {
   if (!heroArtwork || seriesWithArtworks.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white p-8">
-        <h1 className="font-display text-2xl font-light text-neutral-900 mb-4">
+        <h1 className="font-display text-2xl font-normal text-neutral-900 mb-4">
           No Art on View
         </h1>
         <Link
@@ -283,7 +283,7 @@ export default function PortfolioPage() {
         >
           <motion.h1
             variants={heroItem}
-            className="font-display text-6xl font-light leading-[0.92] tracking-tight text-white md:text-8xl lg:text-9xl"
+            className="font-display text-6xl font-medium leading-[0.92] tracking-tight text-white md:text-8xl lg:text-9xl"
           >
             Njenga
             <br />
@@ -292,7 +292,7 @@ export default function PortfolioPage() {
 
           <motion.p
             variants={heroItem}
-            className="mt-10 max-w-md font-display text-base font-light italic leading-relaxed text-white/80 md:mt-12 md:text-lg"
+            className="mt-10 max-w-md font-display text-base font-normal italic leading-relaxed text-white/80 md:mt-12 md:text-lg"
           >
             Dreams are not escapes from reality—they are another way reality
             speaks.
@@ -321,7 +321,7 @@ export default function PortfolioPage() {
         <div className="mx-auto max-w-3xl text-center">
           <motion.blockquote
             variants={reveal}
-            className="font-display text-3xl font-light leading-[1.35] tracking-tight text-neutral-900 md:text-4xl lg:text-[2.75rem]"
+            className="font-display text-3xl font-normal leading-[1.35] tracking-tight text-neutral-900 md:text-4xl lg:text-[2.75rem]"
           >
             “Dark clouds bring waters—a space where hidden truths and unspoken
             fears take shape.”
@@ -364,7 +364,7 @@ export default function PortfolioPage() {
                 className="flex min-h-[70vh] items-center justify-center bg-neutral-950 px-8 py-32 md:px-16"
               >
                 <div className="max-w-3xl text-center">
-                  <p className="font-display text-3xl font-light leading-[1.4] tracking-tight text-white md:text-5xl lg:text-6xl">
+                  <p className="font-display text-3xl font-medium leading-[1.4] tracking-tight text-white md:text-5xl lg:text-6xl">
                     “I have always been fascinated
                     <br className="hidden sm:block" /> by dreams.”
                   </p>
@@ -395,7 +395,7 @@ export default function PortfolioPage() {
                 <p className="font-display text-sm uppercase tracking-[0.28em] text-neutral-500">
                   Series {String(index + 1).padStart(2, "0")}
                 </p>
-                <h2 className="mt-5 font-display text-4xl font-light tracking-tight text-neutral-900 md:text-5xl lg:text-6xl xl:text-7xl">
+                <h2 className="mt-5 font-display text-4xl font-medium tracking-tight text-neutral-900 md:text-5xl lg:text-6xl xl:text-7xl">
                   {seriesData.series.name}
                 </h2>
                 {seriesData.series.description && (

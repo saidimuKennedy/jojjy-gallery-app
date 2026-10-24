@@ -56,7 +56,7 @@ export default function UpdatesPage() {
           transition={{ duration: 0.8 }}
           className="mx-auto mb-20 max-w-3xl text-center md:mb-28"
         >
-          <h1 className="font-display text-5xl font-light tracking-tight text-neutral-900 md:text-6xl lg:text-7xl">
+          <h1 className="font-display text-5xl font-medium tracking-tight text-neutral-900 md:text-6xl lg:text-7xl">
             Updates
           </h1>
           <p className="mx-auto mt-8 max-w-lg font-archive-body text-lg font-normal leading-[1.7] text-neutral-600 md:text-[1.125rem]">
@@ -123,7 +123,7 @@ export default function UpdatesPage() {
                     <p className="font-archive-body text-[0.7rem] font-medium uppercase tracking-[0.2em] text-neutral-500">
                       {formatDate(item.publishedAt)}
                     </p>
-                    <h2 className="mt-4 font-display text-3xl font-light tracking-tight text-neutral-900 md:text-4xl">
+                    <h2 className="mt-4 font-display text-3xl font-normal tracking-tight text-neutral-900 md:text-4xl">
                       {item.title}
                     </h2>
                     <p className="mt-5 whitespace-pre-wrap font-archive-body text-[1.0625rem] leading-[1.7] text-neutral-600 md:text-lg">
@@ -146,7 +146,7 @@ export default function UpdatesPage() {
 
         {updates && updates.length > 0 && (
           <div className="mx-auto mt-16 max-w-2xl border-t border-neutral-100 pt-14 text-center md:mt-24 md:pt-20">
-            <p className="font-display text-2xl font-light tracking-tight text-neutral-900 md:text-3xl">
+            <p className="font-display text-2xl font-normal tracking-tight text-neutral-900 md:text-3xl">
               Stay close to the work
             </p>
             <p className="mx-auto mt-4 max-w-md text-sm font-light leading-relaxed text-neutral-600">

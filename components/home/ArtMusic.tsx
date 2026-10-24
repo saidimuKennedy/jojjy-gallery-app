@@ -92,7 +92,7 @@ function Panel({
         stagger={0.09}
       >
         <RevealItem y={20}>
-          <h2 className="jenga-cream font-display text-5xl font-light tracking-tight md:text-6xl lg:text-7xl">
+          <h2 className="jenga-cream font-display text-5xl font-medium tracking-tight md:text-6xl lg:text-7xl">
             {title}
           </h2>
         </RevealItem>

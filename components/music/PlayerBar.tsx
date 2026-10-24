@@ -62,7 +62,7 @@ export default function PlayerBar() {
 
   const progress = (
     <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-      <span className={`w-9 shrink-0 text-right text-[11px] tabular-nums ${secondary}`}>
+      <span className={`w-9 shrink-0 text-right text-xs tabular-nums ${secondary}`}>
         {formatTime(currentTime)}
       </span>
       <input
@@ -80,7 +80,7 @@ export default function PlayerBar() {
         aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
         className={`${rangeBase} ${rangeClass}`}
       />
-      <span className={`w-9 shrink-0 text-[11px] tabular-nums ${secondary}`}>
+      <span className={`w-9 shrink-0 text-xs tabular-nums ${secondary}`}>
         {formatTime(duration)}
       </span>
     </div>
@@ -119,7 +119,7 @@ export default function PlayerBar() {
             </Link>
             <p className={`truncate text-xs ${secondary}`}>{release.artistName}</p>
             {error && (
-              <p role="alert" className={`truncate text-[11px] ${dark ? "text-red-400" : "text-red-600"}`}>
+              <p role="alert" className={`truncate text-xs ${dark ? "text-red-400" : "text-red-600"}`}>
                 {error}
               </p>
             )}

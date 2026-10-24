@@ -77,7 +77,7 @@ export default function ContactPage() {
 
         <div className="bg-black py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="font-display text-5xl font-light tracking-tight text-white mb-4 md:text-6xl">
+            <h1 className="font-display text-5xl font-medium tracking-tight text-white mb-4 md:text-6xl">
               Visit
             </h1>
             <p className="text-sm font-light text-gray-300 max-w-xl mx-auto md:text-[0.9375rem] md:leading-relaxed">
@@ -200,7 +200,7 @@ export default function ContactPage() {
         <div className="bg-gray-50 py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="font-display text-3xl font-light tracking-tight text-black mb-4 md:text-4xl">
+              <h2 className="font-display text-3xl font-normal tracking-tight text-black mb-4 md:text-4xl">
                 Other ways to reach us
               </h2>
               <p className="text-sm font-light text-gray-500">

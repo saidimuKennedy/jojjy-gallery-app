@@ -86,7 +86,7 @@ const PortfolioSeriesPage: React.FC = () => {
       <>
         <Navbar />
         <div className="container mx-auto px-4 py-20 text-center min-h-screen flex flex-col justify-center">
-          <h1 className="font-display text-4xl font-light text-gray-900 mb-6 tracking-tight">
+          <h1 className="font-display text-4xl font-normal text-gray-900 mb-6 tracking-tight">
             Series Not Found
           </h1>
           <p className="text-gray-600 text-sm font-light">
@@ -129,7 +129,7 @@ const PortfolioSeriesPage: React.FC = () => {
       <div className="container mx-auto px-4 py-12 md:py-20 lg:py-24">
         <motion.h1
           variants={fadeInUp}
-          className="font-display text-4xl md:text-5xl font-light text-gray-900 text-center mb-6 md:mb-8 tracking-tight"
+          className="font-display text-4xl md:text-5xl font-medium text-gray-900 text-center mb-6 md:mb-8 tracking-tight"
         >
           {series.name}
         </motion.h1>
@@ -155,7 +155,7 @@ const PortfolioSeriesPage: React.FC = () => {
             <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500 text-center mb-6">
               Artist statement
             </p>
-            <blockquote className="font-display text-xl md:text-2xl font-light leading-relaxed text-neutral-800 text-center tracking-tight whitespace-pre-line">
+            <blockquote className="font-display text-xl md:text-2xl font-normal leading-relaxed text-neutral-800 text-center tracking-tight whitespace-pre-line">
               {series.artistStatement}
             </blockquote>
           </motion.section>
@@ -185,7 +185,7 @@ const PortfolioSeriesPage: React.FC = () => {
                       />
                     </div>
                     <div className="pt-4">
-                      <h2 className="font-display text-lg font-light text-gray-800 truncate mb-1">
+                      <h2 className="font-display text-lg font-normal text-gray-800 truncate mb-1">
                         {artwork.title}
                       </h2>
                       <p className="text-sm text-gray-500 font-light">

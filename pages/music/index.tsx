@@ -386,7 +386,7 @@ function ReleaseTile({
         )}
         {studio && (
           <span
-            className="pointer-events-none absolute left-3 top-3 max-w-[calc(100%-1.5rem)] truncate bg-black/75 px-2.5 py-1 text-[10px] uppercase tracking-[0.12em] text-white"
+            className="pointer-events-none absolute left-3 top-3 max-w-[calc(100%-1.5rem)] truncate bg-black/75 px-2.5 py-1 text-xs uppercase tracking-[0.12em] text-white"
           >
             Studio access
           </span>

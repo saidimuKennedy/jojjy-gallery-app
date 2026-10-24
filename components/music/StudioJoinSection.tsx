@@ -133,7 +133,7 @@ export default function StudioJoinSection({
             ✓ Studio Member
             {membership.isFounding ? " · Founding Member" : ""}
           </p>
-          <p className="mt-3 font-display text-2xl font-light text-neutral-900">
+          <p className="mt-3 font-display text-2xl font-normal text-neutral-900">
             Welcome back inside the Studio
           </p>
           <p className="mt-2 text-sm text-neutral-600">
@@ -168,7 +168,7 @@ export default function StudioJoinSection({
                     }`}
                   >
                     {featured && (
-                      <span className="absolute -top-3 left-4 bg-neutral-900 px-3 py-1 font-archive-body text-[10px] font-medium uppercase tracking-[0.14em] text-white">
+                      <span className="absolute -top-3 left-4 bg-neutral-900 px-3 py-1 font-archive-body text-xs font-medium uppercase tracking-[0.14em] text-white">
                         Most popular
                       </span>
                     )}

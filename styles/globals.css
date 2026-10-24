@@ -278,7 +278,7 @@ body {
 /* Editorial display titles — skip commerce shells (.commerce) */
 .editorial-title {
   font-family: "Cormorant Garamond", Georgia, serif;
-  font-weight: 300;
+  font-weight: 400;
   letter-spacing: -0.02em;
 }
 

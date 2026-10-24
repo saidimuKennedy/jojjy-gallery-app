@@ -549,7 +549,7 @@ export default function MusicReleasePage() {
                       : ""}
                   </p>
                   <h1
-                    className={`mt-3 font-display text-4xl font-light tracking-tight md:text-5xl ${t.heading}`}
+                    className={`mt-3 font-display text-4xl font-medium tracking-tight md:text-5xl ${t.heading}`}
                   >
                     {release.title}
                   </h1>

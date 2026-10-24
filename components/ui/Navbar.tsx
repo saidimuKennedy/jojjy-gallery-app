@@ -156,7 +156,7 @@ export default function Navbar({ variant = "default" }: NavbarProps = {}) {
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
             <Link href="/" className="flex items-center">
               {isTransparent ? (
-                <span className="font-display text-2xl font-light tracking-[0.3em] text-white sm:text-3xl">
+                <span className="font-display text-2xl font-normal tracking-[0.3em] text-white sm:text-3xl">
                   JENGA
                 </span>
               ) : (
@@ -315,7 +315,7 @@ export default function Navbar({ variant = "default" }: NavbarProps = {}) {
         } flex flex-col`}
       >
         <div className="flex items-center justify-between h-16 px-4 sm:px-6 border-b border-gray-100">
-          <span className="font-display text-2xl font-light text-gray-900 tracking-tight">
+          <span className="font-display text-2xl font-normal text-gray-900 tracking-tight">
             Menu
           </span>
           <button

@@ -58,7 +58,7 @@ function TicketCard({ ticket }: { ticket: RetrievedTicket }) {
         <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-400">
           {ticket.ticketType}
         </p>
-        <p className="mt-2 font-display text-lg font-light text-white">
+        <p className="mt-2 font-display text-lg font-normal text-white">
           {ticket.holderName || "Guest"}
         </p>
         <p className="mt-3 font-mono text-sm tracking-widest text-neutral-200">
@@ -152,7 +152,7 @@ export default function RetrieveTicketsPage() {
         <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500">
           Tickets
         </p>
-        <h1 className="mt-4 font-display text-3xl font-light tracking-tight md:text-4xl">
+        <h1 className="mt-4 font-display text-3xl font-normal tracking-tight md:text-4xl">
           Retrieve your tickets
         </h1>
         <p className="mt-4 font-archive-body text-[1.0625rem] leading-[1.7] text-neutral-400">
@@ -202,7 +202,7 @@ export default function RetrieveTicketsPage() {
           <div className="mt-12 space-y-12">
             {events.map((group) => (
               <section key={group.event.id}>
-                <h2 className="font-display text-2xl font-light tracking-tight">
+                <h2 className="font-display text-2xl font-normal tracking-tight">
                   {group.event.title}
                 </h2>
                 <p className="mt-1 font-archive-body text-sm text-neutral-400">

@@ -42,7 +42,7 @@ export function ProductImage({
           <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
             {kind}
           </p>
-          <p className="font-display text-2xl font-light tracking-tight text-neutral-800">
+          <p className="font-display text-2xl font-normal tracking-tight text-neutral-800">
             {name}
           </p>
         </div>
@@ -328,7 +328,7 @@ export function OrderSummary({
         <span className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
           Total ({currency})
         </span>
-        <span className="font-display text-xl font-light text-neutral-900">
+        <span className="font-display text-xl font-normal text-neutral-900">
           {total}
         </span>
       </p>

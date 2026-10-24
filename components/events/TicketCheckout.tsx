@@ -142,7 +142,7 @@ export default function TicketCheckout({
             <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500">
               Tickets
             </p>
-            <h2 className="mt-2 font-display text-2xl font-light tracking-tight text-neutral-900">
+            <h2 className="mt-2 font-display text-2xl font-normal tracking-tight text-neutral-900">
               {target.ticketTypeName}
             </h2>
             <p className="mt-1 font-archive-body text-sm text-neutral-500">
@@ -240,7 +240,7 @@ export default function TicketCheckout({
         </label>
 
         <div className="mt-6 flex items-center justify-between border-t border-neutral-200 pt-6">
-          <span className="font-display text-lg font-light text-neutral-900">
+          <span className="font-display text-lg font-normal text-neutral-900">
             {isFree
               ? "Free"
               : `${target.currency} ${total.toLocaleString()}`}

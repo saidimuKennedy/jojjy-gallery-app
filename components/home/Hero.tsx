@@ -156,7 +156,7 @@ export default function Hero() {
         data-motion
       >
         <motion.h1
-          className="jenga-cream font-display text-[clamp(4rem,14vw,12rem)] font-light leading-[0.88] tracking-[-0.02em]"
+          className="jenga-cream font-display text-[clamp(4rem,14vw,12rem)] font-normal leading-[0.88] tracking-[-0.02em]"
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
@@ -184,7 +184,7 @@ export default function Hero() {
           Visual artist. Musician.
         </motion.p>
         <motion.p
-          className="jenga-cream mt-6 max-w-lg font-display text-2xl font-light italic leading-relaxed md:text-3xl"
+          className="jenga-cream mt-6 max-w-lg font-display text-2xl font-normal italic leading-relaxed md:text-3xl"
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{

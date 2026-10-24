@@ -32,7 +32,7 @@ export default function MusicWelcomeModal({
             <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500">
               Welcome
             </p>
-            <h2 className="mt-4 font-display text-3xl font-light text-neutral-900">
+            <h2 className="mt-4 font-display text-3xl font-normal text-neutral-900">
               Welcome to the Studio
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-neutral-600">
@@ -61,7 +61,7 @@ export default function MusicWelcomeModal({
             <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500">
               Welcome
             </p>
-            <h2 className="mt-4 font-display text-3xl font-light text-neutral-900">
+            <h2 className="mt-4 font-display text-3xl font-normal text-neutral-900">
               {title ? `"${title}" is yours` : "In your library"}
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-neutral-600">

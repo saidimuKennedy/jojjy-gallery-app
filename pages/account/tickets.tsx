@@ -68,7 +68,7 @@ export default function TicketWalletPage() {
         <BackLink href="/account" tone="dark" className="mb-10">
           Back to Account
         </BackLink>
-        <h1 className="font-display text-4xl font-light tracking-tight text-white mb-2">
+        <h1 className="font-display text-4xl font-normal tracking-tight text-white mb-2">
           Tickets
         </h1>
         <p className="text-sm font-light text-neutral-400 mb-14">
@@ -95,7 +95,7 @@ export default function TicketWalletPage() {
               >
                 <Link
                   href={`/events/${t.event.slug}`}
-                  className="font-display text-xl font-light text-white hover:text-neutral-300"
+                  className="font-display text-xl font-normal text-white hover:text-neutral-300"
                 >
                   {t.event.title}
                 </Link>

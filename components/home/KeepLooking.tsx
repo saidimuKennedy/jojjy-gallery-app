@@ -8,7 +8,7 @@ export default function KeepLooking() {
       <Shell>
         <div className="mx-auto max-w-2xl text-center">
           <Reveal y={24} duration={1.1}>
-            <h2 className="jenga-cream font-display text-[clamp(2.25rem,8vw,6rem)] font-light leading-[1] tracking-tight">
+            <h2 className="jenga-cream font-display text-[clamp(2.25rem,8vw,6rem)] font-normal leading-[1] tracking-tight">
               KEEP LOOKING.
             </h2>
           </Reveal>

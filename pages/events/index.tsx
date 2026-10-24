@@ -84,7 +84,7 @@ export default function EventsIndexPage() {
           transition={{ duration: 0.8 }}
           className="mx-auto max-w-3xl text-center mb-20 md:mb-28"
         >
-          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-light text-neutral-900 tracking-tight">
+          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-medium text-neutral-900 tracking-tight">
             Events
           </h1>
           <p className="mt-8 font-archive-body text-lg md:text-[1.125rem] font-normal leading-[1.7] text-neutral-600 max-w-lg mx-auto">
@@ -151,7 +151,7 @@ export default function EventsIndexPage() {
                         {" · "}
                         {formatDate(event.startsAt)}
                       </p>
-                      <h2 className="font-display text-3xl md:text-4xl lg:text-[2.75rem] font-light tracking-tight text-neutral-900 leading-[1.1] transition-colors group-hover:text-neutral-600">
+                      <h2 className="font-display text-3xl md:text-4xl lg:text-[2.75rem] font-normal tracking-tight text-neutral-900 leading-[1.1] transition-colors group-hover:text-neutral-600">
                         {event.title}
                       </h2>
                       {event.venue && (

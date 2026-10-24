@@ -73,10 +73,10 @@ export default function AboutPage() {
               <p className="font-display text-xs uppercase tracking-[0.28em] text-gray-500 mb-4">
                 Biography
               </p>
-              <h1 className="font-display text-4xl font-light tracking-tight text-gray-900 mb-3 md:text-5xl">
+              <h1 className="font-display text-4xl font-medium tracking-tight text-gray-900 mb-3 md:text-5xl">
                 About the Artist
               </h1>
-              <h2 className="font-display text-2xl font-light text-gray-600 mb-8 md:text-3xl">
+              <h2 className="font-display text-2xl font-normal text-gray-600 mb-8 md:text-3xl">
                 Njenga Ngugi
               </h2>
               <div className="max-w-xl space-y-4 text-sm font-light leading-relaxed text-gray-500 md:text-[0.9375rem] md:leading-[1.75]">

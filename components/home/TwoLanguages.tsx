@@ -93,13 +93,13 @@ export default function TwoLanguages({
             >
               <RevealGroup stagger={0.12}>
                 <RevealItem y={20}>
-                  <h2 className="jenga-cream font-display text-[clamp(2.25rem,5vw,4rem)] font-light leading-[1.05] tracking-tight">
+                  <h2 className="jenga-cream font-display text-[clamp(2.25rem,5vw,4rem)] font-normal leading-[1.05] tracking-tight">
                     Two Languages. One Voice.
                   </h2>
                 </RevealItem>
 
                 <RevealItem y={16} className="mt-8">
-                  <div className="jenga-body-text space-y-1 font-display text-xl font-light italic leading-relaxed md:text-2xl">
+                  <div className="jenga-body-text space-y-1 font-display text-xl font-normal italic leading-relaxed md:text-2xl">
                     <p>One looks inward.</p>
                     <p>One speaks outward.</p>
                   </div>

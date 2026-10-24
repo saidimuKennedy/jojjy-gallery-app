@@ -135,7 +135,7 @@ export default function ShopConfirmationPage() {
           </p>
         ) : error ? (
           <div>
-            <h1 className="font-display text-3xl font-light text-white mb-4">
+            <h1 className="font-display text-3xl font-normal text-white mb-4">
               Payment not confirmed
             </h1>
             <p className="text-sm font-light text-neutral-400 mb-8">{error}</p>
@@ -162,7 +162,7 @@ export default function ShopConfirmationPage() {
             <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500 mb-4">
               {isPaid ? "Thank you" : "Order status"}
             </p>
-            <h1 className="font-display text-3xl md:text-4xl font-light text-white mb-6">
+            <h1 className="font-display text-3xl md:text-4xl font-normal text-white mb-6">
               {isPaid ? "Payment confirmed" : "Payment pending"}
             </h1>
             <p className="text-sm font-light text-neutral-400 mb-10">

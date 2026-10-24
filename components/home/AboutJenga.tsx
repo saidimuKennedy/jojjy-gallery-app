@@ -31,12 +31,12 @@ export default function AboutJenga() {
 
           <RevealGroup className="max-w-2xl" stagger={0.1} delay={0.15}>
             <RevealItem y={20}>
-              <h2 className="jenga-cream font-display text-5xl font-light tracking-tight md:text-6xl lg:text-7xl">
+              <h2 className="jenga-cream font-display text-5xl font-medium tracking-tight md:text-6xl lg:text-7xl">
                 JENGA
               </h2>
             </RevealItem>
             <RevealItem y={18} className="mt-7">
-              <p className="jenga-cream font-display text-xl font-light leading-relaxed md:text-2xl">
+              <p className="jenga-cream font-display text-xl font-normal leading-relaxed md:text-2xl">
                 A multidisciplinary Kenyan artist working across visual art and
                 music.
               </p>

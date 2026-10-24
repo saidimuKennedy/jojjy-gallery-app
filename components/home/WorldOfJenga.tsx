@@ -54,7 +54,7 @@ export default function WorldOfJenga({
                   music—sometimes through the surreal, sometimes through the
                   familiar, always through the human experience.
                 </p>
-                <p className="jenga-cream font-display text-xl font-light italic leading-relaxed md:text-2xl">
+                <p className="jenga-cream font-display text-xl font-normal italic leading-relaxed md:text-2xl">
                   Two disciplines. One evolving practice.
                 </p>
               </div>

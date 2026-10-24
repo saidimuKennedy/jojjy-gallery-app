@@ -11,7 +11,7 @@ export default function StatCounter({ end, label, light = false }: StatProps) {
   return (
     <div className="text-center">
       <div
-        className={`font-display text-3xl font-light tracking-tight ${
+        className={`font-display text-3xl font-normal tracking-tight ${
           light ? "text-white" : "text-gray-900"
         }`}
       >

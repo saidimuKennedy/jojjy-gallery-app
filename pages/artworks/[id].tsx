@@ -132,7 +132,7 @@ export default function ArtworkDetailPage() {
   if (error || !artwork) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white p-8 text-center">
-        <h1 className="font-display text-3xl font-light text-neutral-900 mb-4">
+        <h1 className="font-display text-3xl font-normal text-neutral-900 mb-4">
           Artwork Not Found
         </h1>
         <p className="text-neutral-500 mb-10 font-light">
@@ -201,7 +201,7 @@ export default function ArtworkDetailPage() {
           >
             <motion.h1
               variants={itemVariants}
-              className="font-display text-4xl font-light leading-[1.05] tracking-tight text-neutral-900 md:text-5xl"
+              className="font-display text-4xl font-medium leading-[1.05] tracking-tight text-neutral-900 md:text-5xl"
             >
               {artwork.title}
             </motion.h1>
@@ -209,7 +209,7 @@ export default function ArtworkDetailPage() {
             {metaLines.length > 0 && (
               <motion.p
                 variants={itemVariants}
-                className="mt-4 font-display text-sm font-light tracking-wide text-neutral-500 md:text-base"
+                className="mt-4 font-display text-sm font-normal tracking-wide text-neutral-500 md:text-base"
               >
                 {metaLines.join(" · ")}
               </motion.p>
@@ -347,7 +347,7 @@ export default function ArtworkDetailPage() {
             <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
               From the artist
             </p>
-            <blockquote className="mt-8 font-display text-2xl font-light leading-[1.55] tracking-tight text-neutral-800 md:text-3xl">
+            <blockquote className="mt-8 font-display text-2xl font-normal leading-[1.55] tracking-tight text-neutral-800 md:text-3xl">
               {artwork.description}
             </blockquote>
             <p className="mt-10 text-sm font-light leading-relaxed text-neutral-600">

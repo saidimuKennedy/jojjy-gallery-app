@@ -323,7 +323,7 @@ const ArchivePage = ({ initialEntries, initialTotal }: ArchivePageProps) => {
                         {opening.year ? ` · ${opening.year}` : ""}
                         {opening.duration ? ` · ${opening.duration}` : ""}
                       </p>
-                      <h1 className="mt-3 font-display text-3xl font-light leading-[1.08] tracking-tight text-[#1a1a1a] md:text-4xl lg:text-5xl">
+                      <h1 className="mt-3 font-display text-3xl font-medium leading-[1.08] tracking-tight text-[#1a1a1a] md:text-4xl lg:text-5xl">
                         {opening.title}
                       </h1>
                       {opening.shortDesc && (
@@ -391,7 +391,7 @@ const ArchivePage = ({ initialEntries, initialTotal }: ArchivePageProps) => {
                           {label}
                           {item.year ? ` · ${item.year}` : ""}
                         </span>
-                        <h2 className="mt-3 font-display text-3xl font-light leading-[1.05] tracking-tight text-[#1a1a1a] md:text-4xl">
+                        <h2 className="mt-3 font-display text-3xl font-normal leading-[1.05] tracking-tight text-[#1a1a1a] md:text-4xl">
                           {item.title}
                         </h2>
                         {item.shortDesc && (
@@ -434,7 +434,7 @@ const ArchivePage = ({ initialEntries, initialTotal }: ArchivePageProps) => {
                             {label}
                             {item.year ? ` · ${item.year}` : ""}
                           </span>
-                          <h2 className="mt-3 font-display text-2xl font-light leading-tight tracking-tight text-[#1a1a1a] md:text-3xl">
+                          <h2 className="mt-3 font-display text-2xl font-normal leading-tight tracking-tight text-[#1a1a1a] md:text-3xl">
                             {item.title}
                           </h2>
                           {item.shortDesc && (
@@ -458,7 +458,7 @@ const ArchivePage = ({ initialEntries, initialTotal }: ArchivePageProps) => {
                         {label}
                         {item.year ? ` · ${item.year}` : ""}
                       </span>
-                      <h2 className="mt-4 font-display text-3xl font-light leading-[1.08] tracking-tight text-[#1a1a1a] md:text-4xl">
+                      <h2 className="mt-4 font-display text-3xl font-normal leading-[1.08] tracking-tight text-[#1a1a1a] md:text-4xl">
                         {item.title}
                       </h2>
                       {item.shortDesc && (
