@@ -5,6 +5,13 @@ import { useRouter } from "next/router";
 import { useSession, signIn } from "next-auth/react";
 import { Brush, X } from "lucide-react";
 
+// next-auth reports failures as codes; show readable copy instead.
+const LOGIN_ERRORS: Record<string, string> = {
+  CredentialsSignin: "Incorrect email or password. Please try again.",
+  Configuration: "Sign-in is temporarily unavailable. Please try again shortly.",
+  AccessDenied: "You don't have access to sign in with this account.",
+};
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -53,7 +60,10 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
-      setError(result.error);
+      setError(
+        LOGIN_ERRORS[result.error] ??
+          "Something went wrong signing you in. Please try again."
+      );
     } else {
       router.push(callbackUrl);
     }
