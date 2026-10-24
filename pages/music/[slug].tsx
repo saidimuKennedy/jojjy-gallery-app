@@ -460,7 +460,7 @@ export default function MusicReleasePage() {
             {!showSidebar && (
               <Link
                 href="/music/library"
-                className={`inline-flex min-h-11 items-center justify-center px-5 py-2.5 font-archive-body text-xs font-medium uppercase tracking-[0.18em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                className={`inline-flex min-h-[2.75rem] items-center justify-center px-5 py-2.5 font-archive-body text-xs font-medium uppercase tracking-[0.18em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
                   dark
                     ? "bg-white text-neutral-950 hover:bg-neutral-200 focus-visible:outline-white"
                     : "bg-neutral-900 text-white hover:bg-neutral-700 focus-visible:outline-neutral-900"
@@ -472,7 +472,7 @@ export default function MusicReleasePage() {
             {showSidebar && (
               <Link
                 href="/music/library"
-                className={`inline-flex min-h-11 items-center justify-center px-5 py-2.5 font-archive-body text-xs font-medium uppercase tracking-[0.18em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 lg:hidden ${
+                className={`inline-flex min-h-[2.75rem] items-center justify-center px-5 py-2.5 font-archive-body text-xs font-medium uppercase tracking-[0.18em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 lg:hidden ${
                   dark
                     ? "bg-white text-neutral-950 hover:bg-neutral-200 focus-visible:outline-white"
                     : "bg-neutral-900 text-white hover:bg-neutral-700 focus-visible:outline-neutral-900"
@@ -499,7 +499,7 @@ export default function MusicReleasePage() {
                   onClick={() =>
                     setPaymentCheckAttempt((attempt) => attempt + 1)
                   }
-                  className={`mt-4 inline-flex min-h-11 items-center border px-5 py-3 font-display text-xs uppercase tracking-[0.2em] transition-colors ${
+                  className={`mt-4 inline-flex min-h-[2.75rem] items-center border px-5 py-3 font-display text-xs uppercase tracking-[0.2em] transition-colors ${
                     dark
                       ? "border-white text-white hover:bg-white hover:text-neutral-950"
                       : "border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white"
@@ -628,7 +628,7 @@ export default function MusicReleasePage() {
                             <button
                               type="button"
                               onClick={() => setConfirmUnlock(false)}
-                              className={`min-h-11 px-4 py-3 text-xs uppercase tracking-widest ${t.secondary}`}
+                              className={`min-h-[2.75rem] px-4 py-3 text-xs uppercase tracking-widest ${t.secondary}`}
                             >
                               Back
                             </button>
@@ -636,7 +636,7 @@ export default function MusicReleasePage() {
                               type="button"
                               disabled={checkoutBusy || confirmingPayment}
                               onClick={handleUnlock}
-                              className={`inline-flex min-h-11 flex-1 items-center justify-center border px-6 py-3 font-display text-xs uppercase tracking-[0.22em] transition-colors disabled:opacity-50 ${
+                              className={`inline-flex min-h-[2.75rem] flex-1 items-center justify-center border px-6 py-3 font-display text-xs uppercase tracking-[0.22em] transition-colors disabled:opacity-50 ${
                                 dark
                                   ? "border-white bg-white text-neutral-950 hover:bg-transparent hover:text-white"
                                   : "border-neutral-900 bg-neutral-900 text-white hover:bg-white hover:text-neutral-900"
@@ -662,7 +662,7 @@ export default function MusicReleasePage() {
                             }
                             setConfirmUnlock(true);
                           }}
-                          className={`inline-flex min-h-12 w-full items-center justify-center border px-8 py-4 font-display text-xs uppercase tracking-[0.24em] transition-colors disabled:opacity-50 sm:w-auto ${
+                          className={`inline-flex min-h-[3rem] w-full items-center justify-center border px-8 py-4 font-display text-xs uppercase tracking-[0.24em] transition-colors disabled:opacity-50 sm:w-auto ${
                             dark
                               ? "border-white bg-white text-neutral-950 hover:bg-transparent hover:text-white"
                               : "border-neutral-900 bg-neutral-900 text-white hover:bg-white hover:text-neutral-900"
@@ -713,7 +713,7 @@ export default function MusicReleasePage() {
                           disabled={playDisabled}
                           onClick={() => toggleTrack(tr.id)}
                           aria-label={`${isThisTrack ? "Pause" : "Play"} ${tr.title}`}
-                          className={`flex min-h-14 w-full items-center gap-4 py-3 text-left transition disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] ${t.trackHover} ${
+                          className={`flex min-h-[3.5rem] w-full items-center gap-4 py-3 text-left transition disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] ${t.trackHover} ${
                             dark
                               ? "focus-visible:outline-white"
                               : "focus-visible:outline-neutral-900"

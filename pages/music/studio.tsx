@@ -181,7 +181,7 @@ export default function MusicStudioPage() {
   ).slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-[#f8f6f1]">
+    <div className="min-h-screen bg-white">
       <Head>
         <title>The Studio — Njenga Ngugi</title>
         <meta
@@ -232,7 +232,7 @@ export default function MusicStudioPage() {
                   className="object-cover object-center"
                 />
               </div>
-              <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/50 to-black/20 md:bg-gradient-to-r md:from-[#f8f6f1] md:from-[38%] md:via-[#f8f6f1]/70 md:via-[48%] md:to-transparent md:to-[66%]" />
+              <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/50 to-black/20 md:bg-gradient-to-r md:from-white md:from-[38%] md:via-white/70 md:via-[48%] md:to-transparent md:to-[66%]" />
               <div className={`mx-auto flex max-w-[1600px] items-center ${HERO_MIN_HEIGHT}`}>
                 <motion.div
                   initial={{ opacity: 0, y: 16 }}
@@ -252,7 +252,7 @@ export default function MusicStudioPage() {
                   <div className="mt-8 flex flex-wrap items-center gap-6">
                     <a
                       href="#join-studio"
-                      className="inline-flex min-h-12 items-center border border-white bg-white px-8 py-3 font-archive-body text-xs font-medium tracking-[0.08em] text-neutral-900 transition-colors hover:bg-transparent hover:text-white md:border-neutral-900 md:bg-neutral-900 md:text-white md:hover:bg-transparent md:hover:text-neutral-900"
+                      className="inline-flex min-h-[3rem] items-center border border-white bg-white px-8 py-3 font-archive-body text-xs font-medium tracking-[0.08em] text-neutral-900 transition-colors hover:bg-transparent hover:text-white md:border-neutral-900 md:bg-neutral-900 md:text-white md:hover:bg-transparent md:hover:text-neutral-900"
                     >
                       Join the Studio
                     </a>
@@ -268,7 +268,7 @@ export default function MusicStudioPage() {
               </div>
             </section>
 
-            <div className="bg-[#f8f6f1]">
+            <div className="bg-white">
               {/* Benefits */}
               <section className="mx-auto max-w-[1600px] px-6 py-14 md:px-12 lg:px-16">
                 <ul className="grid grid-cols-2 gap-y-10 md:grid-cols-5 md:gap-y-0">
@@ -395,7 +395,7 @@ export default function MusicStudioPage() {
               </div>
             </section>
 
-            <div className="bg-[#f8f6f1]">
+            <div className="bg-white">
               {/* Join */}
               <section className="mx-auto max-w-[1600px] px-6 pt-14 md:px-12 lg:px-16">
                 <h2 className="font-display text-3xl font-medium tracking-tight text-neutral-900 md:text-[2.1rem]">

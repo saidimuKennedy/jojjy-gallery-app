@@ -122,7 +122,7 @@ export default function MusicLibraryPage() {
                     role="tab"
                     aria-selected={active}
                     onClick={() => setFilter(tab.key)}
-                    className={`flex min-h-11 items-center gap-2 rounded-full px-4 py-2 text-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                    className={`flex min-h-[2.75rem] items-center gap-2 rounded-full px-4 py-2 text-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                       active
                         ? "bg-white font-medium text-neutral-950"
                         : "border border-neutral-700 text-neutral-300 hover:border-neutral-400"

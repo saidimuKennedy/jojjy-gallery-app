@@ -228,14 +228,14 @@ export default function MusicIndexPage() {
                   type="button"
                   disabled={!heroRelease || heroRelease.tracks.length === 0}
                   onClick={() => heroRelease && playRelease(heroRelease)}
-                  className={`inline-flex min-h-12 items-center gap-2 border border-white bg-white px-6 py-3 font-display text-xs uppercase tracking-[0.22em] text-neutral-900 transition-colors hover:bg-transparent hover:text-white disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${dark ? "!text-neutral-900 hover:!text-white" : "md:border-neutral-900 md:bg-neutral-900 md:text-white md:hover:bg-white md:hover:text-neutral-900 md:focus-visible:outline-neutral-900"}`}
+                  className={`inline-flex min-h-[3rem] items-center gap-2 border border-white bg-white px-6 py-3 font-archive-body text-sm font-medium text-neutral-900 transition-colors hover:bg-transparent hover:text-white disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${dark ? "!text-neutral-900 hover:!text-white" : "md:border-neutral-900 md:bg-neutral-900 md:text-white md:hover:bg-white md:hover:text-neutral-900 md:focus-visible:outline-neutral-900"}`}
                 >
                   <Play className="h-4 w-4 fill-current" aria-hidden="true" />
                   Play latest
                 </button>
                 <TextAction
                   href="#latest"
-                  className={`min-h-12 rounded-md border border-white/60 bg-white/10 px-6 py-3 text-white no-underline hover:bg-white/20 hover:no-underline ${dark ? "" : "md:border-neutral-300 md:bg-white/70 md:text-neutral-900 md:hover:bg-white"}`}
+                  className={`min-h-[3rem] rounded-md border border-white/60 bg-white/10 px-6 py-3 text-white no-underline hover:bg-white/20 hover:no-underline ${dark ? "" : "md:border-neutral-300 md:bg-white/70 md:text-neutral-900 md:hover:bg-white"}`}
                 >
                   Explore all releases
                 </TextAction>
