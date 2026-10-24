@@ -6,12 +6,22 @@ import useSWR, { mutate as globalMutate } from "swr";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
-import { Camera, Music, Palette, Ticket } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  ChevronDown,
+  FileText,
+  Music2,
+  Play,
+  Ticket,
+  Users,
+  Video,
+} from "lucide-react";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
-import TextAction from "@/components/ui/TextAction";
 import StudioJoinSection from "@/components/music/StudioJoinSection";
+import { CHECKOUT_SUPPORT_COPY } from "@/lib/music/studio-defaults";
 import MusicWelcomeModal from "@/components/music/MusicWelcomeModal";
 
 type StudioPayload = {
@@ -42,6 +52,34 @@ const fetcher = async (url: string) => {
   }
   return body.data as StudioPayload;
 };
+
+const STUDIO_HERO_COPY =
+  "Go deeper into the music, process and stories. Studio members get early music, studio journals, behind-the-scenes, and priority access — while it's still becoming.";
+
+const BENEFITS = [
+  { icon: Music2, title: "Early music", lines: "Hear new releases before the world." },
+  { icon: FileText, title: "Studio journals", lines: "Notes, ideas and works in progress." },
+  { icon: Video, title: "Behind-the-scenes", lines: "Unseen moments from the studio." },
+  { icon: Users, title: "Member releases", lines: "Exclusive tracks and editions." },
+  { icon: Ticket, title: "Priority event access", lines: "First in line for studio events." },
+];
+
+type StudioTile = {
+  key: string;
+  title: string;
+  meta: string;
+  coverImage: string | null;
+  href?: string;
+  playable?: boolean;
+};
+
+// Layout stand-ins so local development shows the full row; never shipped.
+const DEV_FILLER_TILES: StudioTile[] = [
+  { key: "dev-notes", title: "Studio Notes: The Next Chapter", meta: "Journal · Oct 2026", coverImage: "/images/studio/journal.jpg" },
+  { key: "dev-video", title: "Behind the Track: Dawn Theme", meta: "Video · 12 min", coverImage: "/images/studio/behind-the-scenes.jpg", playable: true },
+  { key: "dev-early", title: "Early Access: New Single", meta: "Studio release · 2026", coverImage: "/images/studio/early-music.jpg" },
+  { key: "dev-journal", title: "Process Journal", meta: "Journal · Sep 2026", coverImage: "/images/studio/process-notes.jpg" },
+];
 
 export default function MusicStudioPage() {
   const router = useRouter();
@@ -122,8 +160,22 @@ export default function MusicStudioPage() {
   const content = data?.content;
   const inside = data?.insideStudio;
 
+  const releaseTiles: StudioTile[] = (inside?.memberReleases ?? []).map((r) => ({
+    key: `release-${r.id}`,
+    title: r.title,
+    meta: "Studio release",
+    coverImage: r.coverImage,
+    href: `/music/${r.slug}`,
+    playable: true,
+  }));
+  const tiles = (
+    process.env.NODE_ENV === "development"
+      ? [...releaseTiles, ...DEV_FILLER_TILES]
+      : releaseTiles
+  ).slice(0, 5);
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#f8f6f1]">
       <Head>
         <title>The Studio — Njenga Ngugi</title>
         <meta
@@ -143,197 +195,244 @@ export default function MusicStudioPage() {
         />
       )}
 
-      <main className="px-5 pb-24 pt-14 md:px-10 md:pt-20 lg:px-16 lg:pb-32">
+      <main className="pb-24">
         {confirmingPayment && (
-          <p className="mb-8 text-center text-sm text-neutral-500">
+          <p className="px-5 py-6 text-center text-sm text-neutral-500">
             Confirming payment…
           </p>
         )}
 
         {isLoading && !confirmingPayment && (
-          <p className="text-center text-neutral-500">Loading…</p>
+          <p className="px-5 py-16 text-center text-neutral-500">Loading…</p>
         )}
         {error && (
-          <p className="text-center text-red-600">{(error as Error).message}</p>
+          <p className="px-5 py-16 text-center text-red-600">
+            {(error as Error).message}
+          </p>
         )}
 
         {content && (
           <>
-            <motion.section
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7 }}
-              className="mx-auto max-w-3xl text-center"
-            >
-              <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500">
-                The Studio
-              </p>
-              <h1 className="mt-6 font-display text-5xl font-light tracking-tight text-neutral-900 md:text-6xl lg:text-7xl">
-                {content.heroTitle}
-              </h1>
-              <p className="mx-auto mt-8 max-w-xl font-archive-body text-lg leading-[1.75] text-neutral-600 md:text-[1.125rem]">
-                {content.heroSubtitle}
-              </p>
-              <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <a
-                  href="#join-studio"
-                  className="inline-flex border border-neutral-900 bg-neutral-900 px-8 py-4 font-display text-xs uppercase tracking-[0.24em] text-white transition-colors hover:bg-white hover:text-neutral-900"
-                >
-                  Join the Studio
-                </a>
-                <TextAction href="/music">Listen on Music</TextAction>
+            {/* Hero */}
+            <section className="relative isolate overflow-hidden">
+              <div className="absolute inset-y-0 right-0 -z-10 w-full md:w-[62%]">
+                <OptimizedImage
+                  src="/images/studio/hero.jpg"
+                  alt=""
+                  fill
+                  preset="full"
+                  priority
+                  sizes="(max-width: 768px) 100vw, 62vw"
+                  className="object-cover object-center"
+                />
               </div>
-            </motion.section>
-
-            <section className="mx-auto mt-24 max-w-2xl md:mt-32">
-              <p className="font-archive-body text-lg leading-relaxed text-neutral-700 md:text-xl">
-                {content.relationshipLead}
-              </p>
-              <ul className="mt-12 space-y-0 border-l border-neutral-200 pl-8">
-                {content.journeySteps.map((step, i) => (
-                  <li
-                    key={step}
-                    className="relative pb-10 font-display text-lg font-light text-neutral-800 last:pb-0"
-                  >
-                    <span className="absolute -left-[2.125rem] top-1.5 h-2 w-2 rounded-full bg-neutral-900" />
-                    {step}
-                    {i < content.journeySteps.length - 1 && (
-                      <span className="mt-2 block text-xs uppercase tracking-[0.2em] text-neutral-300">
-                        ↓
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/50 to-black/20 md:bg-gradient-to-r md:from-[#f8f6f1] md:from-[38%] md:via-[#f8f6f1]/70 md:via-[48%] md:to-transparent md:to-[66%]" />
+              <div className="mx-auto flex min-h-[420px] max-w-[1600px] items-center md:min-h-[400px]">
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7 }}
+                  className="w-full px-6 py-14 md:w-[48%] md:px-12 lg:px-16"
+                >
+                  <p className="font-archive-body text-[11px] uppercase tracking-[0.28em] text-white/80 md:text-neutral-700">
+                    The Studio
+                  </p>
+                  <h1 className="mt-5 font-display text-5xl font-light leading-[1.02] tracking-tight text-white md:text-neutral-900 md:text-6xl lg:text-[4.25rem]">
+                    {content.heroTitle}
+                  </h1>
+                  <p className="mt-5 max-w-md font-archive-body text-[15px] leading-[1.7] text-white/90 md:text-neutral-800">
+                    {STUDIO_HERO_COPY}
+                  </p>
+                  <div className="mt-8 flex flex-wrap items-center gap-6">
+                    <a
+                      href="#join-studio"
+                      className="inline-flex min-h-12 items-center border border-white bg-white px-8 py-3 font-archive-body text-xs font-medium tracking-[0.08em] text-neutral-900 transition-colors hover:bg-transparent hover:text-white md:border-neutral-900 md:bg-neutral-900 md:text-white md:hover:bg-transparent md:hover:text-neutral-900"
+                    >
+                      Join the Studio
+                    </a>
+                    <Link
+                      href="/music"
+                      className="inline-flex items-center gap-2 font-archive-body text-sm font-medium text-white underline-offset-4 hover:underline md:text-neutral-900"
+                    >
+                      Listen on Music
+                      <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+                    </Link>
+                  </div>
+                </motion.div>
+              </div>
             </section>
 
-            <section className="mx-auto mt-24 max-w-4xl border-t border-neutral-200 pt-16 md:mt-32 md:pt-20">
-              <h2 className="font-display text-3xl font-light text-neutral-900 md:text-4xl">
-                Currently inside the Studio
-              </h2>
-              <p className="mt-4 text-neutral-600">
-                What members can reach right now — updated as new work arrives.
-              </p>
-              <div className="mt-10 grid gap-4 sm:grid-cols-2">
-                <div className="border border-neutral-200 p-6">
-                  <Music className="h-6 w-6 text-neutral-900" strokeWidth={1.25} aria-hidden />
-                  <p className="mt-3 font-display text-xl text-neutral-900">
-                    {inside?.memberReleaseCount ?? 0} member{" "}
-                    {(inside?.memberReleaseCount ?? 0) === 1
-                      ? "release"
-                      : "releases"}
-                  </p>
-                  <p className="mt-2 text-sm text-neutral-500">
-                    Unreleased to the public catalogue
-                  </p>
-                </div>
-                <div className="border border-neutral-200 p-6">
-                  <Palette className="h-6 w-6 text-neutral-900" strokeWidth={1.25} aria-hidden />
-                  <p className="mt-3 font-display text-xl text-neutral-900">
-                    Early access window
-                  </p>
-                  <p className="mt-2 text-sm text-neutral-500">
-                    {inside?.earlyAccessCount ?? 0} releases in the exclusive
-                    window
-                  </p>
-                </div>
-                <div className="border border-neutral-200 p-6">
-                  <Camera className="h-6 w-6 text-neutral-900" strokeWidth={1.25} aria-hidden />
-                  <p className="mt-3 font-display text-xl text-neutral-900">
-                    Studio notes
-                  </p>
-                  <p className="mt-2 text-sm text-neutral-500">
-                    Context and stories on select releases
-                  </p>
-                </div>
-                <div className="border border-neutral-200 p-6">
-                  <Ticket className="h-6 w-6 text-neutral-900" strokeWidth={1.25} aria-hidden />
-                  <p className="mt-3 font-display text-xl text-neutral-900">
-                    Priority access
-                  </p>
-                  <p className="mt-2 text-sm text-neutral-500">
-                    First in line for studio events
-                  </p>
-                </div>
-              </div>
-
-              {(inside?.memberReleases.length ?? 0) > 0 && (
-                <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {inside!.memberReleases.map((r) => (
-                    <li key={r.id}>
-                      <Link href={`/music/${r.slug}`} className="group block">
-                        <div className="relative aspect-square bg-neutral-100">
-                          {r.coverImage ? (
-                            <OptimizedImage
-                              src={r.coverImage}
-                              alt={r.title}
-                              fill
-                              preset="card"
-                              sizes="(max-width: 640px) 100vw, 33vw"
-                              className="object-cover transition duration-500 group-hover:scale-[1.02]"
-                            />
-                          ) : null}
-                        </div>
-                        <p className="mt-3 font-display text-lg text-neutral-900">
-                          {r.title}
-                        </p>
-                        <p className="text-xs uppercase tracking-[0.18em] text-neutral-500">
-                          Inside the Studio
-                        </p>
-                      </Link>
+            <div className="bg-[#f8f6f1]">
+              {/* Benefits */}
+              <section className="mx-auto max-w-[1600px] px-6 py-14 md:px-12 lg:px-16">
+                <ul className="grid grid-cols-2 gap-y-10 md:grid-cols-5 md:gap-y-0">
+                  {BENEFITS.map(({ icon: Icon, title, lines }, i) => (
+                    <li
+                      key={title}
+                      className={`pr-6 md:px-6 md:first:pl-0 ${
+                        i > 0 ? "md:border-l md:border-neutral-300/70" : ""
+                      }`}
+                    >
+                      <Icon
+                        className="h-6 w-6 text-neutral-900"
+                        strokeWidth={1.1}
+                        aria-hidden
+                      />
+                      <p className="mt-4 font-archive-body text-[13px] font-semibold text-neutral-900">
+                        {title}
+                      </p>
+                      <p className="mt-2 font-archive-body text-xs leading-relaxed text-neutral-600">
+                        {lines}
+                      </p>
                     </li>
                   ))}
                 </ul>
-              )}
-            </section>
+              </section>
 
-            <section className="mx-auto mt-24 max-w-2xl border-t border-neutral-200 pt-16 md:mt-32 md:pt-20">
-              <h2 className="font-display text-3xl font-light text-neutral-900">
-                The journey
-              </h2>
-              <p className="mt-4 text-neutral-600">
-                You&apos;re hearing it at the beginning.
-              </p>
-              <div className="mt-10 flex flex-wrap items-center gap-3 font-display text-sm uppercase tracking-[0.18em] text-neutral-700">
-                <span>Idea</span>
-                <span className="text-neutral-300">→</span>
-                <span className="text-neutral-900">Studio Members</span>
-                <span className="text-neutral-300">→</span>
-                <span>Paid Release</span>
-                <span className="text-neutral-300">→</span>
-                <span className="text-neutral-400">Spotify / YouTube</span>
+              {/* Currently inside */}
+              <section className="mx-auto max-w-[1600px] px-6 pt-6 md:px-12 lg:px-16">
+                <div className="flex items-end justify-between gap-4">
+                  <div>
+                    <h2 className="font-display text-3xl font-normal tracking-tight text-neutral-900 md:text-[2.1rem]">
+                      Currently inside the Studio
+                    </h2>
+                    <p className="mt-1 font-archive-body text-sm text-neutral-600">
+                      Fresh from the studio — available now for Studio members.
+                    </p>
+                  </div>
+                  <Link
+                    href="/music/library"
+                    className="hidden items-center gap-2 font-archive-body text-xs font-medium text-neutral-900 hover:underline sm:inline-flex"
+                  >
+                    View all Studio content
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                  </Link>
+                </div>
+
+                <ul className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-5">
+                  {tiles.map((tile) => {
+                    const body = (
+                      <>
+                        <div className="relative aspect-[4/3] overflow-hidden bg-neutral-900">
+                          {tile.coverImage ? (
+                            <OptimizedImage
+                              src={tile.coverImage}
+                              alt={tile.title}
+                              fill
+                              preset="card"
+                              sizes="(max-width: 768px) 50vw, 20vw"
+                              className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 bg-gradient-to-br from-neutral-700 via-neutral-800 to-neutral-950" />
+                          )}
+                          {tile.playable && (
+                            <span className="absolute bottom-3 left-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-neutral-900">
+                              <Play
+                                className="h-3.5 w-3.5 fill-current"
+                                aria-hidden
+                              />
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-3 font-archive-body text-[13px] font-medium text-neutral-900">
+                          {tile.title}
+                        </p>
+                        <p className="mt-1 font-archive-body text-[11px] text-neutral-500">
+                          {tile.meta}
+                        </p>
+                      </>
+                    );
+                    return (
+                      <li key={tile.key}>
+                        {tile.href ? (
+                          <Link href={tile.href} className="group block">
+                            {body}
+                          </Link>
+                        ) : (
+                          <div className="group block">{body}</div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+                {tiles.length === 0 && (
+                  <p className="mt-8 font-archive-body text-sm text-neutral-500">
+                    New Studio releases will appear here.
+                  </p>
+                )}
+              </section>
+            </div>
+
+            {/* Journey band */}
+            <section className="mt-16 grid bg-[#1b1b19] text-white md:mt-20 md:grid-cols-[47%_1fr]">
+              <div className="relative min-h-[260px] md:min-h-[340px]">
+                <OptimizedImage
+                  src="/images/studio/journey.jpg"
+                  alt=""
+                  fill
+                  preset="full"
+                  sizes="(max-width: 768px) 100vw, 47vw"
+                  className="object-cover object-[30%_30%]"
+                />
+              </div>
+              <div className="flex flex-col justify-center px-6 py-14 md:px-14 lg:px-20">
+                <p className="font-archive-body text-[11px] uppercase tracking-[0.28em] text-white/60">
+                  The Journey
+                </p>
+                <p className="mt-6 max-w-lg font-display text-4xl font-light leading-[1.12] md:text-[2.6rem]">
+                  {content.heroSubtitle}
+                </p>
+                <p className="mt-6 max-w-md font-archive-body text-sm leading-relaxed text-white/80">
+                  {content.relationshipLead} Join to be part of that journey.
+                </p>
               </div>
             </section>
 
-            <section className="mx-auto mt-24 max-w-2xl border-t border-neutral-200 pt-16 md:mt-32 md:pt-20">
-              <h2 className="font-display text-3xl font-light text-neutral-900">
-                Join the Studio
-              </h2>
-              <p className="mt-4 text-neutral-600">
-                Choose how long you&apos;d like to stay close to the work.
-              </p>
-              <div className="mt-10">
-                <StudioJoinSection returnPath="/music/studio" />
-              </div>
-            </section>
+            <div className="bg-[#f8f6f1]">
+              {/* Join */}
+              <section className="mx-auto max-w-[1600px] px-6 pt-14 md:px-12 lg:px-16">
+                <h2 className="font-display text-3xl font-normal tracking-tight text-neutral-900 md:text-[2.1rem]">
+                  Join the Studio
+                </h2>
+                <p className="mt-2 max-w-xl font-archive-body text-sm leading-relaxed text-neutral-600">
+                  Choose how long you&apos;d like to stay close to the work.{" "}
+                  {CHECKOUT_SUPPORT_COPY}
+                </p>
+                <div className="mt-8">
+                  <StudioJoinSection
+                    returnPath="/music/studio"
+                    showSupportCopy={false}
+                    variant="grid"
+                  />
+                </div>
+              </section>
 
-            <section className="mx-auto mt-20 max-w-2xl">
-              <h3 className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
-                Questions
-              </h3>
-              <ul className="mt-8 space-y-8">
-                {content.faq.map((item) => (
-                  <li key={item.q}>
-                    <p className="font-display text-lg text-neutral-900">
-                      {item.q}
-                    </p>
-                    <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-                      {item.a}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </section>
+              {/* FAQ */}
+              <section className="mx-auto grid max-w-[1600px] gap-8 px-6 pb-4 pt-20 md:grid-cols-[1fr_1.6fr] md:px-12 lg:px-16">
+                <h2 className="font-display text-3xl font-normal text-neutral-900 md:text-[2.1rem]">
+                  Questions
+                </h2>
+                <ul className="divide-y divide-neutral-300/70 border-y border-neutral-300/70">
+                  {content.faq.map((item) => (
+                    <li key={item.q}>
+                      <details className="group py-4">
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-archive-body text-[13px] text-neutral-900 [&::-webkit-details-marker]:hidden">
+                          {item.q}
+                          <ChevronDown
+                            className="h-4 w-4 shrink-0 text-neutral-600 transition-transform group-open:rotate-180"
+                            aria-hidden
+                          />
+                        </summary>
+                        <p className="mt-3 max-w-xl font-archive-body text-sm leading-relaxed text-neutral-600">
+                          {item.a}
+                        </p>
+                      </details>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </div>
           </>
         )}
       </main>

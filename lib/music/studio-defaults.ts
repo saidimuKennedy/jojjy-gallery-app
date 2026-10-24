@@ -24,6 +24,10 @@ export const DEFAULT_STUDIO_PAGE = {
       q: "Can I extend my time in the Studio?",
       a: "Yes. Passes stack — a new join adds days to your current expiry.",
     },
+    {
+      q: "Will I still keep releases I purchased separately?",
+      a: "Yes. Releases you've purchased stay in your collection even after your Studio access ends.",
+    },
   ],
 };
 

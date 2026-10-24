@@ -39,11 +39,14 @@ const fetcher = async (url: string) => {
 type StudioJoinSectionProps = {
   returnPath?: string;
   showSupportCopy?: boolean;
+  /** "grid" renders plans as equal cards, one column per plan. */
+  variant?: "list" | "grid";
 };
 
 export default function StudioJoinSection({
   returnPath = "/music/studio",
   showSupportCopy = true,
+  variant = "list",
 }: StudioJoinSectionProps) {
   const router = useRouter();
   const { data: session, status: authStatus } = useSession();
@@ -151,6 +154,79 @@ export default function StudioJoinSection({
               {CHECKOUT_SUPPORT_COPY}
             </p>
           )}
+          {variant === "grid" ? (
+            <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {plans.map((plan, index) => {
+                const featured = index === 0;
+                return (
+                  <li
+                    key={plan.id}
+                    className={`relative flex flex-col p-6 ${
+                      featured
+                        ? "border border-neutral-900 bg-white"
+                        : "border border-neutral-200 bg-white/60"
+                    }`}
+                  >
+                    {featured && (
+                      <span className="absolute -top-3 left-4 bg-neutral-900 px-3 py-1 font-archive-body text-[10px] font-medium uppercase tracking-[0.14em] text-white">
+                        Most popular
+                      </span>
+                    )}
+                    <p className="font-display text-2xl text-neutral-900">
+                      {plan.durationDays} days
+                    </p>
+                    {plan.description && (
+                      <p className="mt-2 font-archive-body text-sm leading-relaxed text-neutral-600">
+                        {plan.description}
+                      </p>
+                    )}
+                    <p className="mt-6 font-display text-2xl text-neutral-900">
+                      {formatDisplayPrice(plan.price)}
+                    </p>
+                    <div className="mt-auto pt-6">
+                      {confirmPlanId === plan.id ? (
+                        <div className="space-y-3">
+                          <p className="text-xs leading-relaxed text-neutral-500">
+                            {CHECKOUT_SUPPORT_COPY}
+                          </p>
+                          <button
+                            type="button"
+                            disabled={busyPlanId != null}
+                            onClick={() => handleJoin(plan.id)}
+                            className="w-full border border-neutral-900 bg-neutral-900 px-4 py-3 font-archive-body text-xs font-medium text-white transition-colors hover:bg-white hover:text-neutral-900 disabled:opacity-50"
+                          >
+                            {busyPlanId === plan.id
+                              ? "Redirecting…"
+                              : "Continue to payment"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmPlanId(null)}
+                            className="w-full text-xs text-neutral-500 hover:text-neutral-900"
+                          >
+                            Back
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={busyPlanId != null}
+                          onClick={() => setConfirmPlanId(plan.id)}
+                          className={`w-full border border-neutral-900 px-4 py-3 font-archive-body text-xs font-medium transition-colors disabled:opacity-50 ${
+                            featured
+                              ? "bg-neutral-900 text-white hover:bg-white hover:text-neutral-900"
+                              : "bg-transparent text-neutral-900 hover:bg-neutral-900 hover:text-white"
+                          }`}
+                        >
+                          Join the Studio
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
           <ul className="space-y-4">
             {plans.map((plan) => (
               <li
@@ -208,6 +284,7 @@ export default function StudioJoinSection({
               </li>
             ))}
           </ul>
+          )}
           {!session && (
             <p className="mt-6 text-xs text-neutral-500">
               Sign in to join — your Studio access stays with your account.
