@@ -183,23 +183,22 @@ export default function MusicIndexPage() {
                 className="object-cover object-center"
               />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-white via-white/75 via-[38%] to-white/5 to-[82%] md:via-white/75 md:via-[35%] md:to-transparent md:to-[74%]" />
-            <div className="absolute inset-0 bg-gradient-to-t from-white/40 via-transparent to-transparent md:hidden" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/55 to-black/25 md:bg-gradient-to-r md:from-white md:via-white/75 md:via-[35%] md:to-transparent md:to-[74%]" />
           </div>
-          <div className="mx-auto flex min-h-[440px] max-w-[1600px] items-center md:min-h-[480px]">
+          <div className="mx-auto flex min-h-[440px] max-w-[1600px] items-center md:min-h-[min(82svh,820px)]">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7 }}
               className="flex w-full flex-col justify-center px-6 py-16 sm:w-[78%] md:w-[66%] md:px-10 md:py-20 lg:w-[62%]"
             >
-              <p className="font-display text-xs font-semibold uppercase tracking-[0.28em] text-neutral-700">
+              <p className="font-display text-xs font-semibold uppercase tracking-[0.28em] text-white/80 md:text-neutral-700">
                 Music
               </p>
-              <h1 className="mt-5 font-display text-5xl font-light leading-[1.05] tracking-tight text-neutral-900 md:text-6xl lg:text-7xl">
+              <h1 className="mt-5 font-display text-5xl font-light leading-[1.05] tracking-tight text-white md:text-neutral-900 md:text-7xl lg:text-8xl xl:text-9xl">
                 Stories in sound.
               </h1>
-              <p className="mt-5 max-w-md font-archive-body text-lg leading-[1.7] text-neutral-600">
+              <p className="mt-5 max-w-md font-archive-body text-lg leading-[1.7] text-white/90 md:text-neutral-600">
                 Explore releases, listen, and take the journey deeper.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -207,14 +206,14 @@ export default function MusicIndexPage() {
                   type="button"
                   disabled={!heroRelease || heroRelease.tracks.length === 0}
                   onClick={() => heroRelease && playRelease(heroRelease)}
-                  className="inline-flex min-h-12 items-center gap-2 border border-neutral-900 bg-neutral-900 px-6 py-3 font-display text-xs uppercase tracking-[0.22em] text-white transition-colors hover:bg-white hover:text-neutral-900 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
+                  className="inline-flex min-h-12 items-center gap-2 border border-white bg-white px-6 py-3 font-display text-xs uppercase tracking-[0.22em] text-neutral-900 transition-colors hover:bg-transparent hover:text-white md:border-neutral-900 md:bg-neutral-900 md:text-white md:hover:bg-white md:hover:text-neutral-900 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white md:focus-visible:outline-neutral-900"
                 >
                   <Play className="h-4 w-4 fill-current" aria-hidden="true" />
                   Play latest
                 </button>
                 <TextAction
                   href="#latest"
-                  className="min-h-12 rounded-md border border-neutral-300 bg-white/70 px-6 py-3 text-neutral-900 no-underline hover:bg-white hover:no-underline"
+                  className="min-h-12 rounded-md border border-white/60 bg-white/10 px-6 py-3 text-white no-underline hover:bg-white/20 hover:no-underline md:border-neutral-300 md:bg-white/70 md:text-neutral-900 md:hover:bg-white"
                 >
                   Explore all releases
                 </TextAction>
