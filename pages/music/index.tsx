@@ -3,7 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import useSWR from "swr";
-import { Play } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
@@ -31,7 +31,57 @@ type ReleaseCard = {
     trackNumber: number;
     duration: number | null;
   }[];
+  preview?: boolean;
 };
+
+const PREVIEW_COVERS = {
+  waterEchoes: "/images/water-echoes-preview.svg",
+  dawn: "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750932056/Dawn_km3ucm.jpg",
+  sunshine: "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750932044/sunshine_pboqqo.jpg",
+  crossing: "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750932036/The_Crossing_kbdkjg.jpg",
+  tug: "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750932010/Tug_of_war_to9ieg.jpg",
+  untitled: "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750932000/Untitled_xdhljj.jpg",
+  walk: "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750931992/walk_on_water_ekduli.jpg",
+  cycles: "https://res.cloudinary.com/dq3wkbgts/image/upload/v1750931901/cycles_k4yv0p.jpg",
+};
+
+function previewRelease(
+  id: number,
+  title: string,
+  releaseType: string,
+  accessMode: string,
+  coverImage: string
+): ReleaseCard {
+  return {
+    id,
+    slug: `preview-${id}`,
+    title,
+    coverImage,
+    artistName: "Njenga Ngugi",
+    releaseType,
+    releaseDate: "2024-01-01",
+    accessMode,
+    price: null,
+    currency: "USD",
+    locked: accessMode === "MEMBERS_ONLY",
+    tracks: [],
+    preview: true,
+  };
+}
+
+const PREVIEW_RELEASES: ReleaseCard[] = [
+  previewRelease(-1, "omen", "SINGLE", "FREE", PREVIEW_COVERS.dawn),
+  previewRelease(-2, "Water Echoes", "EP", "FREE", PREVIEW_COVERS.waterEchoes),
+  previewRelease(-3, "The Crossing", "SINGLE", "FREE", PREVIEW_COVERS.crossing),
+  previewRelease(-4, "Rhythm na Soul", "ALBUM", "FREE", PREVIEW_COVERS.cycles),
+  previewRelease(-5, "Sauti", "SINGLE", "FREE", PREVIEW_COVERS.sunshine),
+  previewRelease(-6, "Midnight Letters", "EP", "FREE", PREVIEW_COVERS.untitled),
+  previewRelease(-7, "Room to Breathe", "SINGLE", "MEMBERS_ONLY", PREVIEW_COVERS.tug),
+  previewRelease(-8, "After Midnight", "EP", "MEMBERS_ONLY", PREVIEW_COVERS.sunshine),
+  previewRelease(-9, "The Green Room", "ALBUM", "MEMBERS_ONLY", PREVIEW_COVERS.cycles),
+  previewRelease(-10, "Quiet Hours", "SINGLE", "MEMBERS_ONLY", PREVIEW_COVERS.walk),
+  previewRelease(-11, "First Light", "LIVE_SESSION", "MEMBERS_ONLY", PREVIEW_COVERS.dawn),
+];
 
 const fetcher = async (url: string) => {
   const res = await fetch(url, { credentials: "include" });
@@ -78,7 +128,16 @@ export default function MusicIndexPage() {
     setTone("light");
   }, [setTone]);
 
-  const catalogue = useMemo(() => releases ?? [], [releases]);
+  // Editorial sample content is for local development only. Never let demo
+  // releases appear in a deployed catalogue when the database is empty.
+  const usingPreview =
+    process.env.NODE_ENV === "development" &&
+    !isLoading &&
+    (!releases || releases.length === 0);
+  const catalogue = useMemo(
+    () => (usingPreview ? PREVIEW_RELEASES : releases ?? []),
+    [releases, usingPreview]
+  );
   const latest = useMemo(
     () => catalogue.filter((r) => r.accessMode !== "MEMBERS_ONLY"),
     [catalogue]
@@ -111,15 +170,30 @@ export default function MusicIndexPage() {
 
       <main className="pb-28">
         {/* Hero */}
-        <section className="border-b border-neutral-200">
-          <div className="mx-auto grid max-w-7xl items-stretch gap-0 md:grid-cols-2">
+        <section className="relative isolate overflow-hidden border-b border-neutral-200">
+          <div className="absolute inset-0 -z-10 bg-neutral-900">
+            <div className="absolute inset-y-0 right-0 w-full md:w-[72%]">
+              <OptimizedImage
+                src="/images/joj-artist.png"
+                alt=""
+                fill
+                preset="full"
+                priority
+                sizes="(max-width: 768px) 100vw, 72vw"
+                className="object-cover object-center"
+              />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-r from-white via-white/75 via-[38%] to-white/5 to-[82%] md:via-white/75 md:via-[35%] md:to-transparent md:to-[74%]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-white/40 via-transparent to-transparent md:hidden" />
+          </div>
+          <div className="mx-auto flex min-h-[440px] max-w-[1600px] items-center md:min-h-[480px]">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7 }}
-              className="flex flex-col justify-center px-6 py-14 md:px-10 md:py-20"
+              className="flex w-full flex-col justify-center px-6 py-16 sm:w-[78%] md:w-[66%] md:px-10 md:py-20 lg:w-[62%]"
             >
-              <p className="font-display text-xs uppercase tracking-[0.28em] text-neutral-500">
+              <p className="font-display text-xs font-semibold uppercase tracking-[0.28em] text-neutral-700">
                 Music
               </p>
               <h1 className="mt-5 font-display text-5xl font-light leading-[1.05] tracking-tight text-neutral-900 md:text-6xl lg:text-7xl">
@@ -138,39 +212,40 @@ export default function MusicIndexPage() {
                   <Play className="h-4 w-4 fill-current" aria-hidden="true" />
                   Play latest
                 </button>
-                <TextAction href="#latest">Explore all releases</TextAction>
+                <TextAction
+                  href="#latest"
+                  className="min-h-12 rounded-md border border-neutral-300 bg-white/70 px-6 py-3 text-neutral-900 no-underline hover:bg-white hover:no-underline"
+                >
+                  Explore all releases
+                </TextAction>
               </div>
             </motion.div>
-            <div className="relative min-h-[280px] bg-neutral-100 md:min-h-[460px]">
-              {heroRelease?.coverImage ? (
-                <OptimizedImage
-                  src={heroRelease.coverImage}
-                  alt=""
-                  fill
-                  preset="full"
-                  priority
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover"
-                />
-              ) : null}
-            </div>
           </div>
         </section>
 
         {isLoading && (
-          <p className="mx-auto max-w-7xl px-6 py-16 font-display text-xs uppercase tracking-[0.2em] text-neutral-500 md:px-10">
+          <p className="mx-auto max-w-[1600px] px-6 py-16 font-display text-xs uppercase tracking-[0.2em] text-neutral-500 md:px-10">
             Loading
           </p>
         )}
-        {error && (
-          <p className="mx-auto max-w-7xl px-6 py-16 text-sm text-red-600 md:px-10">
-            {(error as Error).message}
+        {usingPreview && (
+          <p
+            role="status"
+            className="mx-auto max-w-[1600px] px-6 pt-8 text-xs text-neutral-500 md:px-10"
+          >
+            {error
+              ? "The catalogue is unavailable. Showing sample artwork and titles for preview."
+              : "Sample artwork and titles shown for preview. These releases are not available to play or purchase."}
           </p>
         )}
-
-        {!isLoading && !error && catalogue.length === 0 && (
-          <p className="mx-auto max-w-7xl px-6 py-16 text-neutral-500 md:px-10">
-            No releases yet.
+        {!isLoading && !usingPreview && error && (
+          <p role="status" className="mx-auto max-w-[1600px] px-6 pt-8 text-sm text-neutral-500 md:px-10">
+            Music releases are temporarily unavailable. Please check back soon.
+          </p>
+        )}
+        {!isLoading && !usingPreview && !error && catalogue.length === 0 && (
+          <p className="mx-auto max-w-[1600px] px-6 py-16 text-sm text-neutral-500 md:px-10">
+            No music releases are available yet.
           </p>
         )}
 
@@ -178,21 +253,24 @@ export default function MusicIndexPage() {
         {latest.length > 0 && (
           <section
             id="latest"
-            className="mx-auto max-w-7xl scroll-mt-20 px-6 pt-14 md:px-10 md:pt-20"
+            className="mx-auto max-w-[1600px] scroll-mt-20 px-6 pt-14 md:px-10 md:pt-20"
           >
             <div className="flex items-end justify-between gap-4">
               <div>
-                <h2 className="font-display text-3xl font-light tracking-tight text-neutral-900 md:text-4xl">
+                <h2 className="font-display text-3xl font-medium tracking-tight text-neutral-900 md:text-4xl">
                   Latest releases
                 </h2>
                 <p className="mt-1 text-sm text-neutral-500">
                   New music, fresh stories, and evolving sounds.
                 </p>
               </div>
-              <TextAction href="#latest">View all</TextAction>
+              <TextAction href="#latest" className="gap-2">
+                View all
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </TextAction>
             </div>
 
-            <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="music-release-carousel mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 sm:gap-5 lg:gap-5">
               {latest.map((r) => (
                 <ReleaseTile key={r.id} release={r} onPlay={playRelease} />
               ))}
@@ -202,10 +280,10 @@ export default function MusicIndexPage() {
 
         {/* Studio releases */}
         {studioReleases.length > 0 && (
-          <section className="mx-auto max-w-7xl px-6 pt-16 pb-4 md:px-10 md:pt-24">
+          <section className="mx-auto max-w-[1600px] px-6 pt-16 pb-4 md:px-10 md:pt-24">
             <div className="flex items-end justify-between gap-4">
               <div>
-                <h2 className="font-display text-3xl font-light tracking-tight text-neutral-900 md:text-4xl">
+                <h2 className="font-display text-3xl font-medium tracking-tight text-neutral-900 md:text-4xl">
                   Studio releases
                 </h2>
                 <p className="mt-1 text-sm text-neutral-500">
@@ -214,10 +292,11 @@ export default function MusicIndexPage() {
               </div>
               <TextAction href="/music/studio">
                 Learn about Studio Pass
+                <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
               </TextAction>
             </div>
 
-            <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="music-release-carousel mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 sm:gap-5 lg:gap-5">
               {studioReleases.map((r) => (
                 <ReleaseTile key={r.id} release={r} onPlay={playRelease} studio />
               ))}
@@ -225,7 +304,7 @@ export default function MusicIndexPage() {
           </section>
         )}
 
-        <section className="mx-auto max-w-7xl px-6 py-16 md:px-10">
+        <section className="mx-auto max-w-[1600px] px-6 py-16 md:px-10">
           <div className="flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-neutral-200 pt-8">
             <TextAction href="/music/studio">Step inside the Studio</TextAction>
             <TextAction href="/music/library">Your library</TextAction>
@@ -248,15 +327,30 @@ function ReleaseTile({
   studio?: boolean;
 }) {
   const playable = release.tracks.length > 0;
+  const showPlayButton = playable || Boolean(release.preview);
   const year = releaseYear(release);
   return (
-    <div>
+    <div className="w-[72vw] max-w-[15rem] shrink-0 snap-start sm:w-[38vw] lg:w-[min(20vw,280px)] lg:max-w-none">
       <div className="group relative aspect-square overflow-hidden bg-neutral-100">
-        <Link
-          href={`/music/${release.slug}`}
-          aria-label={`${release.title} — open release`}
-          className="block h-full w-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
-        >
+        {release.preview ? (
+          <div className="block h-full w-full" aria-hidden="true">
+            {release.coverImage ? (
+              <OptimizedImage
+                src={release.coverImage}
+                alt=""
+                fill
+                preset="card"
+                sizes="(max-width: 640px) 72vw, (max-width: 1024px) 38vw, 17vw"
+                className="object-cover"
+              />
+            ) : null}
+          </div>
+        ) : (
+          <Link
+            href={`/music/${release.slug}`}
+            aria-label={`${release.title} — open release`}
+            className="block h-full w-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
+          >
           {release.coverImage ? (
             <OptimizedImage
               src={release.coverImage}
@@ -267,29 +361,39 @@ function ReleaseTile({
               className="object-cover transition duration-500 group-hover:scale-[1.02]"
             />
           ) : null}
-        </Link>
+          </Link>
+        )}
         {studio && (
-          <span className="pointer-events-none absolute left-3 top-3 inline-flex items-center gap-1.5 bg-black/70 px-2.5 py-1 text-xs text-white">
-            Studio Access
+          <span
+            className="pointer-events-none absolute left-3 top-3 max-w-[calc(100%-1.5rem)] truncate bg-black/75 px-2.5 py-1 text-[10px] uppercase tracking-[0.12em] text-white"
+          >
+            Studio access
           </span>
         )}
-        {playable && (
+        {showPlayButton && (
           <button
             type="button"
             onClick={() => onPlay(release)}
-            aria-label={`Play ${release.title}`}
-            className="absolute bottom-3 left-3 flex h-12 w-12 items-center justify-center rounded-full bg-neutral-900/90 text-white transition hover:bg-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            disabled={!playable}
+            aria-label={playable ? `Play ${release.title}` : `${release.title} preview only`}
+            className="absolute bottom-3 left-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-neutral-900 shadow-sm transition hover:bg-neutral-100 disabled:cursor-default focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
-            <Play className="h-5 w-5 fill-current" aria-hidden="true" />
+            <Play className="h-4 w-4 fill-current" aria-hidden="true" />
           </button>
         )}
       </div>
-      <Link
-        href={`/music/${release.slug}`}
-        className="mt-3 block truncate font-display text-lg text-neutral-900 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
-      >
-        {release.title}
-      </Link>
+      {release.preview ? (
+        <p className="mt-3 truncate font-display text-lg text-neutral-900">
+          {release.title}
+        </p>
+      ) : (
+        <Link
+          href={`/music/${release.slug}`}
+          className="mt-3 block truncate font-display text-lg text-neutral-900 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
+        >
+          {release.title}
+        </Link>
+      )}
       <p className="mt-0.5 text-sm text-neutral-500">
         {prettyType(release.releaseType)}
         {year ? ` · ${year}` : ""}

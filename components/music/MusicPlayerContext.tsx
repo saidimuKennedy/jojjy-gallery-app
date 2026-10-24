@@ -32,6 +32,7 @@ export type MusicPlayerContextValue = {
   isLoading: boolean;
   currentTime: number;
   duration: number | null;
+  volume: number;
   error: string | null;
   tone: PlayerTone;
   setTone: (tone: PlayerTone) => void;
@@ -43,6 +44,7 @@ export type MusicPlayerContextValue = {
   next: () => void;
   prev: () => void;
   seek: (seconds: number) => void;
+  setVolume: (volume: number) => void;
   close: () => void;
 };
 

@@ -44,6 +44,7 @@ export function MusicPlayerProvider({
   const [isLoading, setIsLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState<number | null>(null);
+  const [volume, setVolumeState] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [tone, setTone] = useState<PlayerTone>("light");
 
@@ -187,6 +188,17 @@ export function MusicPlayerProvider({
     setCurrentTime(seconds);
   }, []);
 
+  const setVolume = useCallback((nextVolume: number) => {
+    if (!Number.isFinite(nextVolume)) return;
+    const normalized = Math.min(1, Math.max(0, nextVolume));
+    if (audioRef.current) audioRef.current.volume = normalized;
+    setVolumeState(normalized);
+  }, []);
+
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume;
+  }, [volume]);
+
   const close = useCallback(() => {
     audioRef.current?.pause();
     setRelease(null);
@@ -214,6 +226,7 @@ export function MusicPlayerProvider({
       isLoading,
       currentTime,
       duration,
+      volume,
       error,
       tone,
       setTone,
@@ -222,6 +235,7 @@ export function MusicPlayerProvider({
       next,
       prev,
       seek,
+      setVolume,
       close,
     }),
     [
@@ -231,6 +245,7 @@ export function MusicPlayerProvider({
       isLoading,
       currentTime,
       duration,
+      volume,
       error,
       tone,
       play,
@@ -238,6 +253,7 @@ export function MusicPlayerProvider({
       next,
       prev,
       seek,
+      setVolume,
       close,
     ]
   );
