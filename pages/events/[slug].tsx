@@ -34,6 +34,7 @@ interface EventDetail {
     id: number;
     name: string;
     description: string | null;
+    refundPolicy: string | null;
     price: number;
     quantity: number;
     quantitySold: number;
@@ -279,6 +280,7 @@ export default function EventDetailPage() {
       ticketTypeId: tt.id,
       ticketTypeName: tt.name,
       price: tt.price,
+      refundPolicy: tt.refundPolicy,
       remaining,
     });
   };

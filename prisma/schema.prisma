@@ -271,6 +271,9 @@ model TicketType {
   /// Archived tiers are hidden from sale but kept for history once they have
   /// orders/tickets. Never hard-deleted after first sale.
   archivedAt       DateTime?
+  /// Shown to buyers at checkout, e.g. "Refundable up to 48 hours before the event".
+  /// Blank means no refund statement is shown. Set per tier in the CRM.
+  refundPolicy     String?
   /// Access label printed on the ticket, e.g. "General Access" or "VIP Access".
   entryLabel       String?
   /// Premium tiers get the gold accent on the ticket stub.

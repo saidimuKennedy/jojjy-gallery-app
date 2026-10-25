@@ -12,6 +12,8 @@ export interface TicketCheckoutTarget {
   ticketTypeId: number;
   ticketTypeName: string;
   price: number;
+  /** Set per tier in the CRM; blank means no refund statement. */
+  refundPolicy?: string | null;
   remaining: number;
 }
 
@@ -74,8 +76,8 @@ export default function TicketCheckout({
       toast.error("Enter a valid email so we can send your tickets.");
       return;
     }
-    if (!consent) {
-      toast.error("Please accept the ticket terms.");
+    if (target.refundPolicy && !consent) {
+      toast.error("Please accept the refund policy.");
       return;
     }
     setBusy(true);
@@ -230,18 +232,28 @@ export default function TicketCheckout({
           </div>
         </div>
 
-        <label className="mt-6 flex items-start gap-3 font-archive-body text-sm text-neutral-600">
-          <input
-            type="checkbox"
-            checked={consent}
-            onChange={(e) => setConsent(e.target.checked)}
-            className="mt-1"
-          />
-          <span>
-            I understand tickets are non-transferable and are validated at the
-            door by QR code.
-          </span>
-        </label>
+        {/* Terms come from the CRM (per ticket tier). */}
+        {target.refundPolicy ? (
+          <div className="mt-6 border border-neutral-200 bg-neutral-50 p-4 font-archive-body text-sm text-neutral-700">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
+              Refund policy
+            </p>
+            <p className="mt-1">{target.refundPolicy}</p>
+            <label className="mt-3 flex items-start gap-3">
+              <input
+                type="checkbox"
+                checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+                className="mt-1"
+              />
+              <span>I&apos;ve read and accept this policy.</span>
+            </label>
+          </div>
+        ) : (
+          <p className="mt-6 font-archive-body text-sm text-neutral-600">
+            Your QR ticket is scanned at the door.
+          </p>
+        )}
 
         <div className="mt-6 flex items-center justify-between border-t border-neutral-200 pt-6">
           <span className="font-display text-lg font-normal text-neutral-900">
