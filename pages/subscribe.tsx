@@ -3,6 +3,7 @@ import Head from "next/head";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import NewsletterSignup from "@/components/ui/NewsletterSignup";
+import BackLink from "@/components/ui/BackLink";
 
 export default function SubscribePage() {
   return (
@@ -23,6 +24,9 @@ export default function SubscribePage() {
             aria-hidden
           />
           <div className="relative mx-auto flex min-h-[70vh] max-w-xl flex-col justify-center px-6 py-24 md:px-8 md:py-32">
+            <div className="mb-10">
+              <BackLink href="/">Back to site</BackLink>
+            </div>
             <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500">
               Updates
             </p>
