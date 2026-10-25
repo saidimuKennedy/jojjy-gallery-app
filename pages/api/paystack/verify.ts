@@ -38,7 +38,27 @@ function serializeOrder(order: NonNullable<Awaited<ReturnType<typeof loadOrder>>
     tickets: order.tickets.map((t) => ({
       id: t.id,
       code: t.code,
-      ticketType: t.ticketType,
+      status: t.status,
+      holderName: t.holderName,
+      checkedInAt: t.checkedInAt ? t.checkedInAt.toISOString() : null,
+      ticketType: {
+        name: t.ticketType.name,
+        price: t.ticketType.price.toNumber(),
+        entryLabel: t.ticketType.entryLabel,
+        isPremium: t.ticketType.isPremium,
+        event: {
+          title: t.ticketType.event.title,
+          startsAt: t.ticketType.event.startsAt.toISOString(),
+          endsAt: t.ticketType.event.endsAt
+            ? t.ticketType.event.endsAt.toISOString()
+            : null,
+          venue: t.ticketType.event.venue,
+          imageUrl: t.ticketType.event.imageUrl,
+          timezone: t.ticketType.event.timezone,
+          category: t.ticketType.event.category,
+          tagline: t.ticketType.event.tagline,
+        },
+      },
     })),
   };
 }
@@ -49,7 +69,7 @@ async function loadOrder(orderId: string) {
     include: {
       items: {
         include: {
-          artwork: { select: { id: true, title: true } },
+          artwork: { select: { id: true, title: true, imageUrl: true } },
           ticketType: {
             select: {
               name: true,
@@ -59,16 +79,39 @@ async function loadOrder(orderId: string) {
           productVariant: {
             select: {
               sku: true,
-              product: { select: { name: true } },
+              size: true,
+              color: true,
+              product: { select: { name: true, imageUrl: true } },
             },
           },
-          release: { select: { id: true, title: true, slug: true } },
+          release: {
+            select: { id: true, title: true, slug: true, coverImage: true },
+          },
           membershipPlan: { select: { id: true, name: true } },
         },
       },
       tickets: {
         include: {
-          ticketType: { select: { name: true } },
+          ticketType: {
+            select: {
+              name: true,
+              price: true,
+              entryLabel: true,
+              isPremium: true,
+              event: {
+                select: {
+                  title: true,
+                  startsAt: true,
+                  endsAt: true,
+                  venue: true,
+                  imageUrl: true,
+                  timezone: true,
+                  category: true,
+                  tagline: true,
+                },
+              },
+            },
+          },
         },
       },
     },

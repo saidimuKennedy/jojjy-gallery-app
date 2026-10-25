@@ -7,19 +7,31 @@ import useSWR from "swr";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import BackLink from "@/components/ui/BackLink";
+import EventTicket from "@/components/events/EventTicket";
+import { CATALOG_CURRENCY } from "@/lib/currency";
 
 interface WalletTicket {
   id: string;
   code: string;
   status: string;
+  holderName: string | null;
+  checkedInAt: string | null;
   createdAt: string;
+  purchasedAt: string;
   ticketType: string;
+  price: number;
+  entryLabel: string | null;
+  isPremium: boolean;
   event: {
     title: string;
     slug: string;
     startsAt: string;
     endsAt: string | null;
     venue: string | null;
+    imageUrl: string | null;
+    timezone: string;
+    category: string | null;
+    tagline: string | null;
     status: string;
   };
   orderId: string;
@@ -64,7 +76,7 @@ export default function TicketWalletPage() {
         <title>Tickets — Account</title>
       </Head>
       <Navbar variant="transparent" />
-      <main className="container mx-auto max-w-2xl px-4 pb-16 pt-24 md:pb-20 md:pt-28">
+      <main className="container mx-auto max-w-6xl px-6 pb-16 pt-24 md:pb-20 md:pt-28">
         <BackLink href="/account" tone="dark" className="mb-10">
           Back to Account
         </BackLink>
@@ -87,32 +99,41 @@ export default function TicketWalletPage() {
             </Link>
           </p>
         ) : (
-          <ul className="space-y-6">
+          <ul className="space-y-10">
             {tickets.map((t) => (
-              <li
-                key={t.id}
-                className="border border-neutral-800 bg-neutral-950 px-5 py-5"
-              >
+              <li key={t.id}>
+                <EventTicket
+                  eventTitle={t.event.title}
+                  eventImageUrl={t.event.imageUrl}
+                  startsAt={t.event.startsAt}
+                  endsAt={t.event.endsAt}
+                  venue={t.event.venue}
+                  ticketType={t.ticketType}
+                  price={t.price}
+                  currency={CATALOG_CURRENCY}
+                  entryLabel={t.entryLabel}
+                  premium={t.isPremium}
+                  category={t.event.category}
+                  tagline={t.event.tagline}
+                  timezone={t.event.timezone}
+                  downloadable
+                  attendeeName={t.holderName}
+                  code={t.code}
+                  orderRef={t.orderId.slice(0, 8)}
+                  purchasedAt={t.purchasedAt}
+                  status={
+                    t.orderStatus !== "PAID" && t.status === "VALID"
+                      ? "CANCELLED"
+                      : t.status
+                  }
+                  checkedInAt={t.checkedInAt}
+                />
                 <Link
                   href={`/events/${t.event.slug}`}
-                  className="font-display text-xl font-normal text-white hover:text-neutral-300"
+                  className="mt-3 inline-block font-archive-body text-sm text-neutral-200 underline-offset-4 hover:underline"
                 >
-                  {t.event.title}
+                  View event
                 </Link>
-                <p className="mt-1 text-xs font-light text-neutral-400">
-                  {new Date(t.event.startsAt).toLocaleDateString()}
-                  {t.event.venue ? ` · ${t.event.venue}` : ""} ·{" "}
-                  {t.ticketType}
-                </p>
-                <p className="mt-3 font-mono text-lg tracking-widest text-white">
-                  {t.code}
-                </p>
-                <p className="mt-2 text-xs font-light text-neutral-400">
-                  {t.status}
-                  {t.orderStatus !== "PAID"
-                    ? ` · order ${t.orderStatus.toLowerCase()}`
-                    : ""}
-                </p>
               </li>
             ))}
           </ul>

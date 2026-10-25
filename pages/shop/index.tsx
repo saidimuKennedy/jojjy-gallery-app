@@ -97,12 +97,12 @@ export default function ShopIndexPage({
         >
           Shop
         </motion.h1>
-        <p className="text-center text-sm font-light text-neutral-500 mb-14 max-w-lg mx-auto">
+        <p className="text-center text-sm font-normal text-neutral-500 mb-14 max-w-lg mx-auto">
           Original works, apparel, and objects currently offered for purchase.
         </p>
 
         {isLoading && (
-          <p className="text-center font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
+          <p className="text-center font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-600">
             Loading
           </p>
         )}
@@ -112,7 +112,7 @@ export default function ShopIndexPage({
           </p>
         )}
         {!isLoading && forSale.length === 0 && availableProducts.length === 0 && (
-          <p className="text-center text-sm font-light text-neutral-500">
+          <p className="text-center text-sm font-normal text-neutral-500">
             No works available for purchase right now.
           </p>
         )}
@@ -139,11 +139,11 @@ export default function ShopIndexPage({
                   {artwork.title}
                 </h2>
                 {artwork.medium && (
-                  <p className="text-xs font-light text-neutral-600 mt-1">
+                  <p className="text-xs font-normal text-neutral-600 mt-1">
                     {artwork.medium}
                   </p>
                 )}
-                <p className="mt-2 text-sm font-light text-neutral-600">
+                <p className="mt-2 text-sm font-normal text-neutral-600">
                   {formatUsdPrice(artwork.price!)}
                 </p>
               </Link>
@@ -157,7 +157,7 @@ export default function ShopIndexPage({
               <h2 className="font-display text-2xl md:text-3xl font-normal text-neutral-900 tracking-tight">
                 Merch
               </h2>
-              <span className="text-xs font-light uppercase tracking-[0.2em] text-neutral-500">
+              <span className="font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-600">
                 Apparel &amp; objects
               </span>
             </div>
@@ -180,7 +180,7 @@ export default function ShopIndexPage({
                       />
                     ) : (
                       <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
-                        <p className="font-display text-[0.7rem] uppercase tracking-[0.2em] text-neutral-500">
+                        <p className="font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-600">
                           {product.category || "Merch"}
                         </p>
                         <p className="font-display text-lg font-normal tracking-tight text-neutral-700">
@@ -193,11 +193,11 @@ export default function ShopIndexPage({
                     {product.name}
                   </h2>
                   {product.category && (
-                    <p className="text-xs font-light text-neutral-600 mt-1">
+                    <p className="text-xs font-normal text-neutral-600 mt-1">
                       {product.category}
                     </p>
                   )}
-                  <p className="mt-2 text-sm font-light text-neutral-600">
+                  <p className="mt-2 text-sm font-normal text-neutral-600">
                     {productPriceRange(product)}
                   </p>
                 </Link>

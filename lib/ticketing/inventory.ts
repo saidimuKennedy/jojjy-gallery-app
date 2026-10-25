@@ -51,21 +51,23 @@ export async function releaseExpiredTicketReservations(
   if (expired.length === 0) return 0;
 
   const byType = new Map<number, number>();
+  let released = 0;
   for (const r of expired) {
+    const claimed = await tx.ticketReservation.updateMany({
+      where: { id: r.id, status: "ACTIVE" },
+      data: { status: "RELEASED", releasedAt: now },
+    });
+    if (claimed.count === 0) continue;
+    released += 1;
     byType.set(r.ticketTypeId, (byType.get(r.ticketTypeId) ?? 0) + r.quantity);
   }
-
-  await tx.ticketReservation.updateMany({
-    where: { id: { in: expired.map((r) => r.id) } },
-    data: { status: "RELEASED", releasedAt: now },
-  });
   for (const [ticketTypeId, qty] of byType) {
     await tx.ticketType.update({
       where: { id: ticketTypeId },
       data: { quantityReserved: { decrement: qty } },
     });
   }
-  return expired.length;
+  return released;
 }
 
 /**
@@ -158,12 +160,13 @@ export async function releaseOrderReservations(
 
   const byType = new Map<number, number>();
   for (const r of active) {
+    const claimed = await tx.ticketReservation.updateMany({
+      where: { id: r.id, status: "ACTIVE" },
+      data: { status: "RELEASED", releasedAt: now },
+    });
+    if (claimed.count === 0) continue;
     byType.set(r.ticketTypeId, (byType.get(r.ticketTypeId) ?? 0) + r.quantity);
   }
-  await tx.ticketReservation.updateMany({
-    where: { id: { in: active.map((r) => r.id) } },
-    data: { status: "RELEASED", releasedAt: now },
-  });
   for (const [ticketTypeId, qty] of byType) {
     await tx.ticketType.update({
       where: { id: ticketTypeId },

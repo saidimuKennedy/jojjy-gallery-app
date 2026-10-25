@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Legibility: keep the display serif for headings; small labels use the body sans. */
+.font-display.text-xs,
+.font-display.text-sm {
+  font-family: "Public Sans", system-ui, sans-serif;
+  font-weight: 600;
+}
+
 /* Gallery Theme */
 :root {
   /* Base colors */
@@ -76,7 +83,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Ubuntu, sans-serif;
+  font-family: "Public Sans", system-ui, sans-serif;
 }
 
 .dark {
@@ -663,5 +670,71 @@ body {
 
   .jenga-link > span:first-child::after {
     transition: none !important;
+  }
+}
+
+
+/* EventTicket "Download ticket": one printed sheet = header + the ticket. */
+.ticket-print-root {
+  display: none;
+}
+@page {
+  size: A4 landscape;
+  margin: 0; /* also drops the browser's date / URL header and footer */
+}
+@media print {
+  body[data-printing-ticket] {
+    background: #fff !important;
+  }
+  /* Only the print sheet survives, so the ticket is exactly one page. */
+  body[data-printing-ticket] > *:not(.ticket-print-root) {
+    display: none !important;
+  }
+  body[data-printing-ticket] .ticket-print-root {
+    display: block;
+    box-sizing: border-box;
+    width: 297mm;
+    height: 208mm;
+    overflow: hidden;
+    padding: 9mm 32mm;
+    background: #fff;
+    color: #111;
+    font-family: "Public Sans", system-ui, sans-serif;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .ticket-print-root .print-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 6mm;
+  }
+  .ticket-print-root .print-head h1 {
+    margin: 0;
+    font-size: 26pt;
+    font-weight: 700;
+  }
+  .ticket-print-root .print-head p {
+    margin: 2mm 0 0;
+    font-size: 12pt;
+    color: #444;
+  }
+  .ticket-print-root .print-signature {
+    height: 20mm;
+    width: auto;
+    object-fit: contain;
+  }
+  .ticket-print-root article {
+    box-shadow: none !important;
+  }
+  /* Notches take the paper colour. */
+  .ticket-print-root .ticket-notch {
+    background-color: #fff !important;
+  }
+  .ticket-print-root .print-note {
+    margin: 5mm 0 0;
+    text-align: center;
+    font-size: 10pt;
+    color: #444;
   }
 }

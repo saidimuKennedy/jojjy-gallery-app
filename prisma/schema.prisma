@@ -178,6 +178,12 @@ model Event {
   directions    String?
   openingHours  String?
   artistTalkAt  DateTime?
+  /// IANA timezone the event runs in; drives displayed times on tickets.
+  timezone      String           @default("Africa/Nairobi")
+  /// Short label shown on tickets, e.g. "Live event" or "Opening".
+  category      String?
+  /// One-line tagline shown on the ticket artwork, e.g. "People. Art. Sound. Together."
+  tagline       String?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
   ticketTypes   TicketType[]
@@ -265,6 +271,10 @@ model TicketType {
   /// Archived tiers are hidden from sale but kept for history once they have
   /// orders/tickets. Never hard-deleted after first sale.
   archivedAt       DateTime?
+  /// Access label printed on the ticket, e.g. "General Access" or "VIP Access".
+  entryLabel       String?
+  /// Premium tiers get the gold accent on the ticket stub.
+  isPremium        Boolean     @default(false)
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
   event            Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)

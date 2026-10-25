@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from "react";
 import Head from "next/head";
+import { Info, Search } from "lucide-react";
 import { useRouter } from "next/router";
-import QRCode from "qrcode";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
+import EventTicket from "@/components/events/EventTicket";
+import { CATALOG_CURRENCY } from "@/lib/currency";
+import { resolveCallbackReference } from "@/lib/paystack-callback";
 
 interface RetrievedTicket {
+  id: string;
+  price: number;
+  entryLabel: string | null;
+  isPremium: boolean;
   code: string;
   ticketType: string;
   holderName: string | null;
@@ -20,67 +27,14 @@ interface RetrievedEvent {
     slug: string;
     venue: string | null;
     startsAt: string;
+    endsAt: string | null;
+    imageUrl: string | null;
+    timezone: string;
+    category: string | null;
+    tagline: string | null;
     status: string;
   };
   tickets: RetrievedTicket[];
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
-function TicketCard({ ticket }: { ticket: RetrievedTicket }) {
-  const [qr, setQr] = useState<string | null>(null);
-  useEffect(() => {
-    QRCode.toDataURL(ticket.code, { margin: 1, width: 220 })
-      .then(setQr)
-      .catch(() => setQr(null));
-  }, [ticket.code]);
-
-  const invalid = ticket.status === "REFUNDED" || ticket.status === "CANCELLED";
-  return (
-    <div className="flex flex-col items-center gap-4 border border-neutral-800 p-6 sm:flex-row sm:items-start">
-      <div className="flex h-[220px] w-[220px] items-center justify-center bg-white">
-        {qr ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={qr} alt={`QR code for ticket ${ticket.code}`} width={220} height={220} />
-        ) : (
-          <span className="text-xs text-neutral-500">Loading QR…</span>
-        )}
-      </div>
-      <div className="flex-1 text-center sm:text-left">
-        <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-400">
-          {ticket.ticketType}
-        </p>
-        <p className="mt-2 font-display text-lg font-normal text-white">
-          {ticket.holderName || "Guest"}
-        </p>
-        <p className="mt-3 font-mono text-sm tracking-widest text-neutral-200">
-          {ticket.code}
-        </p>
-        <p className="mt-3 font-archive-body text-sm">
-          {invalid ? (
-            <span className="text-red-400">
-              {ticket.status === "REFUNDED" ? "Refunded" : "Cancelled"} — not
-              valid for entry
-            </span>
-          ) : ticket.checkedInAt ? (
-            <span className="text-neutral-400">
-              Checked in {formatDateTime(ticket.checkedInAt)}
-            </span>
-          ) : (
-            <span className="text-green-400">Valid for entry</span>
-          )}
-        </p>
-      </div>
-    </div>
-  );
 }
 
 export default function RetrieveTicketsPage() {
@@ -90,11 +44,16 @@ export default function RetrieveTicketsPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [events, setEvents] = useState<RetrievedEvent[] | null>(null);
+  const [orderShort, setOrderShort] = useState<string | null>(null);
+  const [purchasedAt, setPurchasedAt] = useState<string | null>(null);
 
   useEffect(() => {
     if (!router.isReady) return;
     const token = typeof router.query.token === "string" ? router.query.token : "";
-    const ref = typeof router.query.ref === "string" ? router.query.ref : "";
+    const callback = resolveCallbackReference(router.query);
+    const ref =
+      callback.reference ??
+      (typeof router.query.ref === "string" ? router.query.ref : "");
     const qEmail = typeof router.query.email === "string" ? router.query.email : "";
     if (token) {
       void lookup({ token });
@@ -126,6 +85,8 @@ export default function RetrieveTicketsPage() {
         return;
       }
       setEvents(body.data.events as RetrievedEvent[]);
+      setOrderShort(body.data.orderShort ?? null);
+      setPurchasedAt(body.data.purchasedAt ?? null);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -142,81 +103,114 @@ export default function RetrieveTicketsPage() {
     void lookup({ reference: reference.trim(), email: email.trim() });
   };
 
+  const ticketCount =
+    events?.reduce((n, g) => n + g.tickets.length, 0) ?? 0;
+
   return (
-    <div className="min-h-screen bg-[#000] text-white">
+    <div className="min-h-screen bg-black text-white">
       <Head>
         <title>Retrieve your tickets — Jojjy Gallery</title>
       </Head>
       <Navbar variant="transparent" />
-      <main className="mx-auto max-w-2xl px-5 pb-16 pt-24 md:pb-24 md:pt-28">
-        <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500">
+      <main className="mx-auto max-w-6xl px-6 pb-20 pt-28 md:pt-32">
+        <p className="font-archive-body text-sm font-semibold uppercase tracking-[0.24em] text-[#6fcf8a]">
           Tickets
         </p>
-        <h1 className="mt-4 font-display text-3xl font-normal tracking-tight md:text-4xl">
+        <h1 className="mt-4 font-display text-5xl font-medium tracking-tight md:text-6xl">
           Retrieve your tickets
         </h1>
-        <p className="mt-4 font-archive-body text-[1.0625rem] leading-[1.7] text-neutral-400">
+        <p className="mt-5 max-w-xl font-archive-body text-lg leading-[1.7] text-neutral-200">
           Enter your order reference and the email you used at checkout. We
           never list tickets by name or email alone.
         </p>
 
-        <form onSubmit={onSubmit} className="mt-8 space-y-4">
-          <label className="block">
-            <span className="font-display text-[0.7rem] uppercase tracking-[0.2em] text-neutral-500">
-              Order reference
-            </span>
-            <input
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-              className="mt-1 w-full border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-white focus:outline-none"
-              placeholder="e.g. jojjy_abc123 or order id"
-            />
-          </label>
-          <label className="block">
-            <span className="font-display text-[0.7rem] uppercase tracking-[0.2em] text-neutral-500">
-              Email
-            </span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-white focus:outline-none"
-            />
-          </label>
+        <form onSubmit={onSubmit} className="mt-10">
+          <div className="grid gap-5 md:grid-cols-2">
+            <label className="block">
+              <span className="font-archive-body text-xs font-semibold uppercase tracking-[0.2em] text-neutral-300">
+                Order reference
+              </span>
+              <input
+                value={reference}
+                onChange={(e) => setReference(e.target.value)}
+                className="mt-2 min-h-[3rem] w-full rounded-md border border-neutral-700 bg-neutral-950 px-4 font-archive-body text-base text-white placeholder:text-neutral-500 focus:border-[#6fcf8a] focus:outline-none"
+                placeholder="e.g. jojjy_abc123 or order id"
+              />
+            </label>
+            <label className="block">
+              <span className="font-archive-body text-xs font-semibold uppercase tracking-[0.2em] text-neutral-300">
+                Email
+              </span>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-2 min-h-[3rem] w-full rounded-md border border-neutral-700 bg-neutral-950 px-4 font-archive-body text-base text-white placeholder:text-neutral-500 focus:border-[#6fcf8a] focus:outline-none"
+                placeholder="you@example.com"
+              />
+            </label>
+          </div>
           <button
             type="submit"
             disabled={busy}
-            className="border border-white bg-white px-8 py-4 font-display text-xs uppercase tracking-[0.28em] text-neutral-950 transition-colors hover:bg-transparent hover:text-white disabled:opacity-40"
+            className="mt-6 inline-flex min-h-[3.25rem] w-full items-center justify-center gap-3 rounded-md border border-white bg-white px-8 font-archive-body text-base font-semibold text-neutral-900 transition-colors hover:bg-transparent hover:text-white disabled:opacity-50 sm:w-[22rem]"
           >
-            {busy ? "…" : "Find tickets"}
+            <Search className="h-5 w-5" aria-hidden />
+            {busy ? "Finding…" : "Find Tickets"}
           </button>
         </form>
 
         {error && (
-          <p role="alert" className="mt-6 font-archive-body text-sm text-red-400">
+          <p role="alert" className="mt-6 font-archive-body text-base text-red-300">
             {error}
           </p>
         )}
 
         {events && events.length > 0 && (
-          <div className="mt-12 space-y-12">
-            {events.map((group) => (
-              <section key={group.event.id}>
-                <h2 className="font-display text-2xl font-normal tracking-tight">
-                  {group.event.title}
-                </h2>
-                <p className="mt-1 font-archive-body text-sm text-neutral-400">
-                  {formatDateTime(group.event.startsAt)}
-                  {group.event.venue ? ` · ${group.event.venue}` : ""}
-                </p>
-                <div className="mt-6 space-y-4">
-                  {group.tickets.map((t) => (
-                    <TicketCard key={t.code} ticket={t} />
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
+          <section className="mt-14" aria-live="polite">
+            <div className="flex items-end justify-between gap-4">
+              <h2 className="font-display text-4xl font-medium tracking-tight">
+                Your tickets
+              </h2>
+              <p className="font-archive-body text-base text-neutral-200">
+                {ticketCount} {ticketCount === 1 ? "ticket" : "tickets"} found
+              </p>
+            </div>
+            <ul className="mt-8 space-y-10">
+              {events.flatMap((group) =>
+                group.tickets.map((t) => (
+                  <li key={t.id ?? t.code}>
+                    <EventTicket
+                      eventTitle={group.event.title}
+                      eventImageUrl={group.event.imageUrl}
+                      startsAt={group.event.startsAt}
+                      endsAt={group.event.endsAt}
+                      venue={group.event.venue}
+                      ticketType={t.ticketType}
+                      price={t.price}
+                      currency={CATALOG_CURRENCY}
+                      entryLabel={t.entryLabel}
+                      premium={t.isPremium}
+                      category={group.event.category}
+                      tagline={group.event.tagline}
+                      timezone={group.event.timezone}
+                      downloadable
+                      attendeeName={t.holderName}
+                      code={t.code}
+                      orderRef={orderShort}
+                      purchasedAt={purchasedAt}
+                      status={t.status}
+                      checkedInAt={t.checkedInAt}
+                    />
+                  </li>
+                ))
+              )}
+            </ul>
+            <p className="mt-10 flex items-center gap-3 border-t border-neutral-800 pt-6 font-archive-body text-sm text-neutral-200">
+              <Info className="h-5 w-5 shrink-0" aria-hidden />
+              This is your official ticket. Keep it safe and ready for entry.
+            </p>
+          </section>
         )}
       </main>
       <Footer tone="dark" />

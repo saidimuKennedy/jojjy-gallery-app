@@ -136,7 +136,7 @@ export default function Select({
         disabled={disabled}
         onClick={() => !disabled && setOpen((o) => !o)}
         onKeyDown={onButtonKeyDown}
-        className="flex w-full items-center justify-between gap-3 border border-neutral-300 bg-white px-3 py-2 text-left text-sm text-neutral-800 transition-colors hover:border-neutral-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex w-full items-center justify-between gap-3 border border-neutral-300 bg-white px-3 py-2 text-left text-sm font-medium text-neutral-900 transition-colors hover:border-neutral-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <span className="truncate">{selected?.label ?? label}</span>
         <svg

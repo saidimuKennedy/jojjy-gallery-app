@@ -97,7 +97,9 @@ export default function TicketCheckout({
           guestName: name.trim(),
           guestEmail: email.trim(),
           guestPhone: phone.trim(),
-          returnPath: `/events/${target.eventSlug}`,
+          returnPath: session?.user
+            ? undefined
+            : `/tickets/retrieve?email=${encodeURIComponent(email.trim())}`,
         }),
       });
       const body = await res.json();
@@ -111,7 +113,9 @@ export default function TicketCheckout({
       }
       // Free tickets issued immediately.
       toast.success("Your tickets are ready.");
-      if (body.data?.id) {
+      if (session?.user) {
+        window.location.href = "/account/tickets";
+      } else if (body.data?.id) {
         window.location.href = `/tickets/retrieve?ref=${encodeURIComponent(
           body.data.id
         )}&email=${encodeURIComponent(email.trim())}`;

@@ -80,6 +80,7 @@ export default async function handler(
       data: {
         id: order.id,
         status: order.status,
+        paymentStatus: order.paymentStatus,
         amount: order.amount.toNumber(),
         currency: order.currency,
         paystackRef: order.paystackRef,

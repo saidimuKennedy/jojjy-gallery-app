@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { promoteEventStatus } from "@/lib/data/events";
+import { completeOrderFromPaystackReference } from "@/lib/orders/complete-payment";
 
 /**
  * Guest ticket retrieval. Two verified paths:
@@ -33,46 +34,71 @@ export default async function handler(
     });
 
   try {
-    let order = null;
+    let orderId: string | null = null;
 
     if (typeof token === "string" && token.trim()) {
-      order = await prisma.order.findUnique({
+      const tokenOrder = await prisma.order.findUnique({
         where: { retrievalToken: token.trim() },
-        include: {
-          items: { include: { ticketType: { include: { event: true } } } },
-          tickets: { include: { ticketType: { include: { event: true } } } },
-        },
+        select: { id: true, retrievalTokenExpiresAt: true },
       });
       if (
-        !order ||
-        !order.retrievalTokenExpiresAt ||
-        order.retrievalTokenExpiresAt.getTime() < Date.now()
+        !tokenOrder ||
+        !tokenOrder.retrievalTokenExpiresAt ||
+        tokenOrder.retrievalTokenExpiresAt.getTime() < Date.now()
       ) {
         return notFound();
       }
+      orderId = tokenOrder.id;
     } else if (typeof reference === "string" && reference.trim()) {
       const ref = reference.trim();
-      order = await prisma.order.findFirst({
+      const refOrder = await prisma.order.findFirst({
         where: { OR: [{ id: ref }, { paystackRef: ref }] },
-        include: {
-          items: { include: { ticketType: { include: { event: true } } } },
-          tickets: { include: { ticketType: { include: { event: true } } } },
-        },
+        select: { id: true, guestEmail: true },
       });
-      if (!order) return notFound();
+      if (!refOrder) return notFound();
 
       const providedEmail =
         typeof email === "string" ? email.trim().toLowerCase() : "";
-      const ownerEmail = (order.guestEmail ?? "").toLowerCase();
+      const ownerEmail = (refOrder.guestEmail ?? "").toLowerCase();
       if (!providedEmail || providedEmail !== ownerEmail) {
         return notFound();
       }
+      orderId = refOrder.id;
     } else {
       return res.status(400).json({
         success: false,
         message: "Provide an order reference and email, or a retrieval token.",
       });
     }
+
+    const pending = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { status: true, paystackRef: true },
+    });
+    if (!pending) return notFound();
+
+    // Guest checkout redirects here before any authenticated confirmation page
+    // can run. Verify the provider reference server-side once, using the same
+    // completion path as the webhook, then re-read the issued tickets.
+    if (pending.status === "PENDING" && pending.paystackRef) {
+      try {
+        await completeOrderFromPaystackReference(pending.paystackRef);
+      } catch {
+        return res.status(409).json({
+          success: false,
+          message: "Tickets are issued once payment is confirmed.",
+        });
+      }
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: { include: { ticketType: { include: { event: true } } } },
+        tickets: { include: { ticketType: { include: { event: true } } } },
+      },
+    });
+    if (!order) return notFound();
 
     if (order.status !== "PAID") {
       return res.status(409).json({
@@ -91,9 +117,18 @@ export default async function handler(
           slug: string;
           venue: string | null;
           startsAt: string;
+          endsAt: string | null;
+          imageUrl: string | null;
+          timezone: string;
+          category: string | null;
+          tagline: string | null;
           status: string;
         };
         tickets: {
+          id: string;
+          price: number;
+          entryLabel: string | null;
+          isPremium: boolean;
           code: string;
           ticketType: string;
           holderName: string | null;
@@ -115,12 +150,21 @@ export default async function handler(
             slug: event.slug,
             venue: event.venue,
             startsAt: event.startsAt.toISOString(),
+            endsAt: event.endsAt ? event.endsAt.toISOString() : null,
+            imageUrl: event.imageUrl,
+            timezone: event.timezone,
+            category: event.category,
+            tagline: event.tagline,
             status: event.status,
           },
           tickets: [],
         });
       }
       byEvent.get(key)!.tickets.push({
+        id: t.id,
+        price: t.ticketType.price.toNumber(),
+        entryLabel: t.ticketType.entryLabel,
+        isPremium: t.ticketType.isPremium,
         code: t.code,
         ticketType: t.ticketType.name,
         holderName: t.holderName,
@@ -134,6 +178,7 @@ export default async function handler(
       data: {
         orderRef: order.id,
         orderShort: order.id.slice(0, 8),
+        purchasedAt: order.createdAt.toISOString(),
         events: [...byEvent.values()],
       },
     });

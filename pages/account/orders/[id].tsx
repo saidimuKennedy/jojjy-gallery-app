@@ -28,6 +28,7 @@ interface OrderItemView {
 interface OrderView {
   id: string;
   status: string;
+  paymentStatus: string;
   amount: number;
   currency: string;
   paystackRef: string | null;
@@ -98,6 +99,10 @@ export default function AccountOrderPage() {
     return null;
   }
 
+  const refunded =
+    order?.paymentStatus === "REFUNDED" || order?.status === "REFUNDED";
+  const partiallyRefunded = order?.paymentStatus === "PARTIALLY_REFUNDED";
+
   return (
     <div className="min-h-screen bg-[#000] text-white">
       <Head>
@@ -126,11 +131,15 @@ export default function AccountOrderPage() {
               {new Date(order.createdAt).toLocaleDateString()}
             </p>
             <h1 className="font-display text-3xl md:text-4xl font-normal text-white mb-6">
-              {order.status === "PAID"
-                ? "Payment confirmed"
-                : order.status === "PENDING"
-                  ? "Payment pending"
-                  : `Order ${order.status.toLowerCase()}`}
+              {refunded
+                ? "Payment refunded"
+                : partiallyRefunded
+                  ? "Payment partially refunded"
+                  : order.status === "PAID"
+                    ? "Payment confirmed"
+                    : order.status === "PENDING"
+                      ? "Payment pending"
+                      : `Order ${order.status.toLowerCase()}`}
             </h1>
 
             <ul className="space-y-4 border-t border-neutral-800 pt-8 mb-8">
@@ -186,7 +195,13 @@ export default function AccountOrderPage() {
               )}
               <div className="flex justify-between">
                 <dt className="text-neutral-500">Payment</dt>
-                <dd>{order.status}</dd>
+                <dd>
+                  {refunded
+                    ? "REFUNDED"
+                    : partiallyRefunded
+                      ? "PARTIALLY REFUNDED"
+                      : order.paymentStatus}
+                </dd>
               </div>
               {order.fulfilledAt && (
                 <div className="flex justify-between">

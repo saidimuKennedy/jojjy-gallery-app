@@ -99,7 +99,7 @@ function ticketPerks(name: string): string[] {
 type TicketSaleStatus = "upcoming" | "open" | "closed" | "sold_out";
 
 function ticketSaleStatus(tt: EventDetail["ticketTypes"][number]): TicketSaleStatus {
-  const left = Math.max(0, tt.quantity - tt.quantitySold);
+  const left = Math.max(0, tt.quantity - tt.quantitySold - tt.quantityReserved);
   if (left === 0) return "sold_out";
   const now = Date.now();
   if (tt.salesStart && now < new Date(tt.salesStart).getTime()) {
@@ -201,7 +201,15 @@ export default function EventDetailPage() {
     if (!event?.ticketTypes.length) return null;
     const total = event.ticketTypes.reduce((s, t) => s + t.quantity, 0);
     const sold = event.ticketTypes.reduce((s, t) => s + t.quantitySold, 0);
-    return { total, sold, remaining: Math.max(0, total - sold) };
+    const reserved = event.ticketTypes.reduce(
+      (s, t) => s + t.quantityReserved,
+      0
+    );
+    return {
+      total,
+      sold,
+      remaining: Math.max(0, total - sold - reserved),
+    };
   }, [event]);
 
   const handleRsvp = async () => {
@@ -260,6 +268,7 @@ export default function EventDetailPage() {
       0,
       tt.quantity - tt.quantitySold - tt.quantityReserved
     );
+    if (remaining <= 0) return;
     setCheckoutTarget({
       eventId: event.id,
       eventSlug: event.slug,
@@ -270,7 +279,7 @@ export default function EventDetailPage() {
       ticketTypeId: tt.id,
       ticketTypeName: tt.name,
       price: tt.price,
-      remaining: Math.max(1, remaining),
+      remaining,
     });
   };
 

@@ -18,6 +18,7 @@ import {
 interface TicketTypeSummary {
   quantity: number;
   quantitySold: number;
+  quantityReserved: number;
 }
 
 interface EventListItem {
@@ -66,7 +67,7 @@ function seatNote(event: EventListItem): string | null {
   const tickets = event.ticketTypes ?? [];
   if (tickets.length === 0) return null;
   const remaining = tickets.reduce(
-    (s, t) => s + Math.max(0, t.quantity - t.quantitySold),
+    (s, t) => s + Math.max(0, t.quantity - t.quantitySold - t.quantityReserved),
     0
   );
   if (remaining === 0) return "Sold out";

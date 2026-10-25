@@ -14,6 +14,7 @@ import { promoteEventStatus } from "@/lib/data/events";
 import {
   TicketInventoryError,
   releaseExpiredTicketReservations,
+  releaseOrderReservations,
   reserveTickets,
   type ReservationLine,
 } from "@/lib/ticketing/inventory";
@@ -141,7 +142,18 @@ export default async function handler(
     });
   }
 
+  const ticketTypeIds = new Set<number>();
   for (const item of items) {
+    if (typeof item.ticketTypeId === "number") {
+      if (ticketTypeIds.has(item.ticketTypeId)) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Combine multiple lines for the same ticket type into one quantity.",
+        });
+      }
+      ticketTypeIds.add(item.ticketTypeId);
+    }
     if (countItemKinds(item) !== 1) {
       return res.status(400).json({
         success: false,
@@ -651,14 +663,32 @@ export default async function handler(
           ? order.amount.toNumber()
           : usdToKes(order.amount.toNumber());
 
-      const paystack = await initializeTransaction({
-        email: payEmail,
-        amount: chargeAmount,
-        currency: chargeCurrency,
-        reference,
-        callbackUrl: paystackCallbackUrl(reference, returnPath),
-        metadata: { orderId: order.id },
-      });
+      let paystack: Awaited<ReturnType<typeof initializeTransaction>>;
+      try {
+        paystack = await initializeTransaction({
+          email: payEmail,
+          amount: chargeAmount,
+          currency: chargeCurrency,
+          reference,
+          callbackUrl: paystackCallbackUrl(reference, returnPath),
+          metadata: { orderId: order.id },
+        });
+      } catch (error) {
+        // The order row already exists. Do not leave it PENDING with no
+        // provider reference: mark it failed and return any ticket stock.
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Payment initialization failed";
+        await prisma.$transaction(async (tx) => {
+          await tx.order.update({
+            where: { id: order.id },
+            data: { status: "FAILED", paymentStatus: "FAILED" },
+          });
+          await releaseOrderReservations(tx, order.id);
+        });
+        return res.status(502).json({ success: false, message });
+      }
 
       await prisma.order.update({
         where: { id: order.id },

@@ -17,11 +17,12 @@ batch) · `EXTERNAL` (needs client/access/capability outside engineering) ·
 |---|---|---|---|
 | B1 | Production database `_prisma_migrations` state unverified. Local dev DB is at the reviewed level, but no session ever reached the VPS/production Postgres. | Batch 0, open since | Deploy operator: run `SELECT migration_name FROM _prisma_migrations ORDER BY finished_at;` against production before first deploy; confirm both `20260829130000_add_event_publish_at` and `20261005000000_add_media_blog_published_at` are absent-or-applied exactly once. |
 | B2 | Three migration directories are untracked in git (two pairs) and therefore missing from any fresh-clone image build: public-app `20260829130000_add_event_publish_at/` (= CRM's copy, byte-identical) and `20261005000000_add_media_blog_published_at/` in both repos (byte-identical pair). A deploy from a clean clone would apply publishAt content via the CRM history only, diverging the app's history from the DB. | Batch 0, extended Batch 1 | Committer with push rights: `git add` + commit the three directories with their current content (each pair verified byte-identical across repos; the two pairs differ from each other). Do NOT rename, regenerate, or edit the SQL. |
-| B3 | No interactive Paystack test charge has completed end-to-end (init → authorize → callback → verify → webhook → PAID + fulfilment + email). All layers around it are proven, but PAID itself is not. | Batch 3, open since | Operator with Paystack test access: run one test-card purchase per advertised type (merch, ticket, artwork) in the target deployment. |
+| B3 | Live Paystack charge and live refund still unproven. Test-mode M-Pesa + card charges completed end-to-end on 2026-10-25 (PAID + fulfilment); product and ticket test refunds settled asynchronously and updated orders, stock, ticket state, and capacity. | Batch 3, partial 2026-10-25 | Operator with live access: run one charge per advertised type and confirm a live refund settles; test-mode settlement is asynchronous. |
 | B4 | `RESEND_API_KEY` unset everywhere (local `.env`, deploy example blank). Order-confirmation and contact emails cannot send; contact degrades to a truthful 500, order mail is silently skipped. | Batch 1/3, open since | Client/operator: supply key + verify `EMAIL_FROM` sender + approve `CONTACT_FORM_RECIPIENT_EMAIL`. Re-test both paths. |
-| B5 | No real launch content seeded anywhere reachable: dev DB content tables are empty (0 products/events/releases/editorial). Staff login was proven only with throwaway dev accounts (since removed). | Batch 2/4, open since | Content owner + CRM operator: seed real catalogue via CRM in staging/production; provision operator accounts via documented seed env vars, then rotate/remove them. |
+| B5 | No real launch content seeded anywhere reachable: dev DB has seeded demo music, but 0 real products/events/editorial. E2E test accounts/orders/refunds were removed after settlement. | Batch 2/4, open since | Content owner + CRM operator: seed real catalogue via CRM in staging/production; provision operator accounts via documented seed env vars, then rotate/remove them. |
 | B6 | Production domains, TLS, and public reachability unproven from here (no VPS access; `deploy/.env` secrets unset; Paystack webhook/callback URLs not registered). | Batch 0, open since | Deploy operator: run `deploy/deploy.sh` on the VPS, register `https://$APP_DOMAIN/api/paystack/webhook` in Paystack. |
-| B7 | No browser/mobile/keyboard verification performed in any batch (no browser tooling in this environment). Reduced-motion, focus visibility, and small-screen layout are code-inspected only. | Batch 1–4, open since | Reviewer with a device lab: walk the Batch 4 smoke list on mobile + keyboard-only before sign-off. |
+| B7 | Browser/mobile/keyboard verification incomplete. Playwright covered the Shop↔CRM price/stock/availability flow and ticket issuance/check-in/refund/guest-retrieval flows on 2026-10-25; reduced-motion, focus visibility, small-screen layout, and the rest of the Batch 4 smoke list are still code-inspected only. | Batch 1–4, partial 2026-10-25 | Reviewer with a device lab: walk the remaining Batch 4 smoke list on mobile + keyboard-only before sign-off. |
+| B8 | Shop promotions/discounts do not exist: no schema, API, or CRM UI. Only fixed variant prices are authorable. | E2E 2026-10-25 | Product decision: confirm whether V1 needs promos; if yes, scope a promo model before selling. Price/stock propagation itself is verified. |
 
 ## 2. EXTERNAL dependencies (client / access / capability)
 
@@ -64,6 +65,29 @@ batch) · `EXTERNAL` (needs client/access/capability outside engineering) ·
 - D19 (DECIDED): Confirmation page shows fulfilment method (it was collected but invisible).
 - D20 (DECIDED): Email stays best-effort + truthful-degradation; no campaign machinery (B4).
 
+### Batch 5 — Shop/CRM E2E (2026-10-25)
+- D27 (DECIDED): CRM → public Shop price/stock/availability/delete propagation is correct. Synthetic product created at `42.50`, reflected as `$ 42.5` before the display fix; edited to `55.00`, reflected; unavailable hid list + detail; delete removed it.
+- D28 (DECIDED): Shop money display uses two decimals. `formatUsdPrice` now renders `42.5` as `$ 42.50`; covered by `lib/utils.test.ts`.
+- D29 (DECIDED): Local E2E must isolate CRM and public-app sessions; both use `next-auth.session-token` on `localhost`. Clear cookies or use distinct hostnames/contexts.
+- D30 (DECIDED): Small shop labels and body copy now use Public Sans (600 labels / normal body); Cormorant display serif is reserved for headings. Evidence: computed styles were Cormorant 12px/400 for labels before, Public Sans 12px/600 after; screenshot re-checked.
+- D31 (DECIDED): Test-mode Paystack payment is verified end-to-end (M-Pesa auto-auth and card test “Success”); PAID + fulfilment + stock decrement + repeat-verify idempotency all passed. Refund submission and asynchronous provider settlement are verified for product and ticket refunds; B9 is resolved in test mode.
+- D32 (DECIDED): Partial refunds convert order-currency amounts to the provider charge currency using the order's actual `paystackChargeAmount` (USD $4 → KES 520), not raw USD cents.
+- D33 (DECIDED): Refund request/approve/submit are serialized with Postgres row locks; concurrent requests cannot over-refund or double-submit. Provider amount/currency is validated before local PROCESSED state.
+- D34 (DECIDED): Full refund of an unfulfilled merch order restocks variants; fulfilled orders and artworks stay manual. Tickets are invalidated and refunded music access is revoked.
+- D35 (DECIDED): Checkout failures after order creation mark the order FAILED and release ticket reservations instead of leaving orphan PENDING rows.
+- D36 (DECIDED): CRM Overview uses 2 columns when there is no upcoming event and places “Continue working” below the grid at full width, removing the empty right-column/left-pushed layout.
+- D37 (DECIDED): Ticket availability everywhere (public event, events index, CRM overview, sales) subtracts `quantityReserved`; active checkout holds cannot inflate “seats remaining”.
+- D38 (DECIDED): Ticket reservation release is claimed `ACTIVE → RELEASED` per row; duplicate/concurrent release cannot double-decrement `quantityReserved`.
+- D39 (DECIDED): Payment fulfilment claims capacity against `quantity - quantitySold - quantityReserved` when a live reservation is absent, preventing oversell after hold expiry.
+- D40 (DECIDED): Duplicate ticket-type lines in one order are rejected; fulfilment handles one reservation per line and rejects reservation/order quantity mismatches.
+- D41 (DECIDED): `reverseCheckIn` uses compare-and-swap; concurrent reversals cannot duplicate history or clear a newer check-in.
+- D42 (DECIDED): Ticket refund invalidation is refund-scoped: partial order refunds keep tickets valid; ticket-scoped refunds void only that ticket once its price is fully refunded; full order refunds void all tickets.
+- D43 (DECIDED): Refunded ticket codes are never reissued. An unchecked refunded ticket returns one unit of tier capacity; a checked-in ticket is voided but keeps capacity consumed. Repeats are idempotent.
+- D44 (DECIDED): Test-mode ticket purchase, unique code issuance, account/CRM visibility, check-in duplicate refusal, excess/concurrent capacity refusal, and ticket-refund submission are verified (report `docs/e2e/TICKETS_E2E_2026-10-25.md`).
+- D45 (DECIDED): Guest ticket checkout redirects to `/tickets/retrieve` and the retrieve API verifies a pending Paystack reference via the canonical completion path before returning tickets. Wrong-email retrieval is refused.
+- D46 (DECIDED): Refunded unchecked tickets return capacity atomically and idempotently; checked-in tickets keep their seat consumed. Verified by a controlled probe and by a real test-mode ticket refund (sold 3 → 2, remaining 1).
+- D47 (DECIDED): Paystack test-mode refunds settle asynchronously (roughly 15–30 minutes). Full/partial product refunds and the ticket-scoped refund all reached `PROCESSED`; CRM orders, stock, ticket state, and capacity updated accordingly. **B9 is resolved in test mode**; live refund settlement remains B3.
+
 ### Batch 4 — Verification (running)
 - D21 (DECIDED): Release candidate is defined as exact revisions + dirty inventory below (§5), not a tag — nothing is committed or deployed by this batch.
 - D22 (DECIDED): `ticketPerks()` hardcoded VIP benefits ("Priority entry / Artist meet & greet / Signed exhibition card") removed and replaced with neutral copy. Rationale: scope-leak audit proved they invent fulfilment promises no CRM data supports; specific perks need CRM-managed data (deferred tooling) before being advertised.
@@ -102,7 +126,8 @@ triage in §7.
 | Email (contact + order) | NO-GO | B4 — key missing; degradation verified only |
 | Production deploy + domains + TLS + webhooks | NO-GO | B1, B6 — never reached from here |
 | Content/operators (real catalogue, staff accounts) | NO-GO | B5 — dev DB nearly empty of launch content |
-| Browser/mobile/keyboard device pass | NO-GO | B7 — code-level only |
+| Browser/mobile/keyboard device pass | PARTIAL | B7 — Shop↔CRM and ticket flows verified in Playwright; mobile/keyboard pass still open |
+| Tickets: issuance/capacity/check-in/refunds | GO with condition | Test-mode purchase, unique codes, no oversell under concurrency, duplicate-scan refusal, refund-scoped invalidation and capacity return; live refund settlement still B3 |
 | **Overall launch** | **NO-GO** | Engineering complete; B1–B6 are operational/external and must clear first |
 
 ## 8. Batch 5 backlog triage (no implementation — scope sketches only)
@@ -115,10 +140,13 @@ triage in §7.
 | Ticket check-in | First ticketed event scheduled | `tickets:write`-gated scan flow; double-scan refused; works offline-tolerant at the door |
 | Press mentions + series media authoring | Real launch content needs them | CRM CRUD wired to existing public renderers; validation mirrors artwork-media rules |
 | Guest checkout / cart | Policy decision overturns accounts-required (E4) | New scope: identity, fraud, and fulfilment rules required — not a tweak |
+| Shop promotions / discount codes | V1 needs sale pricing or promo campaigns | Schema + CRM authoring + app display/checkout; never silently ignore a promo at checkout |
 | Subscriber management UI | Abuse/support load | Staff add/remove/suppress without DB; audit-logged |
 | Role/permission editors | Operator count grows | Per-user grant/revoke UI matching the (currently dead) override model |
 | Login hardening (rate-limit/lockout) | Any brute-force signal | Attempt throttling + logging; no UX change for legitimate staff |
 | Systematic test framework | Second engineer onboards | Port the /tmp smoke scripts (B2–B4) into a runner; browser pass for interactive states |
+| Shop↔CRM Playwright suite | Catalogue changes become frequent | Create/edit/price/stock/availability/delete plus one complete test-mode checkout in CI |
+| Refunded-ticket capacity release | Refunds need immediate resale | Add explicit operator “release capacity” action; keep code non-reusable and audit the change |
 
 *Batch 5 starts only after V1 is stable or product evidence elevates an item.
 Each needs a fresh scope before any code.*

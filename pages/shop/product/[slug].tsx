@@ -153,7 +153,7 @@ export default function ShopProductPage() {
   if (isLoading || !router.isReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-        <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
+        <p className="font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-600">
           Loading
         </p>
       </div>
@@ -206,28 +206,28 @@ export default function ShopProductPage() {
           />
 
           <div>
-            <h1 className="font-display text-3xl md:text-4xl font-normal text-neutral-900 tracking-tight mb-4">
+            <h1 className="font-display text-3xl md:text-4xl font-medium text-neutral-900 tracking-tight mb-4">
               {product.name}
             </h1>
             {product.category && (
-              <p className="text-xs font-light uppercase tracking-[0.2em] text-neutral-500 mb-4">
+              <p className="font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-600 mb-4">
                 {product.category}
               </p>
             )}
             {product.description && (
-              <p className="text-sm font-light text-neutral-600 leading-relaxed mb-8 whitespace-pre-line">
+              <p className="text-sm font-normal text-neutral-700 leading-relaxed mb-8 whitespace-pre-line">
                 {product.description}
               </p>
             )}
 
             {availableVariants.length === 0 ? (
-              <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
+              <p className="font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-700">
                 Out of stock
               </p>
             ) : (
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="shop-variant" className="block font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-2">
+                  <label htmlFor="shop-variant" className="mb-2 block font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-700">
                     Variant
                   </label>
                   <Select
@@ -259,7 +259,7 @@ export default function ShopProductPage() {
 
                 {needsAddress && (
                   <div>
-                    <label htmlFor="shop-delivery-method" className="block font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-2">
+                    <label htmlFor="shop-delivery-method" className="mb-2 block font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-700">
                       Delivery method
                     </label>
                     <DeliveryMethodSelect

@@ -78,10 +78,17 @@ export async function fulfillOrder(
     // Consume pre-payment ticket reservations for this order (if any).
     const reservations = await tx.ticketReservation.findMany({
       where: { orderId, status: "ACTIVE" },
+      orderBy: { createdAt: "asc" },
     });
-    const reservationByType = new Map(
-      reservations.map((r) => [r.ticketTypeId, r])
-    );
+    const reservationQueues = new Map<
+      number,
+      (typeof reservations)[number][]
+    >();
+    for (const reservation of reservations) {
+      const queue = reservationQueues.get(reservation.ticketTypeId) ?? [];
+      queue.push(reservation);
+      reservationQueues.set(reservation.ticketTypeId, queue);
+    }
 
     for (const item of order.items) {
       switch (item.itemType) {
@@ -122,8 +129,14 @@ export async function fulfillOrder(
             throw new FulfillmentError(`Ticket type ${item.ticketTypeId} not found`);
           }
 
-          const reservation = reservationByType.get(item.ticketTypeId);
+          const queue = reservationQueues.get(item.ticketTypeId);
+          const reservation = queue?.shift();
           if (reservation) {
+            if (reservation.quantity !== item.quantity) {
+              throw new FulfillmentError(
+                `Ticket reservation mismatch for ${ticketType.name}`
+              );
+            }
             // reserved → sold, under the row lock.
             const updatedType = await tx.ticketType.update({
               where: { id: item.ticketTypeId },
@@ -141,14 +154,16 @@ export async function fulfillOrder(
               where: { id: reservation.id },
               data: { status: "CONSUMED" },
             });
-            reservationByType.delete(item.ticketTypeId);
           } else {
-            // No reservation (legacy/backfill): atomic increment + capacity check.
-            const updatedType = await tx.ticketType.update({
-              where: { id: item.ticketTypeId },
-              data: { quantitySold: { increment: item.quantity } },
-            });
-            if (updatedType.quantity - updatedType.quantitySold < 0) {
+            // No live reservation (expired hold / legacy): atomically claim
+            // available capacity, also respecting other active reservations.
+            const claimed = await tx.$executeRaw`
+              UPDATE "ticket_types"
+              SET "quantitySold" = "quantitySold" + ${item.quantity}
+              WHERE "id" = ${item.ticketTypeId}
+                AND "quantity" - "quantitySold" - "quantityReserved" >= ${item.quantity}
+            `;
+            if (claimed === 0) {
               throw new FulfillmentError(
                 `Not enough tickets for ${ticketType.name}`
               );

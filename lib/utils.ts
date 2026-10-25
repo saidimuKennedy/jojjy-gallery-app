@@ -6,5 +6,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatUsdPrice(amount: number): string {
-  return `$ ${amount.toLocaleString()}`
+  return `$ ${amount.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`
 }

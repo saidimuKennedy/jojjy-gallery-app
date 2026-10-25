@@ -36,6 +36,9 @@ export default async function handler(
           select: {
             id: true,
             name: true,
+            price: true,
+            entryLabel: true,
+            isPremium: true,
             event: {
               select: {
                 id: true,
@@ -44,6 +47,10 @@ export default async function handler(
                 startsAt: true,
                 endsAt: true,
                 venue: true,
+                imageUrl: true,
+                timezone: true,
+                category: true,
+                tagline: true,
                 status: true,
               },
             },
@@ -59,8 +66,14 @@ export default async function handler(
         id: t.id,
         code: t.code,
         status: t.status,
+        holderName: t.holderName,
+        checkedInAt: t.checkedInAt ? t.checkedInAt.toISOString() : null,
         createdAt: t.createdAt.toISOString(),
+        purchasedAt: t.order.createdAt.toISOString(),
         ticketType: t.ticketType.name,
+        price: t.ticketType.price.toNumber(),
+        entryLabel: t.ticketType.entryLabel,
+        isPremium: t.ticketType.isPremium,
         event: {
           title: t.ticketType.event.title,
           slug: t.ticketType.event.slug,
@@ -69,6 +82,10 @@ export default async function handler(
             ? t.ticketType.event.endsAt.toISOString()
             : null,
           venue: t.ticketType.event.venue,
+          imageUrl: t.ticketType.event.imageUrl,
+          timezone: t.ticketType.event.timezone,
+          category: t.ticketType.event.category,
+          tagline: t.ticketType.event.tagline,
           status: t.ticketType.event.status,
         },
         orderId: t.order.id,

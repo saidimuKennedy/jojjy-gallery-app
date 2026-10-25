@@ -39,7 +39,7 @@ export function ProductImage({
         />
       ) : (
         <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center">
-          <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
+          <p className="font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-700">
             {kind}
           </p>
           <p className="font-display text-2xl font-normal tracking-tight text-neutral-800">
@@ -71,7 +71,7 @@ export function QuantitySelector({
     <div>
       <label
         htmlFor={id}
-        className="mb-2 block font-display text-xs uppercase tracking-[0.2em] text-neutral-500"
+        className="mb-2 block font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-700"
       >
         Quantity
       </label>
@@ -109,7 +109,7 @@ export function QuantitySelector({
         </button>
       </div>
       {max <= 5 && (
-        <p className="mt-2 text-xs font-light text-neutral-600">
+        <p className="mt-2 text-xs font-normal text-neutral-600">
           Only {max} available
         </p>
       )}
@@ -136,7 +136,7 @@ export function FulfilmentSelector({
 }) {
   return (
     <div>
-      <p className="mb-2 font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
+      <p className="mb-2 font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-700">
         Fulfilment
       </p>
       <div
@@ -159,12 +159,12 @@ export function FulfilmentSelector({
                   : "border-neutral-300 bg-white text-neutral-700 hover:border-neutral-500"
               } ${opt.value === "COLLECTION" ? "border-l-0" : ""}`}
             >
-              <span className="block font-display text-xs uppercase tracking-[0.2em]">
+              <span className="block font-archive-body text-xs font-semibold uppercase tracking-[0.14em]">
                 {opt.label}
               </span>
               <span
-                className={`mt-1 block text-xs font-light ${
-                  active ? "text-neutral-300" : "text-neutral-500"
+                className={`mt-1 block text-xs font-normal ${
+                  active ? "text-neutral-200" : "text-neutral-600"
                 }`}
               >
                 {opt.hint}
@@ -201,13 +201,13 @@ export function CustomerDetails({
   const set = (patch: Partial<CustomerDetailsValue>) =>
     onChange({ ...value, ...patch });
   const inputClass =
-    "w-full border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 focus:outline-none focus:border-neutral-900";
+    "w-full border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-900 placeholder:font-normal placeholder:text-neutral-500 focus:outline-none focus:border-neutral-900";
   return (
     <div className="space-y-6">
       <div>
         <label
           htmlFor={`${idPrefix}-name`}
-          className="mb-2 block font-display text-xs uppercase tracking-[0.2em] text-neutral-500"
+          className="mb-2 block font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-700"
         >
           Full name
         </label>
@@ -224,7 +224,7 @@ export function CustomerDetails({
       <div>
         <label
           htmlFor={`${idPrefix}-phone`}
-          className="mb-2 block font-display text-xs uppercase tracking-[0.2em] text-neutral-500"
+          className="mb-2 block font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-700"
         >
           Phone
         </label>
@@ -242,7 +242,7 @@ export function CustomerDetails({
         <div>
           <label
             htmlFor={`${idPrefix}-address`}
-            className="mb-2 block font-display text-xs uppercase tracking-[0.2em] text-neutral-500"
+            className="mb-2 block font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-700"
           >
             Delivery location
           </label>
@@ -259,7 +259,7 @@ export function CustomerDetails({
       <div>
         <label
           htmlFor={`${idPrefix}-notes`}
-          className="mb-2 block font-display text-xs uppercase tracking-[0.2em] text-neutral-500"
+          className="mb-2 block font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-700"
         >
           Notes <span className="normal-case tracking-normal">(optional)</span>
         </label>
@@ -299,14 +299,14 @@ export function OrderSummary({
 }) {
   return (
     <div className="border-t border-neutral-200 pt-6">
-      <p className="mb-4 font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
+      <p className="mb-4 font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-700">
         Order summary
       </p>
       <ul className="space-y-3">
         {lines.map((line) => (
           <li
             key={`${line.label}-${line.detail ?? ""}`}
-            className="flex items-baseline justify-between gap-4 text-sm font-light text-neutral-700"
+            className="flex items-baseline justify-between gap-4 text-sm font-normal text-neutral-700"
           >
             <span>
               {line.label}
@@ -317,7 +317,7 @@ export function OrderSummary({
             <span className="whitespace-nowrap">{line.amount}</span>
           </li>
         ))}
-        <li className="flex items-baseline justify-between gap-4 text-sm font-light text-neutral-700">
+        <li className="flex items-baseline justify-between gap-4 text-sm font-normal text-neutral-700">
           <span>Delivery</span>
           <span className="whitespace-nowrap">
             {freeDelivery ? "Free" : "—"}
@@ -325,14 +325,14 @@ export function OrderSummary({
         </li>
       </ul>
       <p className="mt-4 flex items-baseline justify-between gap-4 border-t border-neutral-200 pt-4">
-        <span className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
+        <span className="font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-700">
           Total ({currency})
         </span>
-        <span className="font-display text-xl font-normal text-neutral-900">
+        <span className="font-archive-body text-xl font-semibold text-neutral-900">
           {total}
         </span>
       </p>
-      <p className="mt-3 text-xs font-light leading-relaxed text-neutral-600">
+      <p className="mt-3 text-xs font-normal leading-relaxed text-neutral-600">
         Payable in KES via Paystack. The exact KES charge is calculated
         securely at checkout and shown on the Paystack page before you
         authorize payment.
@@ -365,16 +365,16 @@ export function PaymentAction({
         type="button"
         onClick={onClick}
         disabled={busy || disabled}
-        className="w-full border border-neutral-900 bg-neutral-900 py-4 font-display text-xs uppercase tracking-[0.28em] text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full border border-neutral-900 bg-neutral-900 py-4 font-archive-body text-sm font-semibold uppercase tracking-[0.16em] text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {busy ? pendingLabel : label}
       </button>
       {error && (
-        <p role="alert" className="mt-3 text-sm font-light text-red-800">
+        <p role="alert" className="mt-3 text-sm font-medium text-red-800">
           {error}
         </p>
       )}
-      <p className="mt-3 text-xs font-light leading-relaxed text-neutral-600">
+      <p className="mt-3 text-xs font-normal leading-relaxed text-neutral-600">
         Secure checkout via Paystack. You&apos;ll return here after payment.
       </p>
     </div>

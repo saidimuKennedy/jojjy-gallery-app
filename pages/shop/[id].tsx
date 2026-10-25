@@ -135,7 +135,7 @@ export default function ShopArtworkPage() {
   if (isLoading || !router.isReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-        <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
+        <p className="font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-600">
           Loading
         </p>
       </div>
@@ -188,15 +188,15 @@ export default function ShopArtworkPage() {
           />
 
           <div>
-            <h1 className="font-display text-3xl md:text-4xl font-normal text-neutral-900 tracking-tight mb-4">
+            <h1 className="font-display text-3xl md:text-4xl font-medium text-neutral-900 tracking-tight mb-4">
               {artwork.title}
             </h1>
-            <p className="text-xs font-light uppercase tracking-[0.2em] text-neutral-500 mb-4">
+            <p className="mb-4 font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-600">
               Original artwork
               {artwork.medium ? ` · ${artwork.medium}` : ""}
             </p>
             {artwork.description && (
-              <p className="text-sm font-light text-neutral-600 leading-relaxed mb-8 whitespace-pre-line">
+              <p className="text-sm font-normal text-neutral-600 leading-relaxed mb-8 whitespace-pre-line">
                 {artwork.description}
               </p>
             )}
@@ -208,13 +208,13 @@ export default function ShopArtworkPage() {
             </p>
 
             {!canPurchase ? (
-              <p className="font-display text-xs uppercase tracking-[0.2em] text-neutral-500">
+              <p className="font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-600">
                 Not available for purchase
               </p>
             ) : (
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="art-packaging" className="block font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-2">
+                  <label htmlFor="art-packaging" className="block font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-600 mb-2">
                     Packaging
                   </label>
                   <Select
@@ -240,7 +240,7 @@ export default function ShopArtworkPage() {
 
                 {needsAddress && (
                   <div>
-                    <label htmlFor="art-delivery-method" className="block font-display text-xs uppercase tracking-[0.2em] text-neutral-500 mb-2">
+                    <label htmlFor="art-delivery-method" className="block font-archive-body text-xs font-semibold uppercase tracking-[0.14em] text-neutral-600 mb-2">
                       Delivery method
                     </label>
                     <DeliveryMethodSelect
