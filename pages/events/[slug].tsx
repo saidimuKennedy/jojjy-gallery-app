@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import useSWR from "swr";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
+import { ArrowLeft, ArrowRight, Calendar, MapPin, Ticket } from "lucide-react";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import OptimizedImage from "@/components/ui/OptimizedImage";
@@ -14,6 +15,7 @@ import TicketCheckout, {
   type TicketCheckoutTarget,
 } from "@/components/events/TicketCheckout";
 import { CATALOG_CURRENCY } from "@/lib/currency";
+import { HERO_LABEL } from "@/lib/music/hero-styles";
 
 interface EventDetail {
   id: number;
@@ -81,10 +83,9 @@ function formatTime(iso: string): string {
   });
 }
 
-function venueShort(venue: string | null): string {
-  if (!venue) return "";
-  const parts = venue.split(",");
-  return (parts[parts.length - 1] || parts[0] || venue).trim();
+function venueParts(venue: string): { name: string; rest: string } {
+  const [name, ...rest] = venue.split(",");
+  return { name: name.trim(), rest: rest.join(",").trim() };
 }
 
 function ticketPerks(name: string): string[] {
@@ -329,184 +330,151 @@ export default function EventDetailPage() {
       <Navbar />
 
       <main>
-        {/* Chapter: invitation */}
-        <section className="px-5 pt-10 pb-12 md:px-10 md:pt-16 lg:px-16 lg:pb-16">
-          <BackLink href="/events" className="mb-12">
-            Back to Events
-          </BackLink>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
-            className="mx-auto max-w-5xl"
-          >
-            <p className="font-archive-body text-[0.7rem] font-medium uppercase tracking-[0.22em] text-neutral-500 mb-8">
-              {isCompleted
-                ? "Past"
-                : isSoldOut
-                  ? "Sold out"
-                  : "Registration open"}
-              {capacity && !isCompleted && capacity.remaining > 0 && capacity.remaining <= 30
-                ? ` · ${capacity.remaining} seats remaining`
-                : !isCompleted && capacity
-                  ? " · Limited capacity"
-                  : ""}
-            </p>
-
-            <h1 className="font-display text-[2.75rem] sm:text-6xl md:text-7xl lg:text-[4.5rem] font-medium leading-[1.05] tracking-tight text-neutral-900 max-w-4xl">
-              {event.title}
-            </h1>
-          </motion.div>
-        </section>
-
-        {/* Chapter: cinematic image */}
-        {event.imageUrl && (
-          <motion.section
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.1, delay: 0.15 }}
-            className="relative w-full"
-          >
-            <div className="relative h-[55vh] min-h-[320px] max-h-[720px] w-full overflow-hidden bg-neutral-100 md:h-[70vh]">
-              <OptimizedImage
-                src={event.imageUrl}
-                alt={event.title}
-                fill
-                preset="hero"
-                priority
-                sizes="100vw"
-                className="object-contain"
-              />
-            </div>
-          </motion.section>
-        )}
-
-        {/* Chapter: description */}
-        {event.description && (
-          <section className="px-5 py-20 md:px-10 md:py-28 lg:px-16">
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-10%" }}
-              transition={{ duration: 0.7 }}
-              className="mx-auto max-w-2xl font-archive-body text-lg md:text-[1.125rem] font-normal leading-[1.7] text-neutral-700"
-            >
-              {event.description}
-            </motion.p>
-          </section>
-        )}
-
-        {/* Chapter: Event facts */}
-        <section className="border-t border-neutral-100 px-5 py-20 md:px-10 md:py-28 lg:px-16">
-          <div className="mx-auto max-w-2xl">
-            <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500 mb-12">
-              Event
-            </p>
-            <dl className="space-y-10">
-              <div>
-                <dt className="sr-only">Date</dt>
-                <dd className="font-display text-[1.35rem] md:text-[1.5rem] font-normal tracking-tight text-neutral-900">
-                  {formatDay(event.startsAt)}
-                </dd>
-              </div>
-              <div>
-                <dt className="sr-only">Time</dt>
-                <dd className="font-archive-body text-[1.0625rem] md:text-[1.125rem] font-normal text-neutral-700 leading-[1.7]">
-                  {event.openingHours || formatTime(event.startsAt)}
-                </dd>
-              </div>
-              {event.venue && (
-                <div>
-                  <dt className="sr-only">Venue</dt>
-                  <dd className="font-archive-body text-[1.0625rem] md:text-[1.125rem] font-normal text-neutral-700 leading-[1.7]">
-                    {venueShort(event.venue)}
-                    <span className="block mt-1 text-neutral-500 text-base">
-                      {event.venue}
-                    </span>
-                  </dd>
-                </div>
+        {/* Hero: image left, invitation right */}
+        <section className="relative isolate overflow-hidden bg-black text-white">
+          <div className="grid md:grid-cols-2">
+            <div className="relative min-h-[320px] md:min-h-[min(62svh,640px)]">
+              {event.imageUrl ? (
+                <OptimizedImage
+                  src={event.imageUrl}
+                  alt={event.title}
+                  fill
+                  preset="hero"
+                  priority
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-neutral-900" />
               )}
-            </dl>
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:via-transparent md:to-black" />
+              <Link
+                href="/events"
+                className="absolute left-6 top-6 z-10 inline-flex items-center gap-2 font-archive-body text-sm text-white hover:underline md:left-10"
+              >
+                <ArrowLeft className="h-4 w-4" aria-hidden />
+                Back to events
+              </Link>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="flex flex-col justify-center px-6 py-12 md:px-12 md:py-16 lg:pr-20"
+            >
+              <p className={`${HERO_LABEL} text-white/70`}>
+                {isCompleted
+                  ? "Past event"
+                  : isSoldOut
+                    ? "Sold out"
+                    : "Registration open"}
+              </p>
+              <h1 className="mt-5 font-display text-5xl font-medium leading-[1.05] tracking-tight md:text-6xl">
+                {event.title}
+              </h1>
+              {event.description && (
+                <p className="mt-6 max-w-lg font-display text-xl font-normal leading-[1.55] text-white/90 line-clamp-4">
+                  {event.description}
+                </p>
+              )}
+
+              <dl className="mt-8 space-y-6 border-t border-white/15 pt-8">
+                <div className="flex gap-4">
+                  <Calendar className="mt-0.5 h-6 w-6 shrink-0" strokeWidth={1.25} aria-hidden />
+                  <div>
+                    <dt className="sr-only">Date</dt>
+                    <dd className="font-archive-body text-base font-medium">
+                      {formatDay(event.startsAt)}
+                    </dd>
+                    <dd className="mt-1 font-archive-body text-sm text-white/70">
+                      {event.openingHours ||
+                        `${formatTime(event.startsAt)}${
+                          event.artistTalkAt
+                            ? ` · Talk ${formatTime(event.artistTalkAt)}`
+                            : ""
+                        }`}
+                    </dd>
+                  </div>
+                </div>
+                {event.venue && (
+                  <div className="flex gap-4">
+                    <MapPin className="mt-0.5 h-6 w-6 shrink-0" strokeWidth={1.25} aria-hidden />
+                    <div>
+                      <dt className="sr-only">Venue</dt>
+                      <dd className="font-archive-body text-base font-medium">
+                        {venueParts(event.venue).name}
+                      </dd>
+                      {venueParts(event.venue).rest && (
+                        <dd className="mt-1 font-archive-body text-sm text-white/70">
+                          {venueParts(event.venue).rest}
+                        </dd>
+                      )}
+                    </div>
+                  </div>
+                )}
+                <div className="flex gap-4">
+                  <Ticket className="mt-0.5 h-6 w-6 shrink-0" strokeWidth={1.25} aria-hidden />
+                  <div>
+                    <dt className="sr-only">Tickets</dt>
+                    <dd className="font-archive-body text-base font-medium">
+                      {isSoldOut
+                        ? "Sold out"
+                        : capacity
+                          ? "Limited tickets"
+                          : "RSVP"}
+                    </dd>
+                    <dd className="mt-1 font-archive-body text-sm text-white/70">
+                      {isCompleted
+                        ? "This event has passed"
+                        : capacity && capacity.remaining > 0 && capacity.remaining <= 40
+                          ? `${capacity.remaining} seats remaining`
+                          : "Reserve your place below"}
+                    </dd>
+                  </div>
+                </div>
+              </dl>
+            </motion.div>
           </div>
         </section>
 
-        {/* Chapter: Experience */}
-        {!isCompleted && (
-          <section className="border-t border-neutral-100 px-5 py-20 md:px-10 md:py-28 lg:px-16 bg-neutral-50">
-            <div className="mx-auto max-w-2xl">
-              <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500 mb-12">
-                Experience
-              </p>
-              <ul className="space-y-6">
-                {event.artistTalkAt && (
-                  <li className="font-archive-body text-[1.0625rem] md:text-[1.125rem] leading-[1.7] text-neutral-800">
-                    Artist talk
-                    <span className="block text-neutral-500 text-base mt-1">
-                      {formatTime(event.artistTalkAt)}
-                    </span>
-                  </li>
-                )}
-                <li className="font-archive-body text-[1.0625rem] md:text-[1.125rem] leading-[1.7] text-neutral-800">
-                  Opening reception
-                </li>
-                <li className="font-archive-body text-[1.0625rem] md:text-[1.125rem] leading-[1.7] text-neutral-800">
-                  Collectors meet &amp; greet
-                </li>
-                <li className="font-archive-body text-[1.0625rem] md:text-[1.125rem] leading-[1.7] text-neutral-800">
-                  Refreshments
-                </li>
-              </ul>
-            </div>
-          </section>
-        )}
-
-        {/* Atmosphere — living community */}
-        {atmosphere.length > 0 && (
-          <section className="border-t border-neutral-100 px-5 py-20 md:px-10 md:py-28 lg:px-16">
-            <div className="mx-auto max-w-5xl">
-              <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500 mb-12">
-                {isCompleted ? "From the evening" : "Atmosphere"}
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-                {atmosphere.map((file, i) => (
-                  <motion.div
-                    key={file.id}
-                    initial={{ opacity: 0, y: 12 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.55, delay: i * 0.06 }}
-                    className={`relative overflow-hidden bg-neutral-100 ${
-                      i === 0 ? "sm:col-span-2 aspect-[16/10]" : "aspect-[4/3]"
-                    }`}
-                  >
+        {/* About the event */}
+        {event.description &&
+          (event.description.length > 200 || atmosphere.length > 0) && (
+            <section className="mx-auto max-w-6xl px-6 py-20 md:px-10 md:py-24">
+              <div
+                className={`grid items-center gap-10 md:gap-16 ${
+                  atmosphere.length > 0 ? "md:grid-cols-[1fr_1.35fr]" : ""
+                }`}
+              >
+                <div className="max-w-md">
+                  <p className={`${HERO_LABEL} text-neutral-600`}>
+                    About the event
+                  </p>
+                  <h2 className="mt-4 font-display text-4xl font-medium leading-[1.1] tracking-tight text-neutral-900 md:text-5xl">
+                    Art, conversation and community
+                  </h2>
+                  <div className="mt-6 space-y-4 font-archive-body text-base leading-[1.7] text-neutral-700">
+                    {event.description.split(/\n{2,}/).map((para) => (
+                      <p key={para}>{para}</p>
+                    ))}
+                  </div>
+                </div>
+                {atmosphere[0] && (
+                  <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
                     <OptimizedImage
-                      src={file.url}
-                      alt={file.description || ""}
+                      src={atmosphere[0].url}
+                      alt={atmosphere[0].description || ""}
                       fill
                       preset="card"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      sizes="(max-width: 768px) 100vw, 55vw"
                       className="object-cover"
                     />
-                  </motion.div>
-                ))}
+                  </div>
+                )}
               </div>
-            </div>
-          </section>
-        )}
-
-        {event.directions && (
-          <section className="border-t border-neutral-100 px-5 py-16 md:px-10 md:py-20 lg:px-16">
-            <div className="mx-auto max-w-2xl">
-              <p className="font-display text-xs uppercase tracking-[0.22em] text-neutral-500 mb-6">
-                Directions
-              </p>
-              <p className="font-archive-body text-[1.0625rem] leading-[1.7] text-neutral-600 whitespace-pre-line">
-                {event.directions}
-              </p>
-            </div>
-          </section>
-        )}
+            </section>
+          )}
 
         {/* Chapter: Tickets + RSVP */}
         {!isCompleted && (
@@ -703,6 +671,80 @@ export default function EventDetailPage() {
                     </a>
                   </div>
                 </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Moments */}
+        {atmosphere.length > 1 && (
+          <section className="mx-auto max-w-6xl px-6 pb-20 md:px-10">
+            <p className={`${HERO_LABEL} text-neutral-600`}>
+              {isCompleted ? "From the evening" : "Atmosphere"}
+            </p>
+            <h2 className="mt-3 font-display text-4xl font-medium tracking-tight text-neutral-900">
+              {isCompleted ? "Moments from the studio" : "A glimpse of the evening"}
+            </h2>
+            <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-[1.25fr_1.05fr_0.7fr] md:grid-rows-2 md:gap-4">
+              {atmosphere.map((file, i) => {
+                const layout =
+                  i === 0
+                    ? "col-span-2 aspect-[4/3] md:col-span-1 md:row-span-2 md:aspect-auto md:min-h-[380px]"
+                    : i === 1
+                      ? "aspect-[3/4] md:row-span-2 md:aspect-auto"
+                      : "aspect-[4/3]";
+                return (
+                  <div
+                    key={file.id}
+                    className={`relative overflow-hidden bg-neutral-100 ${layout}`}
+                  >
+                    <OptimizedImage
+                      src={file.url}
+                      alt={file.description || ""}
+                      fill
+                      preset="card"
+                      sizes="(max-width: 768px) 50vw, 33vw"
+                      className="object-cover"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Directions */}
+        {event.venue && (
+          <section className="border-t border-neutral-200">
+            <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-16 md:grid-cols-[1fr_1.4fr] md:gap-16 md:px-10">
+              <div>
+                <p className={`${HERO_LABEL} text-neutral-600`}>Directions</p>
+                <h2 className="mt-3 font-display text-4xl font-medium tracking-tight text-neutral-900">
+                  {/studio/i.test(event.venue) ? "Find the studio" : "Find the venue"}
+                </h2>
+                {event.directions && (
+                  <p className="mt-4 whitespace-pre-line font-archive-body text-base leading-[1.7] text-neutral-700">
+                    {event.directions}
+                  </p>
+                )}
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venue)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 inline-flex min-h-[3rem] items-center gap-2 border border-neutral-900 bg-neutral-900 px-6 py-3 font-archive-body text-sm font-medium text-white transition-colors hover:bg-white hover:text-neutral-900"
+                >
+                  Open in Google Maps
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </a>
+              </div>
+              <div className="relative h-[260px] overflow-hidden bg-neutral-100">
+                <iframe
+                  title={`Map of ${event.venue}`}
+                  src={`https://www.google.com/maps?q=${encodeURIComponent(event.venue)}&output=embed`}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="h-full w-full border-0 grayscale"
+                />
               </div>
             </div>
           </section>
