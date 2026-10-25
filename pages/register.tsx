@@ -3,6 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Palette, X } from "lucide-react";
+import PasswordInput from "@/components/ui/PasswordInput";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -128,10 +129,9 @@ export default function RegisterPage() {
                 >
                   Password
                 </label>
-                <input
+                <PasswordInput
                   id="password"
                   name="password"
-                  type="password"
                   autoComplete="new-password"
                   required
                   value={password}

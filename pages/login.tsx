@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSession, signIn } from "next-auth/react";
 import { Brush, X } from "lucide-react";
+import PasswordInput from "@/components/ui/PasswordInput";
 
 // next-auth reports failures as codes; show readable copy instead.
 const LOGIN_ERRORS: Record<string, string> = {
@@ -144,10 +145,9 @@ export default function LoginPage() {
                 >
                   Password
                 </label>
-                <input
+                <PasswordInput
                   id="password"
                   name="password"
-                  type="password"
                   autoComplete="current-password"
                   required
                   value={password}
