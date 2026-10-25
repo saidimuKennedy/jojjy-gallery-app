@@ -326,15 +326,21 @@ export default function AccountPage() {
           >
             {initial}
           </div>
-          <div className="min-w-0">
+          <div className="w-full min-w-0 sm:w-auto">
             <p className="font-archive-body text-xs font-semibold uppercase tracking-[0.28em] text-neutral-400">
               Account
             </p>
-            <h1 className="mt-3 truncate font-display text-5xl font-medium tracking-tight text-white">
+            <h1
+              className={`mt-3 break-words font-display font-medium tracking-tight text-white ${
+                displayName.includes("@")
+                  ? "text-2xl sm:text-4xl"
+                  : "text-4xl sm:text-5xl"
+              }`}
+            >
               {displayName}
             </h1>
             {session.user.email && session.user.email !== displayName && (
-              <p className="mt-3 truncate font-display text-xl text-neutral-300">
+              <p className="mt-3 break-all font-display text-lg text-neutral-300 sm:text-xl">
                 {session.user.email}
               </p>
             )}
