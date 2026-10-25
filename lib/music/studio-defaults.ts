@@ -1,20 +1,20 @@
 export const DEFAULT_STUDIO_PAGE = {
   heroTitle: "Step Inside the Studio",
   heroSubtitle:
-    "Every painting begins as an idea. Every song begins as a voice. Join me before the world hears it.",
+    "Every painting begins as an idea. Every song begins as a voice. Step inside the work while it's still becoming.",
   relationshipLead:
     "Studio members experience work while it's still becoming — not after the algorithms find it.",
   journeySteps: [
-    "Early music",
-    "Studio journals",
-    "Behind-the-scenes",
-    "Member releases",
-    "Priority event access",
+    "Member-only releases",
+    "Studio notes",
+    "Your member library",
+    "Purchases you keep",
+    "Passes that stack",
   ],
   faq: [
     {
       q: "What's the difference between unlocking a release and joining the Studio?",
-      a: "Unlocking a paid release adds that work to your collection forever. The Studio is ongoing access to member-only releases and early windows while your membership is active.",
+      a: "Unlocking a paid release adds that work to your collection forever. The Studio is ongoing access to member-only releases and Studio notes while your membership is active.",
     },
     {
       q: "What happens when my Studio access ends?",

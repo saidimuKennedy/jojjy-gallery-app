@@ -51,7 +51,7 @@ CrmUser + music:* permissions  (staff publish + manual grants)
 | --- | --- |
 | Catalogue IDs | Integer autoincrement (`Release`, `Track`, `MembershipPlan`, …) |
 | Fan / order IDs | UUID strings (`User`, `Order`, `Membership`, …) |
-| Money | Decimal(10, 2), currency default `KES` |
+| Money | Decimal(10, 2), currency default `USD` (KES is charged at Paystack checkout) |
 | Payment provider | `PaymentProvider` enum (`PAYSTACK`) |
 | Soft end-of-life | Archive / status — no hard delete after sale |
 
@@ -121,7 +121,7 @@ Current unlock rules for a Release (1:1).
 - releaseId (unique)
 - accessMode (FREE | PAID | MEMBERS_ONLY)
 - price (nullable; required when PAID; **editable anytime** — ADR-021)
-- currency (default KES)
+- currency (default USD; KES at Paystack checkout)
 - paidPlayLimit (default **3** for PAID tease — ADR-005)
 - updatedAt
 
@@ -161,7 +161,7 @@ Catalogue of Studio Membership offers — **created and priced by the Artist in 
 - name
 - description
 - price
-- currency (KES)
+- currency (USD; KES at Paystack checkout)
 - durationDays (prepaid length — artist-set)
 - active
 - createdAt / updatedAt

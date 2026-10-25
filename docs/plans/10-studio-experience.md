@@ -113,7 +113,7 @@ Not a pricing page. An **invitation**.
      - Count of `MEMBERS_ONLY` published releases  
      - Optional CRM “studio highlights” (images, journal links) — Phase B  
    - Example card types: unreleased songs, sketchbook, BTS photos, event priority  
-   - Phase A: auto-list member releases + placeholder cards for future content types
+   - Auto-list published member releases only; no placeholder cards. Unsupported content types stay off the live page until real CRM data exists.
 
 4. **The journey — why join**  
    - Timeline diagram:  
@@ -387,3 +387,4 @@ Plan 09 covers **Support** for paid unlock. Plan 10 covers **Belong** and the **
 | Date | Note |
 | ---- | ---- |
 | 2026-07-21 | Plan created from Ken product review — emotional layer on top of Plan 09 MVP |
+| 2026-10-25 | Data-correctness pass: removed dev filler cards and unsupported early/priority claims; public Studio lists published member releases only, library keeps archived releases for active members; plans/expiry state corrected |

@@ -15,8 +15,18 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { DEFAULT_STUDIO_PAGE } from "../lib/music/studio-defaults";
 
+function isLocalHost(connectionString: string | undefined) {
+  if (!connectionString) return false;
+  try {
+    const { hostname } = new URL(connectionString);
+    return hostname === "localhost" || hostname === "127.0.0.1";
+  } catch {
+    return false;
+  }
+}
+
 function withRelaxedSsl(connectionString: string | undefined) {
-  if (!connectionString) return connectionString;
+  if (!connectionString || isLocalHost(connectionString)) return connectionString;
   try {
     const url = new URL(connectionString);
     url.searchParams.set("sslmode", "no-verify");
@@ -29,7 +39,9 @@ function withRelaxedSsl(connectionString: string | undefined) {
 const pool = new Pool({
   connectionString: withRelaxedSsl(process.env.DATABASE_URL),
   max: 1,
-  ssl: { rejectUnauthorized: false },
+  ssl: isLocalHost(process.env.DATABASE_URL)
+    ? false
+    : { rejectUnauthorized: false },
 });
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
@@ -169,7 +181,7 @@ async function upsertPlan(params: {
 async function main() {
   await upsertPlan({
     name: "30 days in the Studio",
-    description: "Member exclusives and early listens for a month.",
+    description: "Member-only releases and Studio notes for a month.",
     price: 12,
     durationDays: 30,
   });

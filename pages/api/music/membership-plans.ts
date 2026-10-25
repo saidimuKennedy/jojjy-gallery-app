@@ -2,7 +2,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
-import { musicCatalogPrice } from "@/lib/currency";
+import { isSupportedCurrency, musicCatalogPrice } from "@/lib/currency";
+import { getViewerMembership } from "@/lib/music/membership";
 
 export default async function handler(
   req: NextApiRequest,
@@ -19,13 +20,44 @@ export default async function handler(
     const session = await getServerSession(req, res, authOptions);
     const userId = session?.user?.id as string | undefined;
 
-    const plans = await prisma.membershipPlan.findMany({
-      where: { active: true },
-      orderBy: { price: "asc" },
+    const rawPlans = await prisma.membershipPlan.findMany({
+      where: {
+        active: true,
+        durationDays: { gt: 0 },
+        price: { gte: 0 },
+      },
+      orderBy: { id: "asc" },
     });
+
+    const unsupported = rawPlans.filter(
+      (plan) => !isSupportedCurrency(plan.currency)
+    );
+    if (unsupported.length > 0) {
+      console.warn(
+        "Skipping membership plans with unsupported currency",
+        unsupported.map((plan) => plan.id)
+      );
+    }
+
+    const plans = rawPlans
+      .filter((plan) => isSupportedCurrency(plan.currency))
+      .map((plan) => {
+        const stored = Number(plan.price);
+        const { price, currency } = musicCatalogPrice(stored, plan.currency);
+        return {
+          id: plan.id,
+          name: plan.name,
+          description: plan.description,
+          price: price ?? 0,
+          currency,
+          durationDays: plan.durationDays,
+        };
+      })
+      .sort((a, b) => a.price - b.price);
 
     let viewerMembership: {
       active: boolean;
+      status: string | null;
       expiresAt: string | null;
       startedAt: string | null;
       planName: string | null;
@@ -33,50 +65,30 @@ export default async function handler(
     } | null = null;
 
     if (userId) {
-      const now = new Date();
-      const membership = await prisma.membership.findFirst({
-        where: {
-          userId,
-          status: "ACTIVE",
-          expiresAt: { gt: now },
-        },
-        orderBy: { expiresAt: "desc" },
-        include: { plan: true },
-      });
-      if (membership) {
-        viewerMembership = {
-          active: true,
-          expiresAt: membership.expiresAt.toISOString(),
-          startedAt: membership.startedAt.toISOString(),
-          planName: membership.plan.name,
-          isFounding: membership.isFounding,
-        };
-      } else {
-        viewerMembership = {
-          active: false,
-          expiresAt: null,
-          startedAt: null,
-          planName: null,
-          isFounding: false,
-        };
-      }
+      const viewer = await getViewerMembership(userId);
+      viewerMembership = viewer
+        ? {
+            active: viewer.active,
+            status: viewer.status,
+            expiresAt: viewer.expiresAt.toISOString(),
+            startedAt: viewer.startedAt.toISOString(),
+            planName: viewer.planName,
+            isFounding: viewer.isFounding,
+          }
+        : {
+            active: false,
+            status: null,
+            expiresAt: null,
+            startedAt: null,
+            planName: null,
+            isFounding: false,
+          };
     }
 
     return res.status(200).json({
       success: true,
       data: {
-        plans: plans.map((p) => {
-          const stored = Number(p.price);
-          const { price, currency } = musicCatalogPrice(stored, p.currency);
-          return {
-            id: p.id,
-            name: p.name,
-            description: p.description,
-            price,
-            currency,
-            durationDays: p.durationDays,
-          };
-        }),
+        plans,
         viewerMembership,
       },
     });

@@ -7,7 +7,7 @@
     "build": "npx prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "test:unit": "tsx --test lib/music/experience.test.ts lib/paystack-callback.test.ts",
+    "test:unit": "tsx --test lib/music/experience.test.ts lib/currency.test.ts lib/paystack-callback.test.ts",
     "prisma:seed": "prisma db seed",
     "prisma:seed-archive": "tsx prisma/seed-archive.ts",
     "prisma:seed-events-shop": "tsx prisma/seed-events-shop.ts",

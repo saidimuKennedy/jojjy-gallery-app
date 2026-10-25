@@ -20,6 +20,7 @@ type PlansPayload = {
   plans: MembershipPlan[];
   viewerMembership: {
     active: boolean;
+    status: "ACTIVE" | "EXPIRED" | "CANCELLED" | null;
     expiresAt: string | null;
     startedAt: string | null;
     planName: string | null;
@@ -106,8 +107,6 @@ export default function StudioJoinSection({
   const plans = data?.plans ?? [];
   const membership = data?.viewerMembership;
 
-  if (plans.length === 0) return null;
-
   const expiryLabel =
     membership?.active && membership.expiresAt
       ? new Date(membership.expiresAt).toLocaleDateString(undefined, {
@@ -123,6 +122,21 @@ export default function StudioJoinSection({
           month: "long",
           year: "numeric",
         })
+      : null;
+
+  const expiredLabel =
+    membership && !membership.active
+      ? membership.status === "CANCELLED"
+        ? "Your Studio access is not active."
+        : membership.expiresAt
+          ? `Your Studio access ended on ${new Date(
+              membership.expiresAt
+            ).toLocaleDateString(undefined, {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })}.`
+          : null
       : null;
 
   return (
@@ -149,29 +163,29 @@ export default function StudioJoinSection({
         </div>
       ) : (
         <>
+          {expiredLabel && (
+            <p className="mb-6 text-sm leading-relaxed text-neutral-600">
+              {expiredLabel}
+            </p>
+          )}
           {showSupportCopy && (
             <p className="mb-8 max-w-lg text-sm leading-relaxed text-neutral-600">
               {CHECKOUT_SUPPORT_COPY}
             </p>
           )}
-          {variant === "grid" ? (
+          {plans.length === 0 ? (
+            <p className="border border-neutral-200 bg-neutral-50 p-6 text-sm leading-relaxed text-neutral-600">
+              Studio plans are not available right now. Please check back
+              shortly.
+            </p>
+          ) : variant === "grid" ? (
             <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {plans.map((plan, index) => {
-                const featured = index === 0;
+              {plans.map((plan) => {
                 return (
                   <li
                     key={plan.id}
-                    className={`relative flex flex-col p-6 ${
-                      featured
-                        ? "border border-neutral-900 bg-white"
-                        : "border border-neutral-200 bg-white/60"
-                    }`}
+                    className="relative flex flex-col border border-neutral-200 bg-white/60 p-6"
                   >
-                    {featured && (
-                      <span className="absolute -top-3 left-4 bg-neutral-900 px-3 py-1 font-archive-body text-xs font-medium uppercase tracking-[0.14em] text-white">
-                        Most popular
-                      </span>
-                    )}
                     <p className="font-display text-2xl text-neutral-900">
                       {plan.durationDays} days
                     </p>
@@ -212,11 +226,7 @@ export default function StudioJoinSection({
                           type="button"
                           disabled={busyPlanId != null}
                           onClick={() => setConfirmPlanId(plan.id)}
-                          className={`w-full border border-neutral-900 px-4 py-3 font-archive-body text-xs font-medium transition-colors disabled:opacity-50 ${
-                            featured
-                              ? "bg-neutral-900 text-white hover:bg-white hover:text-neutral-900"
-                              : "bg-transparent text-neutral-900 hover:bg-neutral-900 hover:text-white"
-                          }`}
+                          className="w-full border border-neutral-900 bg-transparent px-4 py-3 font-archive-body text-xs font-medium text-neutral-900 transition-colors hover:bg-neutral-900 hover:text-white disabled:opacity-50"
                         >
                           Join the Studio
                         </button>
@@ -285,7 +295,7 @@ export default function StudioJoinSection({
             ))}
           </ul>
           )}
-          {!session && (
+          {!session && plans.length > 0 && (
             <p className="mt-6 text-xs text-neutral-500">
               Sign in to join — your Studio access stays with your account.
             </p>

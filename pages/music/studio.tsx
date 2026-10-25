@@ -46,7 +46,6 @@ type StudioPayload = {
       title: string;
       coverImage: string | null;
     }>;
-    earlyAccessCount: number;
   };
 };
 
@@ -59,16 +58,7 @@ const fetcher = async (url: string) => {
   return body.data as StudioPayload;
 };
 
-const STUDIO_HERO_COPY =
-  "Go deeper into the music, process and stories. Studio members get early music, studio journals, behind-the-scenes, and priority access — while it's still becoming.";
-
-const BENEFITS = [
-  { icon: Music2, title: "Early music", lines: "Hear new releases before the world." },
-  { icon: FileText, title: "Studio journals", lines: "Notes, ideas and works in progress." },
-  { icon: Video, title: "Behind-the-scenes", lines: "Unseen moments from the studio." },
-  { icon: Users, title: "Member releases", lines: "Exclusive tracks and editions." },
-  { icon: Ticket, title: "Priority event access", lines: "First in line for studio events." },
-];
+const JOURNEY_ICONS = [Music2, FileText, Video, Users, Ticket];
 
 type StudioTile = {
   key: string;
@@ -78,14 +68,6 @@ type StudioTile = {
   href?: string;
   playable?: boolean;
 };
-
-// Layout stand-ins so local development shows the full row; never shipped.
-const DEV_FILLER_TILES: StudioTile[] = [
-  { key: "dev-notes", title: "Studio Notes: The Next Chapter", meta: "Journal · Oct 2026", coverImage: "/images/studio/journal.jpg" },
-  { key: "dev-video", title: "Behind the Track: Dawn Theme", meta: "Video · 12 min", coverImage: "/images/studio/behind-the-scenes.jpg", playable: true },
-  { key: "dev-early", title: "Early Access: New Single", meta: "Studio release · 2026", coverImage: "/images/studio/early-music.jpg" },
-  { key: "dev-journal", title: "Process Journal", meta: "Journal · Sep 2026", coverImage: "/images/studio/process-notes.jpg" },
-];
 
 export default function MusicStudioPage() {
   const router = useRouter();
@@ -120,6 +102,7 @@ export default function MusicStudioPage() {
     }
 
     let cancelled = false;
+    let welcome: "studio" | "release" | null = null;
 
     (async () => {
       setConfirmingPayment(true);
@@ -139,11 +122,15 @@ export default function MusicStudioPage() {
           const isPass = body.data.items?.some(
             (i: { itemType: string }) => i.itemType === "MEMBERSHIP_PASS"
           );
-          await globalMutate("/api/music/membership-plans");
-          setWelcomeType(isPass ? "studio" : "release");
+          await Promise.all([
+            globalMutate("/api/music/membership-plans"),
+            globalMutate("/api/music/library"),
+          ]);
+          welcome = isPass ? "studio" : "release";
+          setWelcomeType(welcome);
           setShowWelcome(true);
           toast.success(
-            isPass ? "Welcome to the Studio" : "Added to your library"
+            welcome === "studio" ? "Welcome to the Studio" : "Added to your library"
           );
         }
       } catch {
@@ -151,9 +138,11 @@ export default function MusicStudioPage() {
       } finally {
         if (!cancelled) {
           setConfirmingPayment(false);
-          router.replace("/music/studio?welcomed=studio", undefined, {
-            shallow: true,
-          });
+          router.replace(
+            welcome ? `/music/studio?welcomed=${welcome}` : "/music/studio",
+            undefined,
+            { shallow: true }
+          );
         }
       }
     })();
@@ -174,11 +163,7 @@ export default function MusicStudioPage() {
     href: `/music/${r.slug}`,
     playable: true,
   }));
-  const tiles = (
-    process.env.NODE_ENV === "development"
-      ? [...releaseTiles, ...DEV_FILLER_TILES]
-      : releaseTiles
-  ).slice(0, 5);
+  const tiles = releaseTiles.slice(0, 5);
 
   return (
     <div className="min-h-screen bg-white">
@@ -186,7 +171,7 @@ export default function MusicStudioPage() {
         <title>The Studio — Njenga Ngugi</title>
         <meta
           name="description"
-          content="Step inside the studio — early music and member releases before they go wider."
+          content="Step inside the studio — member-only releases, Studio notes and your member library."
         />
       </Head>
       <Navbar />
@@ -247,7 +232,7 @@ export default function MusicStudioPage() {
                     {content.heroTitle}
                   </h1>
                   <p className={`mt-5 max-w-md ${HERO_BODY} text-white/90 md:text-neutral-800`}>
-                    {STUDIO_HERO_COPY}
+                    {content.heroSubtitle}
                   </p>
                   <div className="mt-8 flex flex-wrap items-center gap-6">
                     <a
@@ -272,26 +257,26 @@ export default function MusicStudioPage() {
               {/* Benefits */}
               <section className="mx-auto max-w-[1600px] px-6 py-14 md:px-12 lg:px-16">
                 <ul className="grid grid-cols-2 gap-y-10 md:grid-cols-5 md:gap-y-0">
-                  {BENEFITS.map(({ icon: Icon, title, lines }, i) => (
-                    <li
-                      key={title}
-                      className={`pr-6 md:px-6 md:first:pl-0 ${
-                        i > 0 ? "md:border-l md:border-neutral-300/70" : ""
-                      }`}
-                    >
-                      <Icon
-                        className="h-6 w-6 text-neutral-900"
-                        strokeWidth={1.1}
-                        aria-hidden
-                      />
-                      <p className="mt-4 font-archive-body text-sm font-semibold text-neutral-900">
-                        {title}
-                      </p>
-                      <p className="mt-2 font-archive-body text-sm leading-relaxed text-neutral-700">
-                        {lines}
-                      </p>
-                    </li>
-                  ))}
+                  {content.journeySteps.map((step, i) => {
+                    const Icon = JOURNEY_ICONS[i % JOURNEY_ICONS.length];
+                    return (
+                      <li
+                        key={`${step}-${i}`}
+                        className={`pr-6 md:px-6 md:first:pl-0 ${
+                          i > 0 ? "md:border-l md:border-neutral-300/70" : ""
+                        }`}
+                      >
+                        <Icon
+                          className="h-6 w-6 text-neutral-900"
+                          strokeWidth={1.1}
+                          aria-hidden
+                        />
+                        <p className="mt-4 font-archive-body text-sm font-semibold text-neutral-900">
+                          {step}
+                        </p>
+                      </li>
+                    );
+                  })}
                 </ul>
               </section>
 
@@ -303,7 +288,7 @@ export default function MusicStudioPage() {
                       Currently inside the Studio
                     </h2>
                     <p className="mt-1 font-archive-body text-sm text-neutral-600">
-                      Fresh from the studio — available now for Studio members.
+                      Member releases available now for Studio members.
                     </p>
                   </div>
                   <Link
@@ -387,10 +372,10 @@ export default function MusicStudioPage() {
                   The Journey
                 </p>
                 <p className="mt-6 max-w-lg font-display text-4xl font-normal leading-[1.12] md:text-[2.6rem]">
-                  {content.heroSubtitle}
+                  {content.relationshipLead}
                 </p>
                 <p className="mt-6 max-w-md font-archive-body text-sm leading-relaxed text-white/80">
-                  {content.relationshipLead} Join to be part of that journey.
+                  Join to be part of that journey.
                 </p>
               </div>
             </section>

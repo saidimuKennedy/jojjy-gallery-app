@@ -12,8 +12,18 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { hashPassword } from "../lib/auth";
 
+function isLocalHost(connectionString: string | undefined) {
+  if (!connectionString) return false;
+  try {
+    const { hostname } = new URL(connectionString);
+    return hostname === "localhost" || hostname === "127.0.0.1";
+  } catch {
+    return false;
+  }
+}
+
 function withRelaxedSsl(connectionString: string | undefined) {
-  if (!connectionString) return connectionString;
+  if (!connectionString || isLocalHost(connectionString)) return connectionString;
   try {
     const url = new URL(connectionString);
     url.searchParams.set("sslmode", "no-verify");
@@ -26,7 +36,9 @@ function withRelaxedSsl(connectionString: string | undefined) {
 const pool = new Pool({
   connectionString: withRelaxedSsl(process.env.DATABASE_URL),
   max: 1,
-  ssl: { rejectUnauthorized: false },
+  ssl: isLocalHost(process.env.DATABASE_URL)
+    ? false
+    : { rejectUnauthorized: false },
 });
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
@@ -47,6 +59,11 @@ const ACCOUNTS = [
     username: "music_listener",
     email: "music.listener@demo.jojjy",
     label: "Free listener — no purchases",
+  },
+  {
+    username: "expired_member",
+    email: "expired.member@demo.jojjy",
+    label: "Expired Studio member",
   },
 ] as const;
 
@@ -98,6 +115,22 @@ async function main() {
           expiresAt,
           status: "ACTIVE",
           isFounding: true,
+        },
+      });
+    }
+
+    if (acct.email === "expired.member@demo.jojjy") {
+      const startedAt = new Date();
+      startedAt.setUTCDate(startedAt.getUTCDate() - 60);
+      const expiresAt = new Date();
+      expiresAt.setUTCDate(expiresAt.getUTCDate() - 30);
+      await prisma.membership.create({
+        data: {
+          userId: user.id,
+          membershipPlanId: plan.id,
+          startedAt,
+          expiresAt,
+          status: "EXPIRED",
         },
       });
     }

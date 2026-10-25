@@ -29,6 +29,7 @@ import {
 import {
   CATALOG_CURRENCY,
   MUSIC_PAYMENT_CURRENCY,
+  isSupportedCurrency,
   musicPaymentAmount,
   normalizeToUsd,
   usdToKes,
@@ -437,6 +438,12 @@ export default async function handler(
           });
         }
         const storedCurrency = release.accessPolicy.currency ?? "USD";
+        if (!isSupportedCurrency(storedCurrency)) {
+          return res.status(400).json({
+            success: false,
+            message: `Release currency ${storedCurrency} is not supported`,
+          });
+        }
         const usdPrice = normalizeToUsd(
           release.accessPolicy.price.toNumber(),
           storedCurrency
@@ -463,13 +470,24 @@ export default async function handler(
         const plan = await prisma.membershipPlan.findUnique({
           where: { id: item.membershipPlanId },
         });
-        if (!plan || !plan.active) {
+        if (
+          !plan ||
+          !plan.active ||
+          plan.durationDays <= 0 ||
+          plan.price.toNumber() < 0
+        ) {
           return res.status(404).json({
             success: false,
             message: `Membership plan ${item.membershipPlanId} not found`,
           });
         }
         const planCurrency = plan.currency ?? "USD";
+        if (!isSupportedCurrency(planCurrency)) {
+          return res.status(400).json({
+            success: false,
+            message: `Membership plan currency ${planCurrency} is not supported`,
+          });
+        }
         const usdPrice = normalizeToUsd(plan.price.toNumber(), planCurrency);
         const kesCharge = musicPaymentAmount(usdPrice);
         orderItemsData.push({

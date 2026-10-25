@@ -22,12 +22,18 @@ export function usdToKes(usd: number): number {
   return Math.round(usd * kesPerUsd() * 100) / 100;
 }
 
+/** Supported catalogue currencies. Anything else must not be silently relabelled. */
+export function isSupportedCurrency(storedCurrency: string): boolean {
+  const c = storedCurrency.trim().toUpperCase();
+  return c === "USD" || c === "KES";
+}
+
 /** Normalise a stored DB price to USD for display and checkout logic. */
 export function normalizeToUsd(amount: number, storedCurrency: string): number {
-  const c = storedCurrency.toUpperCase();
+  const c = storedCurrency.trim().toUpperCase();
   if (c === "USD") return amount;
   if (c === "KES") return kesToUsd(amount);
-  return amount;
+  throw new Error(`Unsupported catalogue currency: ${storedCurrency}`);
 }
 
 export function formatDisplayPrice(amount: number): string {

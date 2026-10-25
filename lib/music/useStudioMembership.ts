@@ -2,6 +2,7 @@ import useSWR from "swr";
 
 export type ViewerMembership = {
   active: boolean;
+  status: "ACTIVE" | "EXPIRED" | "CANCELLED" | null;
   expiresAt: string | null;
   startedAt: string | null;
   planName: string | null;

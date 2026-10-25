@@ -1,6 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { DEFAULT_STUDIO_PAGE } from "@/lib/music/studio-defaults";
+import {
+  STUDIO_CURRENT_RELEASE_WHERE,
+  promoteDueScheduledReleases,
+} from "@/lib/music/studio-access";
 
 export default async function handler(
   req: NextApiRequest,
@@ -14,39 +18,33 @@ export default async function handler(
   }
 
   try {
-    let content = await prisma.studioPageContent.findUnique({ where: { id: 1 } });
-    if (!content) {
-      content = await prisma.studioPageContent.create({
-        data: {
-          id: 1,
-          heroTitle: DEFAULT_STUDIO_PAGE.heroTitle,
-          heroSubtitle: DEFAULT_STUDIO_PAGE.heroSubtitle,
-          relationshipLead: DEFAULT_STUDIO_PAGE.relationshipLead,
-          journeySteps: DEFAULT_STUDIO_PAGE.journeySteps,
-          faq: DEFAULT_STUDIO_PAGE.faq,
-        },
-      });
-    }
+    const content = await prisma.studioPageContent.upsert({
+      where: { id: 1 },
+      update: {},
+      create: {
+        id: 1,
+        heroTitle: DEFAULT_STUDIO_PAGE.heroTitle,
+        heroSubtitle: DEFAULT_STUDIO_PAGE.heroSubtitle,
+        relationshipLead: DEFAULT_STUDIO_PAGE.relationshipLead,
+        journeySteps: DEFAULT_STUDIO_PAGE.journeySteps,
+        faq: DEFAULT_STUDIO_PAGE.faq,
+      },
+    });
+
+    await promoteDueScheduledReleases();
 
     const memberReleases = await prisma.release.findMany({
-      where: {
-        publishStatus: "PUBLISHED",
-        accessPolicy: { accessMode: "MEMBERS_ONLY" },
-      },
+      where: STUDIO_CURRENT_RELEASE_WHERE,
       select: {
         id: true,
         slug: true,
         title: true,
         coverImage: true,
       },
-      orderBy: { releaseDate: "desc" },
-    });
-
-    const paidEarlyCount = await prisma.release.count({
-      where: {
-        publishStatus: "PUBLISHED",
-        accessPolicy: { accessMode: { in: ["PAID", "MEMBERS_ONLY"] } },
-      },
+      orderBy: [
+        { releaseDate: { sort: "desc", nulls: "last" } },
+        { createdAt: "desc" },
+      ],
     });
 
     return res.status(200).json({
@@ -62,7 +60,6 @@ export default async function handler(
         insideStudio: {
           memberReleaseCount: memberReleases.length,
           memberReleases,
-          earlyAccessCount: paidEarlyCount,
         },
       },
     });

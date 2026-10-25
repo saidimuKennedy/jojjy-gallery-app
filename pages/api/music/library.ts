@@ -2,10 +2,12 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
+import { serializeReleasePublic } from "@/lib/music/entitlements";
+import { getViewerMembership } from "@/lib/music/membership";
 import {
-  hasActiveMembership,
-  serializeReleasePublic,
-} from "@/lib/music/entitlements";
+  STUDIO_LIBRARY_RELEASE_WHERE,
+  promoteDueScheduledReleases,
+} from "@/lib/music/studio-access";
 
 export default async function handler(
   req: NextApiRequest,
@@ -27,8 +29,13 @@ export default async function handler(
   }
 
   try {
+    await promoteDueScheduledReleases();
+
     const unlocks = await prisma.releaseUnlock.findMany({
-      where: { userId },
+      where: {
+        userId,
+        release: { publishStatus: { in: ["PUBLISHED", "ARCHIVED"] } },
+      },
       include: {
         release: {
           include: {
@@ -44,14 +51,12 @@ export default async function handler(
       librarySource: "PURCHASE" as const,
     }));
 
-    const member = await hasActiveMembership(userId);
+    const viewer = await getViewerMembership(userId);
+    const member = !!viewer?.active;
     let studioAccess: ReturnType<typeof serializeReleasePublic>[] = [];
     if (member) {
       const rows = await prisma.release.findMany({
-        where: {
-          publishStatus: { in: ["PUBLISHED", "ARCHIVED"] },
-          accessPolicy: { accessMode: "MEMBERS_ONLY" },
-        },
+        where: STUDIO_LIBRARY_RELEASE_WHERE,
         include: {
           accessPolicy: true,
           tracks: { orderBy: { trackNumber: "asc" } },
@@ -66,22 +71,18 @@ export default async function handler(
         }));
     }
 
-    const membership = await prisma.membership.findFirst({
-      where: { userId, status: "ACTIVE", expiresAt: { gt: new Date() } },
-      orderBy: { expiresAt: "desc" },
-    });
-
     return res.status(200).json({
       success: true,
       data: {
         collection,
         studioAccess,
-        studioMembership: membership
+        studioMembership: viewer
           ? {
-              active: true,
-              expiresAt: membership.expiresAt.toISOString(),
-              startedAt: membership.startedAt.toISOString(),
-              isFounding: membership.isFounding,
+              active: viewer.active,
+              status: viewer.status,
+              expiresAt: viewer.expiresAt.toISOString(),
+              startedAt: viewer.startedAt.toISOString(),
+              isFounding: viewer.isFounding,
             }
           : { active: false },
       },
