@@ -432,6 +432,7 @@ export default function AccountPage() {
                         </Link>
                         <p className="mt-1 font-archive-body text-sm text-neutral-300">
                           Artwork
+                          {item.artwork.year ? ` · ${item.artwork.year}` : ""}
                         </p>
                       </div>
                       <RowMenu
